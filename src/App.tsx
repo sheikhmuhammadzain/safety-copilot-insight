@@ -5,6 +5,13 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { AppLayout } from "./components/layout/AppLayout";
 import Overview from "./pages/Overview";
+import Incidents from "./pages/Incidents";
+import Hazards from "./pages/Hazards";
+import Audits from "./pages/Audits";
+import Maps from "./pages/Maps";
+import Agent from "./pages/Agent";
+import Workbooks from "./pages/Workbooks";
+import Settings from "./pages/Settings";
 import NotFound from "./pages/NotFound";
 
 const queryClient = new QueryClient();
@@ -16,13 +23,13 @@ const App = () => (
         <AppLayout>
           <Routes>
             <Route path="/" element={<Overview />} />
-            <Route path="/incidents" element={<div className="p-6"><h1 className="text-2xl font-bold">Incidents</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/hazards" element={<div className="p-6"><h1 className="text-2xl font-bold">Hazards</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/audits" element={<div className="p-6"><h1 className="text-2xl font-bold">Audits</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/maps" element={<div className="p-6"><h1 className="text-2xl font-bold">Maps</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/agent" element={<div className="p-6"><h1 className="text-2xl font-bold">Agent</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/workbooks" element={<div className="p-6"><h1 className="text-2xl font-bold">Workbooks</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
-            <Route path="/settings" element={<div className="p-6"><h1 className="text-2xl font-bold">Settings</h1><p className="text-muted-foreground">Coming soon...</p></div>} />
+            <Route path="/incidents" element={<Incidents />} />
+            <Route path="/hazards" element={<Hazards />} />
+            <Route path="/audits" element={<Audits />} />
+            <Route path="/maps" element={<Maps />} />
+            <Route path="/agent" element={<Agent />} />
+            <Route path="/workbooks" element={<Workbooks />} />
+            <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />
           </Routes>
