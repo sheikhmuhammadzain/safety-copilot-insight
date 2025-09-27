@@ -3,6 +3,12 @@ import type { Config } from "tailwindcss";
 export default {
   darkMode: ["class"],
   content: ["./pages/**/*.{ts,tsx}", "./components/**/*.{ts,tsx}", "./app/**/*.{ts,tsx}", "./src/**/*.{ts,tsx}"],
+  safelist: [
+    "animate-fade-in",
+    "animate-fade-up",
+    "animate-slide-up",
+    "animate-scale-in",
+  ],
   prefix: "",
   theme: {
     container: {
@@ -97,10 +103,35 @@ export default {
             height: "0",
           },
         },
+        fadeIn: {
+          from: { opacity: "0" },
+          to: { opacity: "1" },
+        },
+        fadeUp: {
+          "0%": { opacity: "0", transform: "translateY(16px)" },
+          "100%": { opacity: "1", transform: "translateY(0)" },
+        },
+        slideUp: {
+          "0%": { transform: "translateY(24px)" },
+          "100%": { transform: "translateY(0)" },
+        },
+        scaleIn: {
+          "0%": { opacity: "0", transform: "scale(0.96)" },
+          "100%": { opacity: "1", transform: "scale(1)" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
         "accordion-up": "accordion-up 0.2s ease-out",
+        "fade-in": "fadeIn 0.8s ease-out forwards",
+        "fade-up": "fadeUp 0.7s ease-out forwards",
+        "slide-up": "slideUp 0.6s ease-out forwards",
+        "scale-in": "scaleIn 0.5s ease-out forwards",
+      },
+      fontFamily: {
+        sans: ["var(--font-sans)"],
+        serif: ["var(--font-serif)"],
+        mono: ["var(--font-mono)"],
       },
     },
   },

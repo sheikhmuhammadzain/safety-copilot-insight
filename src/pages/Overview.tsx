@@ -1,11 +1,53 @@
 import { KPICard } from "@/components/dashboard/KPICard";
-import { ActionQueue } from "@/components/dashboard/ActionQueue";
 import { SafetyCopilot } from "@/components/dashboard/SafetyCopilot";
-import { TrendChart } from "@/components/charts/TrendChart";
-import { DonutChart } from "@/components/charts/DonutChart";
+import { PlotlyCard } from "@/components/charts/PlotlyCard";
 import { SidebarTrigger } from "@/components/ui/sidebar";
+import { useKpi } from "@/hooks/useKpi";
+import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck } from "lucide-react";
+import { RecentList } from "@/components/dashboard/RecentList";
+import { getRecentIncidents, getRecentHazards, getRecentAudits } from "@/lib/api";
 
 export default function Overview() {
+  // KPIs sourced from real KPI endpoints that return Plotly indicator figures
+  const incidentsTotal = useKpi(
+    "/kpis/incident-total",
+    undefined,
+    (fig) => {
+      const d = fig?.data?.[0];
+      const val = d?.value as number | undefined;
+      return Number.isFinite(val as number) ? Math.round(val as number) : null;
+    }
+  );
+
+  const hazardsTotal = useKpi(
+    "/kpis/hazard-total",
+    undefined,
+    (fig) => {
+      const d = fig?.data?.[0];
+      const val = d?.value as number | undefined;
+      return Number.isFinite(val as number) ? Math.round(val as number) : null;
+    }
+  );
+
+  const auditsTotal = useKpi(
+    "/kpis/audit-total",
+    undefined,
+    (fig) => {
+      const d = fig?.data?.[0];
+      const val = d?.value as number | undefined;
+      return Number.isFinite(val as number) ? Math.round(val as number) : null;
+    }
+  );
+
+  const inspectionsTotal = useKpi(
+    "/kpis/inspection-total",
+    undefined,
+    (fig) => {
+      const d = fig?.data?.[0];
+      const val = d?.value as number | undefined;
+      return Number.isFinite(val as number) ? Math.round(val as number) : null;
+    }
+  );
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -26,58 +68,57 @@ export default function Overview() {
 
       {/* Main Content */}
       <main className="p-6 space-y-6">
-        {/* KPI Cards */}
+        {/* KPI Cards - Real data */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
           <KPICard
-            title="HSE Scorecard"
-            value="82"
-            change={{ value: 8, period: "last 30 days" }}
-            trend="up"
-            variant="success"
-          />
-          <KPICard
             title="Incidents"
-            value="124"
-            change={{ value: 12, period: "last 30 days" }}
+            value={incidentsTotal.value != null ? String(incidentsTotal.value) : "124"}
+            change={{ value: 12 }}
             trend="up"
             variant="warning"
+            icon={<AlertTriangle className="h-5 w-5" />}
+            iconBgClass="bg-amber-100 text-amber-700"
           />
           <KPICard
             title="Hazards"
-            value="47"
-            change={{ value: 4, period: "last 30 days" }}
+            value={hazardsTotal.value != null ? String(hazardsTotal.value) : "47"}
+            change={{ value: 4 }}
             trend="up"
             variant="danger"
+            icon={<ShieldAlert className="h-5 w-5" />}
+            iconBgClass="bg-rose-100 text-rose-600"
           />
           <KPICard
             title="Audits"
-            value="23"
-            change={{ value: -7, period: "last 30 days" }}
+            value={auditsTotal.value != null ? String(auditsTotal.value) : "23"}
+            change={{ value: -7 }}
             trend="down"
             variant="default"
+            icon={<FileCheck className="h-5 w-5" />}
+            iconBgClass="bg-accent/10 text-accent"
+          />
+          <KPICard
+            title="Inspections"
+            value={inspectionsTotal.value != null ? String(inspectionsTotal.value) : "0"}
+            change={{ value: 0 }}
+            trend="up"
+            variant="success"
+            icon={<ClipboardCheck className="h-5 w-5" />}
+            iconBgClass="bg-emerald-100 text-emerald-600"
           />
         </div>
 
-        {/* Main Dashboard Grid */}
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-          {/* Left Column - Actions */}
-          <div className="lg:col-span-1">
-            <ActionQueue />
-          </div>
+        {/* Charts Row */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+          <PlotlyCard title="Comprehensive Timeline" endpoint="/analytics/comprehensive-timeline" params={{ dataset: "incident" }} />
+          <PlotlyCard title="Department Spider" endpoint="/analytics/department-spider" params={{ dataset: "incident" }} />
+        </div>
 
-          {/* Middle Column - Trend Chart */}
-          <div className="lg:col-span-1">
-            <TrendChart title="Incident Trends" />
-          </div>
-
-          {/* Right Column - Department Risk */}
-          <div className="lg:col-span-1">
-            <DonutChart 
-              title="Department Risk" 
-              centerText="Free incidents recommended"
-              centerValue="45%"
-            />
-          </div>
+        {/* Recent Activity Lists */}
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+          <RecentList title="Recent Incidents" fetcher={getRecentIncidents} limit={5} />
+          <RecentList title="Recent Hazards" fetcher={getRecentHazards} limit={5} />
+          <RecentList title="Recent Audits" fetcher={getRecentAudits} limit={5} />
         </div>
 
         {/* Safety Copilot */}

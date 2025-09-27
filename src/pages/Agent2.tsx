@@ -14,7 +14,7 @@ import { runAgent } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
- 
+
 interface AgentResponse {
   code: string;
   stdout: string;
@@ -35,7 +35,7 @@ const EXAMPLE_PROMPTS = [
   "Create prioritized action list for top 3 locations",
 ];
 
-export default function Agent() {
+export default function Agent2() {
   const [question, setQuestion] = useState("");
   const [dataset, setDataset] = useState<"incident" | "hazard" | "audit" | "inspection" | "all">("incident");
   const [response, setResponse] = useState<AgentResponse | null>(null);
@@ -67,6 +67,7 @@ export default function Agent() {
   const handleExampleClick = (prompt: string) => {
     setQuestion(prompt);
   };
+
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -156,7 +157,7 @@ export default function Agent() {
         {response && (
           <div className="space-y-6">
             {/* Analysis */}
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <div className="grid grid-cols-1 lg:grid-cols-1 gap-6">
               <Card>
                 <CardHeader>
                   <CardTitle className="flex items-center space-x-2">
@@ -189,6 +190,7 @@ export default function Agent() {
                             {key.replace(/_/g, " ")}
                           </TableHead>
                         ))}
+                      </TableRow>
                     </TableHeader>
                     <TableBody>
                       {response.result_preview.slice(0, 10).map((row, index) => (
@@ -200,7 +202,22 @@ export default function Agent() {
                       ))}
                     </TableBody>
                   </Table>
-{{ ... }}
+                  {response.result_preview.length > 10 && (
+                    <p className="text-sm text-muted-foreground mt-2">
+                      Showing first 10 of {response.result_preview.length} results
+                    </p>
+                  )}
+                </CardContent>
+              </Card>
+            )}
+
+            {/* Chart Visualization */}
+            {response.figure && (
+              <Card>
+                <CardHeader>
+                  <CardTitle className="flex items-center space-x-2">
+                    <BarChart3 className="h-4 w-4" />
+                    <span>Visualization</span>
                   </CardTitle>
                 </CardHeader>
                 <CardContent>
@@ -212,7 +229,21 @@ export default function Agent() {
                   />
                 </CardContent>
               </Card>
-{{ ... }}
+            )}
+
+            {/* Matplotlib Fallback */}
+            {!response.figure && response.mpl_png_base64 && (
+              <Card>
+                <CardHeader>
+                  <CardTitle>Visualization</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <img
+                    src={`data:image/png;base64,${response.mpl_png_base64}`}
+                    alt="Analysis Chart"
+                    className="max-w-full h-auto"
+                  />
+                </CardContent>
               </Card>
             )}
 
@@ -281,4 +312,3 @@ export default function Agent() {
     </div>
   );
 }
-{{ ... }}

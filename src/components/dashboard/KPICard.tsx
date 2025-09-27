@@ -1,6 +1,7 @@
+import { type ReactNode } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
 
 interface KPICardProps {
@@ -8,10 +9,13 @@ interface KPICardProps {
   value: string | number;
   change?: {
     value: number;
-    period: string;
+    period?: string;
   };
   trend?: "up" | "down" | "neutral";
   variant?: "default" | "success" | "warning" | "danger";
+  valueSuffix?: string;
+  icon?: ReactNode;
+  iconBgClass?: string;
   className?: string;
 }
 
@@ -21,6 +25,9 @@ export function KPICard({
   change, 
   trend = "neutral", 
   variant = "default",
+  valueSuffix,
+  icon,
+  iconBgClass,
   className 
 }: KPICardProps) {
   const getTrendIcon = () => {
@@ -45,47 +52,52 @@ export function KPICard({
     }
   };
 
-  const getVariantStyles = () => {
-    switch (variant) {
-      case "success":
-        return "border-l-4 border-l-safety-success";
-      case "warning":
-        return "border-l-4 border-l-safety-warning";
-      case "danger":
-        return "border-l-4 border-l-safety-danger";
-      default:
-        return "border-l-4 border-l-accent";
-    }
-  };
+  const iconWrapperClass = iconBgClass ||
+    (variant === "success"
+      ? "bg-emerald-100 text-emerald-600"
+      : variant === "warning"
+      ? "bg-amber-100 text-amber-700"
+      : variant === "danger"
+      ? "bg-rose-100 text-rose-600"
+      : "bg-accent/10 text-accent");
 
   return (
-    <Card className={cn("transition-all duration-200 hover:shadow-lg", getVariantStyles(), className)}>
-      <CardHeader className="pb-2">
-        <CardTitle className="text-sm font-medium text-muted-foreground">
-          {title}
-        </CardTitle>
-      </CardHeader>
-      <CardContent>
+    <Card className={cn("relative overflow-hidden rounded-2xl border border-border/60 bg-card/90 shadow-sm transition-all hover:shadow-lg", className)}>
+      <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <div className="text-2xl font-bold text-foreground">{value}</div>
-          {change && (
-            <div className="flex items-center space-x-1">
-              <Badge 
-                variant="secondary" 
-                className={cn("text-xs", getTrendColor())}
-              >
-                {getTrendIcon()}
-                <span className="ml-1">
-                  {change.value > 0 ? "+" : ""}{change.value}%
-                </span>
-              </Badge>
+          <div className="h-6 w-6 rounded-full border border-muted-foreground/20 grid place-items-center text-muted-foreground/60">
+            <Info className="h-3.5 w-3.5" />
+          </div>
+          <div className="h-6 w-6 rounded-full bg-muted/50" />
+        </div>
+      </CardHeader>
+      <CardContent className="pt-4">
+        <div className="flex items-start gap-3">
+          {icon && (
+            <div className={cn("h-10 w-10 rounded-full grid place-items-center", iconWrapperClass)}>
+              {icon}
             </div>
           )}
+          <div>
+            <div className="text-3xl md:text-4xl font-extrabold tracking-tight text-foreground leading-tight">
+              {value}{valueSuffix ? valueSuffix : ""}
+            </div>
+            <p className="text-sm text-muted-foreground mt-1">{title}</p>
+          </div>
         </div>
         {change && (
-          <p className="text-xs text-muted-foreground mt-1">
-            vs {change.period}
-          </p>
+          <div className="mt-4">
+            <Badge 
+              variant="secondary" 
+              className={cn("text-xs px-2 py-1 rounded-md", (trend === "down" || change.value < 0) ? "text-rose-600" : (trend === "up" || change.value > 0) ? "text-emerald-600" : "text-muted-foreground")}
+            >
+              {(trend === "down" || change.value < 0) ? <TrendingDown className="h-3 w-3" /> : (trend === "up" || change.value > 0) ? <TrendingUp className="h-3 w-3" /> : <Minus className="h-3 w-3" />}
+              <span className="ml-1">{change.value > 0 ? "+" : ""}{change.value}%</span>
+            </Badge>
+            {change.period && (
+              <span className="text-xs text-muted-foreground ml-2">vs {change.period}</span>
+            )}
+          </div>
         )}
       </CardContent>
     </Card>

@@ -1,13 +1,12 @@
 import { 
   BarChart3, 
   Shield, 
-  AlertTriangle, 
-  FileCheck, 
   Map, 
   Bot, 
   Database, 
   Settings,
-  Home
+  Home,
+  Cloud
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -24,11 +23,10 @@ import {
 import { cn } from "@/lib/utils";
 
 const navigationItems = [
-  { title: "Overview", url: "/", icon: Home },
-  { title: "Incidents", url: "/incidents", icon: AlertTriangle },
-  { title: "Hazards", url: "/hazards", icon: Shield },
-  { title: "Audits", url: "/audits", icon: FileCheck },
+  { title: "Overview", url: "/dashboard", icon: Home },
   { title: "Maps", url: "/maps", icon: Map },
+  { title: "Wordclouds", url: "/wordclouds", icon: Cloud },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
   { title: "Agent", url: "/agent", icon: Bot },
   { title: "Workbooks", url: "/workbooks", icon: Database },
   { title: "Settings", url: "/settings", icon: Settings },
@@ -43,9 +41,10 @@ export function AppSidebar() {
   const isActive = (path: string) => currentPath === path;
   const getNavClass = (active: boolean) =>
     cn(
-      "w-full justify-start transition-colors duration-200",
-      active 
-        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium" 
+      "w-full transition-colors duration-200",
+      collapsed ? "justify-center rounded-full p-0 aspect-square" : "justify-start",
+      active
+        ? "bg-sidebar-accent text-sidebar-accent-foreground font-medium"
         : "text-sidebar-foreground/70 hover:bg-sidebar-accent hover:text-sidebar-accent-foreground"
     );
 
@@ -54,13 +53,11 @@ export function AppSidebar() {
       className="border-r border-border"
       collapsible="icon"
     >
-      <SidebarContent className="p-4">
+      <SidebarContent className="p-8 group-data-[collapsible=icon]:p-2">
         {/* Header */}
         <div className="mb-6">
-          <div className="flex items-center gap-3">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-br from-accent to-chart-primary">
-              <Shield className="h-5 w-5 text-white" />
-            </div>
+          <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
+            <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded-md object-contain" />
             <div className="group-data-[collapsible=icon]:hidden">
               <h2 className="text-lg font-semibold text-sidebar-foreground">Safety Co-pilot</h2>
             </div>
@@ -77,7 +74,7 @@ export function AppSidebar() {
                 <SidebarMenuItem key={item.title}>
                   <SidebarMenuButton 
                     asChild 
-                    className="h-10"
+                    className="h-10 group-data-[collapsible=icon]:h-8 group-data-[collapsible=icon]:rounded-full group-data-[collapsible=icon]:mx-1"
                     isActive={isActive(item.url)}
                     tooltip={item.title}
                   >

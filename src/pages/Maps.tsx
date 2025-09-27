@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
 import { Map, MapPin, Layers, RotateCcw } from "lucide-react";
+import { getHtml } from "@/lib/api";
 
 export default function Maps() {
   const [mapData, setMapData] = useState<string>("");
@@ -15,96 +16,20 @@ export default function Maps() {
   const fetchMapData = async (mapType: "combined" | "incident" | "hazard") => {
     setLoading(true);
     try {
-      // TODO: Replace with actual API endpoint
-      const endpoint = mapType === "combined" 
-        ? "http://127.0.0.1:8000/maps/combined"
-        : `http://127.0.0.1:8000/maps/single?dataset=${mapType}`;
-      
-      // Simulate API call for now
-      setTimeout(() => {
-        const mockMapHtml = `
-          <!DOCTYPE html>
-          <html>
-          <head>
-            <title>Safety Map - ${mapType}</title>
-            <style>
-              body { margin: 0; padding: 20px; font-family: Arial, sans-serif; }
-              .map-container { 
-                width: 100%; 
-                height: 400px; 
-                background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
-                border-radius: 8px;
-                display: flex;
-                align-items: center;
-                justify-content: center;
-                color: white;
-                font-size: 18px;
-              }
-              .legend {
-                margin-top: 20px;
-                padding: 15px;
-                background: #f8f9fa;
-                border-radius: 8px;
-              }
-              .legend-item {
-                display: inline-block;
-                margin-right: 20px;
-                margin-bottom: 10px;
-              }
-              .legend-color {
-                display: inline-block;
-                width: 20px;
-                height: 20px;
-                margin-right: 8px;
-                border-radius: 3px;
-                vertical-align: middle;
-              }
-              .red { background-color: #ef4444; }
-              .yellow { background-color: #eab308; }
-              .green { background-color: #22c55e; }
-              .blue { background-color: #3b82f6; }
-            </style>
-          </head>
-          <body>
-            <div class="map-container">
-              <div>
-                <h2>Interactive Safety Map - ${mapType.charAt(0).toUpperCase() + mapType.slice(1)}</h2>
-                <p>Map visualization would be displayed here</p>
-                <p>Showing: ${mapType === "combined" ? "All incidents and hazards" : 
-                  mapType === "incident" ? "Incident locations" : "Hazard locations"}</p>
-              </div>
-            </div>
-            <div class="legend">
-              <h3>Legend</h3>
-              <div class="legend-item">
-                <span class="legend-color red"></span>
-                Critical/High Risk
-              </div>
-              <div class="legend-item">
-                <span class="legend-color yellow"></span>
-                Medium Risk
-              </div>
-              <div class="legend-item">
-                <span class="legend-color green"></span>
-                Low Risk
-              </div>
-              <div class="legend-item">
-                <span class="legend-color blue"></span>
-                Facility Areas
-              </div>
-            </div>
-          </body>
-          </html>
-        `;
-        setMapData(mockMapHtml);
-        setLoading(false);
-      }, 1000);
+      if (mapType === "combined") {
+        const res = await getHtml("/maps/combined");
+        setMapData(res.html);
+      } else {
+        const res = await getHtml("/maps/single", { dataset: mapType });
+        setMapData(res.html);
+      }
     } catch (error) {
       toast({
         title: "Error",
         description: "Failed to load map data",
         variant: "destructive"
       });
+    } finally {
       setLoading(false);
     }
   };
