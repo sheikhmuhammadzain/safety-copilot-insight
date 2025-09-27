@@ -57,6 +57,23 @@ export default {
           border: "hsl(var(--sidebar-border))",
           ring: "hsl(var(--sidebar-ring))",
         },
+        safety: {
+          success: "hsl(var(--safety-success))",
+          warning: "hsl(var(--safety-warning))",
+          danger: "hsl(var(--safety-danger))",
+          info: "hsl(var(--safety-info))",
+        },
+        kpi: {
+          positive: "hsl(var(--kpi-positive))",
+          negative: "hsl(var(--kpi-negative))",
+          neutral: "hsl(var(--kpi-neutral))",
+        },
+        chart: {
+          primary: "hsl(var(--chart-primary))",
+          secondary: "hsl(var(--chart-secondary))",
+          tertiary: "hsl(var(--chart-tertiary))",
+          quaternary: "hsl(var(--chart-quaternary))",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",
