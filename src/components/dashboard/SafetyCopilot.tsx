@@ -5,14 +5,12 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Bot, Send, Sparkles } from "lucide-react";
 import { cn } from "@/lib/utils";
+import AITextLoading from "@/components/motion/AITextLoading";
 
 const suggestedQueries = [
   "Top 5 departments with most incidents",
   "Weekly incident trend with avg severity & total cost",
   "Incidents per location with average severity",
-  "Top 10 violation types",
-  "Audit completion rates by month",
-  "Create prioritized action list for top 3 locations"
 ];
 
 export function SafetyCopilot() {
@@ -84,10 +82,17 @@ export function SafetyCopilot() {
         </div>
 
         {isLoading && (
-          <div className="flex items-center space-x-2 text-sm text-muted-foreground">
-            <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-accent"></div>
-            <span>Analyzing safety data...</span>
-          </div>
+          <AITextLoading
+            texts={[
+              "Thinking...",
+              "Analyzing data...",
+              "Cross-checking KPIs...",
+              "Summarizing insights...",
+              "Almost there...",
+            ]}
+            className="text-xl md:text-2xl"
+            interval={1200}
+          />
         )}
       </CardContent>
     </Card>

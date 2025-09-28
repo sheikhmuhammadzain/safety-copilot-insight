@@ -14,6 +14,7 @@ import { runAgent } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import AITextLoading from "@/components/motion/AITextLoading";
 
 interface AgentResponse {
   code: string;
@@ -152,6 +153,41 @@ export default function Agent2() {
             </div>
           </CardContent>
         </Card>
+
+        {/* Loading State */}
+        {loading && (
+          <Card>
+            <CardContent className="p-4">
+              <AITextLoading
+               texts={[
+                "Thinking...",
+                "Analyzing data...",
+                "Cross-checking KPIs...",
+                "Summarizing insights...",
+                "Almost there...",
+                "Scanning hazards...",
+                "Mapping incidents...",
+                "Detecting anomalies...",
+                "Crunching numbers...",
+                "Identifying root causes...",
+                "Evaluating safety metrics...",
+                "Generating risk scores...",
+                "Comparing trends...",
+                "Finding correlations...",
+                "Checking compliance...",
+                "Highlighting critical issues...",
+                "Recommending actions...",
+                "Building charts...",
+                "Polishing insights...",
+                "Finalizing report..."
+              ]}
+              
+                interval={1100}
+                className="text-xl md:text-2xl"
+              />
+            </CardContent>
+          </Card>
+        )}
 
         {/* Response Display */}
         {response && (

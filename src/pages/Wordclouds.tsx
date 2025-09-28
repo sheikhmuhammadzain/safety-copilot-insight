@@ -49,7 +49,7 @@ export default function Wordclouds() {
 
       {/* Content */}
       <main className="p-6 space-y-6">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="grid grid-cols-1 gap-6">
           <Card>
             <CardHeader>
               <CardTitle className="text-lg font-semibold">Incidents by Department</CardTitle>

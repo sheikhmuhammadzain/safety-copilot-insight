@@ -166,3 +166,11 @@ export async function postChartInsights(payload: ChartInsightsRequest) {
   });
   return res.data;
 }
+
+// Prefer per-chart insights: GET `${endpoint}/insights` with same query params
+export async function getChartInsightsForEndpoint(endpoint: string, params?: Record<string, any>) {
+  const base = endpoint.startsWith("/") ? endpoint : `/${endpoint}`;
+  const path = `${base.replace(/\/$/, "")}/insights`;
+  const res = await api.get<ChartInsightsResponse>(path, { params });
+  return res.data;
+}

@@ -1,6 +1,9 @@
 import { KPICard } from "@/components/dashboard/KPICard";
-import { SafetyCopilot } from "@/components/dashboard/SafetyCopilot";
-import { PlotlyCard } from "@/components/charts/PlotlyCard";
+import ShadcnLineCard from "@/components/charts/ShadcnLineCard";
+import ShadcnBarCard from "@/components/charts/ShadcnBarCard";
+import ShadcnDonutCard from "@/components/charts/ShadcnDonutCard";
+import ShadcnParetoCard from "@/components/charts/ShadcnParetoCard";
+import ShadcnHeatmapCard from "@/components/charts/ShadcnHeatmapCard";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useKpi } from "@/hooks/useKpi";
 import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck } from "lucide-react";
@@ -108,22 +111,39 @@ export default function Overview() {
           />
         </div>
 
-        {/* Charts Row */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <PlotlyCard title="Comprehensive Timeline" endpoint="/analytics/comprehensive-timeline" params={{ dataset: "incident" }} />
-          <PlotlyCard title="Department Spider" endpoint="/analytics/department-spider" params={{ dataset: "incident" }} />
+        {/* Analytics Overview (requested endpoints only) */}
+        <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
+          {/* Trends */}
+          <div className="lg:col-span-6">
+            <ShadcnLineCard title="Incidents Trend" endpoint="/analytics/data/incident-trend" params={{ dataset: "incident" }} />
+          </div>
+          <div className="lg:col-span-6">
+            <ShadcnLineCard title="Incident Cost Trend" endpoint="/analytics/data/incident-cost-trend" />
+          </div>
+
+          {/* Categories and Pareto */}
+          <div className="lg:col-span-4">
+            <ShadcnBarCard title="Incident Types" endpoint="/analytics/data/incident-type-distribution" params={{ dataset: "incident" }} />
+          </div>
+          <div className="lg:col-span-8">
+            <ShadcnParetoCard title="Root Cause Pareto" endpoint="/analytics/data/root-cause-pareto" params={{ dataset: "incident" }} />
+          </div>
+
+          {/* Long-text findings */}
+          <div className="lg:col-span-12">
+            <ShadcnBarCard title="Top Inspection Findings" endpoint="/analytics/data/inspection-top-findings" />
+          </div>
+
+          {/* Heatmap */}
+          <div className="lg:col-span-12">
+            <ShadcnHeatmapCard title="Department × Month (Avg)" endpoint="/analytics/data/department-month-heatmap" params={{ dataset: "incident" }} />
+          </div>
         </div>
 
-        {/* Recent Activity Lists */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <RecentList title="Recent Incidents" fetcher={getRecentIncidents} limit={5} />
           <RecentList title="Recent Hazards" fetcher={getRecentHazards} limit={5} />
           <RecentList title="Recent Audits" fetcher={getRecentAudits} limit={5} />
-        </div>
-
-        {/* Safety Copilot */}
-        <div className="max-w-4xl">
-          <SafetyCopilot />
         </div>
       </main>
     </div>
