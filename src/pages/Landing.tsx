@@ -11,7 +11,35 @@ export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
   const [parallaxScale, setParallaxScale] = useState(1);
+  const [isVisible, setIsVisible] = useState(false);
   const location = useLocation();
+
+  // Intersection observer for scroll animations
+  useEffect(() => {
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-up');
+            entry.target.classList.remove('opacity-0', 'translate-y-8');
+          }
+        });
+      },
+      { threshold: 0.1, rootMargin: '50px' }
+    );
+
+    // Observe all animatable elements
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    elements.forEach((el) => observer.observe(el));
+
+    return () => observer.disconnect();
+  }, []);
+
+  // Hero visibility trigger
+  useEffect(() => {
+    const timer = setTimeout(() => setIsVisible(true), 100);
+    return () => clearTimeout(timer);
+  }, []);
 
   useEffect(() => {
     const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -111,16 +139,16 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen bg-grid-dark text-white">
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
-      {/* Navbar (simple) */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-white/5 backdrop-blur">
+      {/* Navbar */}
+      <header className="sticky top-0 z-40 border-b border-border/60 bg-white/5 backdrop-blur transition-all duration-300">
         <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2">
-            <img src="/logo.png" alt="Logo" className="h-7 w-7 rounded-md object-contain" />
-            <span className="font-semibold tracking-tight text-white">Safety Copilot</span>
+          <div className="flex items-center gap-2 group">
+            <img src="/logo.png" alt="Logo" className="h-7 w-7 rounded-md object-contain transition-transform duration-300 group-hover:scale-110" />
+            <span className="font-semibold tracking-tight text-white transition-colors duration-300 group-hover:text-primary">Safety Copilot</span>
           </div>
           <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 rounded-full border px-4 py-2 text-sm hover:bg-muted">
-              Go to Dashboard <ArrowRight className="h-4 w-4" />
+            <Link to="/dashboard" className="group inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:scale-105">
+              Go to Dashboard <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
             </Link>
           </div>
         </div>
@@ -129,45 +157,58 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 relative z-10" ref={heroRef}>
-          <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none">
+          <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ease-out ${
+            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
+            <div className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none transition-all duration-700 delay-200 ${
+              isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            }`}>
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
               AI-powered Safety Analytics
             </div>
-            <h1 className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight">
+            <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight leading-tight transition-all duration-1000 delay-300 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}>
               Drive safer operations with actionable insights
             </h1>
-            <p className="mt-4 text-base md:text-lg text-white/80 leading-relaxed">
+            <p className={`mt-4 text-base md:text-lg text-white/80 leading-relaxed transition-all duration-1000 delay-500 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}>
               Explore incidents, hazards, audits and inspections in one place. Ask natural-language questions, view live maps, and make faster decisions.
             </p>
-            <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
+            <div className={`mt-8 flex flex-wrap items-center justify-center gap-3 transition-all duration-1000 delay-700 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}>
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.4),0_6px_12px_rgba(0,0,0,0.3)] hover:scale-105 hover:-translate-y-1 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg"
+                className="group inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-300 ease-out hover:shadow-[0_16px_32px_rgba(0,0,0,0.4),0_8px_16px_rgba(0,0,0,0.3)] hover:scale-105 hover:-translate-y-2 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg"
               >
                 Open Dashboard
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
-              <a href="#features" className="inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-3 text-white hover:bg-white/10">
+              <a href="#features" className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-3 text-white transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-105">
                 Learn More
+                <ArrowRight className="h-4 w-4 opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1" />
               </a>
             </div>
           </div>
 
           {/* Device frame with dashboard image */}
           <div
-            className="mx-auto mt-12 md:mt-16 max-w-6xl"
+            className={`mx-auto mt-12 md:mt-16 max-w-6xl transition-all duration-1200 delay-900 ${
+              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            }`}
             style={{
               transform: `translateY(${Math.round(parallaxY)}px) scale(${parallaxScale})`,
-              transition: "transform 0.3s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              transition: "transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
             }}
           >
-            <div className="rounded-[28px] border border-white/10 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65)] p-2">
+            <div className="rounded-[28px] border border-white/10 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65)] p-2 hover:shadow-[0_30px_100px_rgba(0,0,0,0.8)] transition-shadow duration-700">
               <div className="rounded-2xl overflow-hidden bg-black">
                 <img
                   src="/dashboard.png"
                   alt="Safety Copilot dashboard preview"
-                  className="w-full h-auto object-cover"
+                  className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
                   loading="eager"
                 />
               </div>
@@ -176,10 +217,12 @@ export default function Landing() {
         </div>
       </section>
 
-      {/* Features (Glass Bento, no animations) */}
+      {/* Features */}
       <section id="features" className="mx-auto max-w-7xl px-6 py-16">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">Features</h2>
-        <p className="mt-2 text-center text-white/80">Everything you need to understand and improve safety performance.</p>
+        <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">Features</h2>
+          <p className="mt-2 text-center text-white/80">Everything you need to understand and improve safety performance.</p>
+        </div>
 
         <div className="mt-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6">
           <FeatureCard
@@ -187,7 +230,7 @@ export default function Landing() {
             desc="Incidents, hazards, audits and inspections in one place."
             icon={<Shield className="h-5 w-5" />}
             iconClass="bg-emerald-100 text-emerald-600"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100"
             gradientClass="bg-gradient-to-br from-emerald-500/20 via-emerald-600/10 to-transparent"
           />
           <FeatureCard
@@ -195,7 +238,7 @@ export default function Landing() {
             desc="Spot trends, prioritize risk, track improvements."
             icon={<BarChart3 className="h-5 w-5" />}
             iconClass="bg-sky-100 text-sky-700"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200"
             gradientClass="bg-gradient-to-br from-sky-500/20 via-sky-600/10 to-transparent"
           />
           <FeatureCard
@@ -203,7 +246,7 @@ export default function Landing() {
             desc="Visualize locations and hotspots instantly."
             icon={<Map className="h-5 w-5" />}
             iconClass="bg-violet-100 text-violet-700"
-            className="md:col-span-6 lg:col-span-4 row-span-2 min-h-[180px]"
+            className="md:col-span-6 lg:col-span-4 row-span-2 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300"
             gradientClass="bg-gradient-to-br from-violet-500/20 via-violet-600/10 to-transparent"
           />
           <FeatureCard
@@ -211,7 +254,7 @@ export default function Landing() {
             desc="Ask natural questions to analyze data."
             icon={<Bot className="h-5 w-5" />}
             iconClass="bg-amber-100 text-amber-700"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2"
+            className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400"
             gradientClass="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent"
           />
           <FeatureCard
@@ -219,7 +262,7 @@ export default function Landing() {
             desc="Generate actions and follow-ups quickly."
             icon={<CheckCircle2 className="h-5 w-5" />}
             iconClass="bg-rose-100 text-rose-600"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-500"
             gradientClass="bg-gradient-to-br from-rose-500/20 via-rose-600/10 to-transparent"
           />
           <FeatureCard
@@ -227,31 +270,47 @@ export default function Landing() {
             desc="Connect to your existing systems."
             icon={<ArrowRight className="h-5 w-5" />}
             iconClass="bg-indigo-100 text-indigo-600"
-            className="md:col-span-6 lg:col-span-8 min-h-[180px]"
+            className="md:col-span-6 lg:col-span-8 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-600"
             gradientClass="bg-gradient-to-br from-indigo-500/20 via-indigo-600/10 to-transparent"
           />
         </div>
       </section>
 
 
-      {/* Stats strip (Glass, no animations) */}
+      {/* Stats strip */}
       <section id="stats" className="border-y border-white/10">
         <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
-          <Stat value="3.1k+" label="Incidents Analyzed" />
-          <Stat value="1.2k+" label="Hazards Tracked" />
-          <Stat value="89%" label="Audit Completion" />
-          <Stat value="24" label="Facility Zones" />
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
+            <Stat value="3.1k+" label="Incidents Analyzed" />
+          </div>
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200">
+            <Stat value="1.2k+" label="Hazards Tracked" />
+          </div>
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300">
+            <Stat value="89%" label="Audit Completion" />
+          </div>
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400">
+            <Stat value="24" label="Facility Zones" />
+          </div>
         </div>
       </section>
 
-      {/* Use cases (Glass, no animations) */}
+      {/* Use cases */}
       <section id="use-cases" className="mx-auto max-w-7xl px-6 py-16">
-        <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">Built for every safety role</h2>
-        <p className="mt-2 text-center text-white/80">From leadership to operations, get the right insights at the right time.</p>
+        <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">Built for every safety role</h2>
+          <p className="mt-2 text-center text-white/80">From leadership to operations, get the right insights at the right time.</p>
+        </div>
         <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <UseCase title="Leadership" bullet1="KPI overview" bullet2="Trends & hotspots" bullet3="Outcome tracking" />
-          <UseCase title="HSE Team" bullet1="Root cause analysis" bullet2="Prioritized actions" bullet3="Compliance tracking" />
-          <UseCase title="Operations" bullet1="On-floor visibility" bullet2="Quick audits" bullet3="Issue resolution" />
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
+            <UseCase title="Leadership" bullet1="KPI overview" bullet2="Trends & hotspots" bullet3="Outcome tracking" />
+          </div>
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200">
+            <UseCase title="HSE Team" bullet1="Root cause analysis" bullet2="Prioritized actions" bullet3="Compliance tracking" />
+          </div>
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300">
+            <UseCase title="Operations" bullet1="On-floor visibility" bullet2="Quick audits" bullet3="Issue resolution" />
+          </div>
         </div>
       </section>
 {/* 
@@ -268,24 +327,27 @@ export default function Landing() {
         </div>
       </section> */}
 
-      {/* CTA (Glass, no animations) */}
+      {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
-        <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Ready to explore your safety data?</h2>
-          <p className="mt-2 text-white/80">Jump straight into the dashboard. No sign in required.</p>
-          <div className="mt-6">
-            <Link to="/dashboard" className="inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground shadow">
-              Go to Dashboard <ArrowRight className="h-4 w-4" />
-            </Link>
+        <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] transition-shadow duration-500">
+            <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Ready to explore your safety data?</h2>
+            <p className="mt-2 text-white/80">Jump straight into the dashboard. No sign in required.</p>
+            <div className="mt-6">
+              <Link to="/dashboard" className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground shadow transition-all duration-300 hover:scale-105 hover:shadow-lg">
+                Go to Dashboard <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
         </div>
       </section>
 
-      {/* Footer (Glass, premium) */}
+      {/* Footer */}
       <footer className="border-t border-white/10 bg-transparent">
         <div className="mx-auto max-w-7xl px-6 py-12">
-          <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-            <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+            <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] transition-shadow duration-500">
+              <div className="grid grid-cols-1 md:grid-cols-12 gap-8">
               {/* Brand */}
               <div className="md:col-span-4">
                 <div className="flex items-center gap-2">
@@ -297,9 +359,9 @@ export default function Landing() {
                   <MapPin className="h-4 w-4" /> <span>Karachi, PK</span>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 hover:bg-white/10" href="#" aria-label="Twitter"><Twitter className="h-4 w-4 text-white" /></a>
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 hover:bg-white/10" href="#" aria-label="Github"><Github className="h-4 w-4 text-white" /></a>
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 hover:bg-white/10" href="#" aria-label="LinkedIn"><Linkedin className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="Twitter"><Twitter className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="Github"><Github className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="LinkedIn"><Linkedin className="h-4 w-4 text-white" /></a>
                 </div>
               </div>
 
@@ -348,6 +410,7 @@ export default function Landing() {
                 <a href="#" className="hover:text-white">Security</a>
                 <a href="#" className="hover:text-white">Status</a>
               </div>
+              </div>
             </div>
           </div>
         </div>
@@ -366,14 +429,14 @@ function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }:
 }) {
   return (
     <div 
-      className={`rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden ${gradientClass ?? ""} ${className ?? ""}`}
+      className={`group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:scale-105 hover:border-white/25 hover:-translate-y-2 ${gradientClass ?? ""} ${className ?? ""}`}
     >
       <div className="relative z-10">
-        <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full ${iconClass ?? "bg-white/20 text-white"}`}>
+        <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:scale-110 ${iconClass ?? "bg-white/20 text-white"}`}>
           {icon}
         </div>
-        <div className="text-lg font-semibold text-white">{title}</div>
-        <div className="mt-1 text-sm text-white/80">{desc}</div>
+        <div className="text-lg font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
+        <div className="mt-1 text-sm text-white/80 transition-colors duration-300 group-hover:text-white/90">{desc}</div>
       </div>
     </div>
   );
@@ -381,21 +444,21 @@ function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }:
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-      <div className="text-3xl font-extrabold tracking-tight text-white">{value}</div>
-      <div className="mt-1 text-xs text-white/80">{label}</div>
+    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-500 hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] hover:scale-105 hover:border-white/25 hover:-translate-y-1">
+      <div className="text-3xl font-extrabold tracking-tight text-white transition-all duration-300 group-hover:scale-110">{value}</div>
+      <div className="mt-1 text-xs text-white/80 transition-colors duration-300 group-hover:text-white/90">{label}</div>
     </div>
   );
 }
 
 function UseCase({ title, bullet1, bullet2, bullet3 }: { title: string; bullet1: string; bullet2: string; bullet3: string }) {
   return (
-    <div className="rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
-      <div className="text-base font-semibold text-white">{title}</div>
+    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:scale-105 hover:border-white/25 hover:-translate-y-2">
+      <div className="text-base font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
       <ul className="mt-3 space-y-2 text-sm text-white/80">
-        <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{bullet1}</li>
-        <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{bullet2}</li>
-        <li className="flex items-center gap-2"><span className="h-1.5 w-1.5 rounded-full bg-primary" />{bullet3}</li>
+        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet1}</li>
+        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet2}</li>
+        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet3}</li>
       </ul>
     </div>
   );
