@@ -81,19 +81,19 @@ export default function ShadcnDonutCard({
   }, [rows]);
 
   return (
-    <Card className="border border-white/10 bg-white/5 backdrop-blur">
+    <Card className="w-full border border-slate-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold text-slate-900">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {loading && <div className="text-xs text-muted-foreground">Loading…</div>}
-        {error && <div className="text-xs text-destructive">{error}</div>}
+        {loading && <div className="text-xs text-slate-500">Loading…</div>}
+        {error && <div className="text-xs text-red-600">{error}</div>}
         {!loading && !error && data && (
           <div style={{ width: "100%", height }} className="relative">
             <ChartContainer config={chartConfig} className="w-full h-full">
               <ResponsiveContainer>
                 <PieChart>
-                  <ChartTooltip content={<ChartTooltipContent className="text-white" />} />
+                  <ChartTooltip content={<ChartTooltipContent />} />
                   {rows.length > 1 && <ChartLegend content={<ChartLegendContent />} />}
                   <Pie data={rows} dataKey="value" nameKey="name" cx="50%" cy="50%" innerRadius={60} outerRadius={90} paddingAngle={2}>
                     {rows.map((_, idx) => (
@@ -105,8 +105,8 @@ export default function ShadcnDonutCard({
             </ChartContainer>
             <div className="absolute inset-0 flex items-center justify-center pointer-events-none">
               <div className="text-center">
-                <div className="text-2xl font-bold text-white">{total}</div>
-                {centerText && <div className="text-xs text-white/70">{centerText}</div>}
+                <div className="text-2xl font-bold text-slate-900">{total}</div>
+                {centerText && <div className="text-xs text-slate-600">{centerText}</div>}
               </div>
             </div>
           </div>

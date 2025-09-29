@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/lib/api";
+import { useCachedGet } from "@/hooks/useCachedGet";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import {
   ResponsiveContainer,
@@ -25,35 +25,15 @@ export default function ShadcnLineCard({
   endpoint,
   params,
   height = 260,
+  refreshKey,
 }: {
   title: string;
   endpoint: string; // e.g. "/analytics/data/incident-trend"
   params?: Record<string, any>;
   height?: number;
+  refreshKey?: number;
 }) {
-  const [data, setData] = useState<ChartResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    api
-      .get<ChartResponse>(endpoint, { params })
-      .then((res) => {
-        if (!mounted) return;
-        setData(res.data);
-        setError(null);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        setError(err?.message || "Failed to load chart");
-      })
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
-  }, [endpoint, JSON.stringify(params)]);
+  const { data, error, loading } = useCachedGet<ChartResponse>(endpoint, params, undefined, refreshKey);
 
   // Sanitize and optionally aggregate series
   const safeData = useMemo<ChartResponse | null>(() => {
@@ -98,9 +78,9 @@ export default function ShadcnLineCard({
   }, [safeData]);
 
   return (
-    <Card className="border border-white/10 bg-white/5 backdrop-blur">
+    <Card className="w-full border border-slate-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold text-slate-900">{title}</CardTitle>
       </CardHeader>
       <CardContent>
         {loading && <div className="text-xs text-muted-foreground">Loading…</div>}
@@ -108,10 +88,10 @@ export default function ShadcnLineCard({
         {!loading && !error && safeData && (
           <ChartContainer config={chartConfig} className="w-full" style={{ height }}>
             <LineChart data={rows} margin={{ top: 10, right: 20, bottom: 10, left: 0 }} accessibilityLayer>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-              <XAxis dataKey="label" tick={{ fill: "#94A3B8", fontSize: 11 }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.2)" }} minTickGap={24} />
-              <YAxis tick={{ fill: "#94A3B8", fontSize: 11 }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.2)" }} allowDecimals={false} />
-              <ChartTooltip content={<ChartTooltipContent className="text-white" />} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={{ stroke: "#cbd5e1" }} axisLine={{ stroke: "#cbd5e1" }} minTickGap={24} />
+              <YAxis tick={{ fill: "#64748b", fontSize: 11 }} tickLine={{ stroke: "#cbd5e1" }} axisLine={{ stroke: "#cbd5e1" }} allowDecimals={false} />
+              <ChartTooltip content={<ChartTooltipContent />} />
               {safeData.series.length > 1 && (
                 <ChartLegend content={<ChartLegendContent />} />
               )}

@@ -1,6 +1,6 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/lib/api";
+import { useCachedGet } from "@/hooks/useCachedGet";
 import { ChartContainer, ChartTooltip, ChartTooltipContent, ChartLegend, ChartLegendContent } from "@/components/ui/chart";
 import { ComposedChart, CartesianGrid, XAxis, YAxis, Tooltip, Legend, Bar, Line } from "recharts";
 
@@ -15,35 +15,15 @@ export default function ShadcnParetoCard({
   endpoint,
   params,
   height = 260,
+  refreshKey,
 }: {
   title: string;
   endpoint: string;
   params?: Record<string, any>;
   height?: number;
+  refreshKey?: number;
 }) {
-  const [data, setData] = useState<ParetoResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    api
-      .get<ParetoResponse>(endpoint, { params })
-      .then((res) => {
-        if (!mounted) return;
-        setData(res.data);
-        setError(null);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        setError(err?.message || "Failed to load chart");
-      })
-      .finally(() => mounted && setLoading(false));
-    return () => {
-      mounted = false;
-    };
-  }, [endpoint, JSON.stringify(params)]);
+  const { data, error, loading } = useCachedGet<ParetoResponse>(endpoint, params, undefined, refreshKey);
 
   const rows = useMemo(() => {
     if (!data) return [] as any[];
@@ -61,21 +41,21 @@ export default function ShadcnParetoCard({
   }), []);
 
   return (
-    <Card className="border border-white/10 bg-white/5 backdrop-blur">
+    <Card className="w-full border border-slate-200 bg-white shadow-sm">
       <CardHeader>
-        <CardTitle className="text-base font-semibold">{title}</CardTitle>
+        <CardTitle className="text-base font-semibold text-slate-900">{title}</CardTitle>
       </CardHeader>
       <CardContent>
-        {loading && <div className="text-xs text-muted-foreground">Loading…</div>}
-        {error && <div className="text-xs text-destructive">{error}</div>}
+        {loading && <div className="text-xs text-slate-500">Loading…</div>}
+        {error && <div className="text-xs text-red-600">{error}</div>}
         {!loading && !error && rows.length > 0 && (
           <ChartContainer config={chartConfig} className="w-full" style={{ height }}>
             <ComposedChart data={rows} margin={{ top: 10, right: 30, bottom: 10, left: 0 }}>
-              <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.08)" />
-              <XAxis dataKey="label" tick={{ fill: "#94A3B8", fontSize: 11 }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.2)" }} interval={0} angle={-20} textAnchor="end" height={50} />
-              <YAxis yAxisId="left" tick={{ fill: "#94A3B8", fontSize: 11 }} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.2)" }} allowDecimals={false} />
-              <YAxis yAxisId="right" orientation="right" tick={{ fill: "#94A3B8", fontSize: 11 }} tickFormatter={(v)=>`${v}%`} tickLine={false} axisLine={{ stroke: "rgba(255,255,255,0.2)" }} domain={[0, 100]} />
-              <ChartTooltip content={<ChartTooltipContent className="text-white" />} />
+              <CartesianGrid strokeDasharray="3 3" stroke="#e2e8f0" />
+              <XAxis dataKey="label" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={{ stroke: "#cbd5e1" }} axisLine={{ stroke: "#cbd5e1" }} interval={0} angle={-20} textAnchor="end" height={50} />
+              <YAxis yAxisId="left" tick={{ fill: "#64748b", fontSize: 11 }} tickLine={{ stroke: "#cbd5e1" }} axisLine={{ stroke: "#cbd5e1" }} allowDecimals={false} />
+              <YAxis yAxisId="right" orientation="right" tick={{ fill: "#64748b", fontSize: 11 }} tickFormatter={(v)=>`${v}%`} tickLine={{ stroke: "#cbd5e1" }} axisLine={{ stroke: "#cbd5e1" }} domain={[0, 100]} />
+              <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar yAxisId="left" dataKey="Count" fill="hsl(201, 96%, 45%)" radius={[4,4,0,0]} />
               <Line yAxisId="right" type="monotone" dataKey="Cum %" stroke="hsl(38, 92%, 55%)" strokeWidth={2} dot={false} />

@@ -59,7 +59,9 @@ export function AppSidebar() {
           <div className="flex items-center gap-3 group-data-[collapsible=icon]:justify-center">
             <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded-md object-contain" />
             <div className="group-data-[collapsible=icon]:hidden">
-              <h2 className="text-lg font-semibold text-sidebar-foreground">Safety Co-pilot</h2>
+              <a href="/" className="flex items-center gap-2">
+                <h2 className="text-lg font-semibold text-sidebar-foreground">Safety Co-pilot</h2>
+              </a>
             </div>
           </div>
         </div>

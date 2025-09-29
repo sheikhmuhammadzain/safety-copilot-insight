@@ -1,4 +1,4 @@
-import { useCallback, useEffect, useMemo, useState } from "react";
+import { useCallback, useMemo, useState } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { BarChart, Bar, XAxis, YAxis, CartesianGrid, ResponsiveContainer, Tooltip, Legend } from "recharts";
 
@@ -20,7 +20,7 @@ const palette = [
   "hsl(30, 80%, 55%)",
 ];
 
-import { api } from "@/lib/api";
+import { useCachedGet } from "@/hooks/useCachedGet";
 
 export default function ShadcnBarCard({
   title,
@@ -29,6 +29,7 @@ export default function ShadcnBarCard({
   height = 260,
   stacked = false,
   maxCategories = 12,
+  refreshKey,
 }: {
   title: string;
   endpoint: string;
@@ -36,35 +37,9 @@ export default function ShadcnBarCard({
   height?: number;
   stacked?: boolean;
   maxCategories?: number;
+  refreshKey?: number;
 }) {
-  const [data, setData] = useState<ChartResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
-
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    
-    // Use your actual API
-    api
-      .get<ChartResponse>(endpoint, { params })
-      .then((res) => {
-        if (!mounted) return;
-        setData(res.data);
-        setError(null);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        setError(err?.message || "Failed to load chart");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-      
-    return () => {
-      mounted = false;
-    };
-  }, [endpoint, JSON.stringify(params)]);
+  const { data, error, loading } = useCachedGet<ChartResponse>(endpoint, params, undefined, refreshKey);
 
   const safeData = useMemo<ChartResponse | null>(() => {
     if (!data) return null;

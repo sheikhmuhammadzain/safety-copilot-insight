@@ -4,9 +4,10 @@ import { usePlotly } from "@/hooks/usePlotly";
 export function useKpi(
   endpoint: string,
   params: Record<string, any> | undefined,
-  derive: (figure: any | undefined) => number | null
+  derive: (figure: any | undefined) => number | null,
+  refreshKey?: number,
 ) {
-  const { data: figure, isLoading, isError, error } = usePlotly(endpoint, params);
+  const { data: figure, isLoading, isError, error } = usePlotly(endpoint, params, refreshKey);
 
   const value = useMemo(() => {
     try {

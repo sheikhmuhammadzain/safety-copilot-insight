@@ -16,6 +16,7 @@ import Analytics from "./pages/Analytics";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Wordclouds from "./pages/Wordclouds";
+import FloatingChatButton from "@/components/ui/FloatingChatButton";
 
 const queryClient = new QueryClient();  
 
@@ -43,6 +44,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
+        {/* Global floating chat button */}
+        <FloatingChatButton />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>

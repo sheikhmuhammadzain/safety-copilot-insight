@@ -1,5 +1,5 @@
 import axios from "axios";
-import { API_BASE_URL } from "./config";
+import { API_BASE_URL, buildUrl } from "./config";
 
 export const api = axios.create({
   baseURL: API_BASE_URL,
@@ -92,6 +92,73 @@ export type DepartmentWordcloudResponse = {
 export async function getDepartmentWordcloud(params?: { top_n?: number; min_count?: number }) {
   const res = await api.get<DepartmentWordcloudResponse>("/wordclouds/departments", { params });
   return res.data;
+}
+
+// Wordcloud image helpers
+export type WordcloudImageOptions = {
+  width?: number;
+  height?: number;
+  background_color?: string;
+  extra_stopwords?: string; // comma-separated
+  department?: string; // when provided, uses department-image endpoint
+  dataset?: "incident" | "hazard"; // default incident
+  cacheBust?: string | number; // optional cache buster
+};
+
+export function getWordcloudImageUrl(opts: WordcloudImageOptions = {}) {
+  const {
+    width = 1200,
+    height = 520,
+    background_color = "white",
+    extra_stopwords,
+    department,
+    dataset = "incident",
+    cacheBust,
+  } = opts;
+
+  const endpoint = department ? "/wordclouds/department-image" : "/wordclouds/image";
+  const params: Record<string, any> = {
+    dataset,
+    width,
+    height,
+    background_color,
+  };
+  if (extra_stopwords) params.extra_stopwords = extra_stopwords;
+  if (department) params.department = department;
+  if (cacheBust !== undefined) params.__t = cacheBust;
+
+  return buildUrl(endpoint, params);
+}
+
+// Department names wordcloud image (frequency-based)
+export type DepartmentsWordcloudImageOptions = {
+  dataset?: "incident" | "hazard" | "both"; // default: both
+  width?: number;
+  height?: number;
+  background_color?: string;
+  top_n?: number;
+  min_count?: number;
+  exclude_other?: boolean;
+  cacheBust?: string | number;
+};
+
+export function getDepartmentsWordcloudImageUrl(opts: DepartmentsWordcloudImageOptions = {}) {
+  const {
+    dataset = "both",
+    width = 1200,
+    height = 520,
+    background_color = "white",
+    top_n,
+    min_count,
+    exclude_other,
+    cacheBust,
+  } = opts;
+  const params: Record<string, any> = { dataset, width, height, background_color };
+  if (top_n !== undefined) params.top_n = top_n;
+  if (min_count !== undefined) params.min_count = min_count;
+  if (exclude_other !== undefined) params.exclude_other = exclude_other;
+  if (cacheBust !== undefined) params.__t = cacheBust;
+  return buildUrl("/wordclouds/departments-image", params);
 }
 
 // Lists

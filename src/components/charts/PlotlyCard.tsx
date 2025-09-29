@@ -8,10 +8,11 @@ interface PlotlyCardProps {
   endpoint: string; // e.g. "/analytics/hse-scorecard"
   params?: Record<string, any>;
   height?: number;
+  refreshKey?: number;
 }
 
-export function PlotlyCard({ title, endpoint, params, height = 300 }: PlotlyCardProps) {
-  const { data: figure, isLoading, isError, error, refetch, isFetching } = usePlotly(endpoint, params);
+export function PlotlyCard({ title, endpoint, params, height = 300, refreshKey }: PlotlyCardProps) {
+  const { data: figure, isLoading, isError, error, refetch, isFetching } = usePlotly(endpoint, params, refreshKey);
 
   return (
     <Card>

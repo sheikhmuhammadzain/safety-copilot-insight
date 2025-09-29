@@ -1,6 +1,6 @@
-import React, { useEffect, useMemo, useRef, useState } from "react";
+import React, { useMemo, useRef, useState } from "react";
 import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
-import { api } from "@/lib/api";
+import { useCachedGet } from "@/hooks/useCachedGet";
 import { Palette } from "lucide-react";
 
 type HeatmapResponse = {
@@ -21,6 +21,7 @@ export default function ShadcnHeatmapCard({
   showLegend = true,
   lowLabel = "Low",
   highLabel = "High",
+  refreshKey,
 }: {
   title?: string;
   endpoint?: string;
@@ -31,10 +32,9 @@ export default function ShadcnHeatmapCard({
   showLegend?: boolean;
   lowLabel?: string;
   highLabel?: string;
+  refreshKey?: number;
 }) {
-  const [data, setData] = useState<HeatmapResponse | null>(null);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState<boolean>(false);
+  const { data, error, loading } = useCachedGet<HeatmapResponse>(endpoint, params, undefined, refreshKey);
 
   // hover/focus state for keyboard & hover highlights
   const [hovered, setHovered] = useState<{ r: number; c: number } | null>(null);
@@ -42,28 +42,7 @@ export default function ShadcnHeatmapCard({
 
   const scrollRef = useRef<HTMLDivElement | null>(null);
 
-  useEffect(() => {
-    let mounted = true;
-    setLoading(true);
-    api
-      .get<HeatmapResponse>(endpoint, { params })
-      .then((res) => {
-        if (!mounted) return;
-        setData(res.data);
-        setError(null);
-      })
-      .catch((err) => {
-        if (!mounted) return;
-        setError(err?.message || "Failed to load heatmap");
-      })
-      .finally(() => {
-        if (mounted) setLoading(false);
-      });
-
-    return () => {
-      mounted = false;
-    };
-  }, [endpoint, JSON.stringify(params || {})]);
+  // fetching handled by useCachedGet
 
   // parse / sanitize data and compute stats
   const { xLabels, yLabels, values, min, max } = useMemo(() => {
@@ -131,6 +110,12 @@ export default function ShadcnHeatmapCard({
       A[1] + (B[1] - A[1]) * t, 
       A[2] + (B[2] - A[2]) * t
     );
+  }
+
+  // value formatter: keep up to 2 decimals, trim trailing zeros
+  function fmtValue(n: number) {
+    const s = Number(n).toFixed(2);
+    return s.replace(/\.00$/, "").replace(/(\.\d)0$/, "$1");
   }
 
   function colorFor(v: number) {
@@ -268,7 +253,8 @@ export default function ShadcnHeatmapCard({
                       const v = values[yi]?.[xi] ?? 0;
                       const bg = colorFor(v);
                       const isHovered = hovered && (hovered.r === yi || hovered.c === xi);
-                      const textColor = v > (max - min) * 0.6 + min ? 'white' : 'black';
+                      // Force white text for better visibility on colored cells
+                      const textColor = v > 0 ? 'white' : 'white';
                       
                       return (
                         <div
@@ -313,7 +299,7 @@ export default function ShadcnHeatmapCard({
                           }`}
                           title={cellAriaLabel(yi, xi, v)}
                         >
-                          {v > 0 ? v : ''}
+                          {v > 0 ? fmtValue(v) : ''}
                         </div>
                       );
                     })}
