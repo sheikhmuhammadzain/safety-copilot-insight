@@ -39,17 +39,30 @@ export function PlotlyCard({ title, endpoint, params, height = 300, refreshKey }
         ) : figure ? (
           <Plot
             data={figure.data}
-            layout={{
-              ...figure.layout,
-              autosize: true,
-              height,
-              margin: { l: 60, r: 30, t: 60, b: 60, ...(figure.layout?.margin || {}) },
-              legend: { orientation: "h", yanchor: "top", y: -0.2, xanchor: "left", x: 0, ...(figure.layout?.legend || {}) },
-              uniformtext: { mode: "hide", minsize: 10, ...(figure.layout?.uniformtext || {}) },
-              xaxis: { automargin: true, tickangle: figure.layout?.xaxis?.tickangle ?? -15, ...(figure.layout?.xaxis || {}) },
-              yaxis: { automargin: true, ...(figure.layout?.yaxis || {}) },
-              title: figure.layout?.title ? { ...(typeof figure.layout.title === 'object' ? figure.layout.title : { text: String(figure.layout.title) }), x: 0.02 } : undefined,
-            }}
+            layout={(() => {
+              const base: any = figure.layout || {};
+              const next: any = {
+                ...base,
+                autosize: true,
+                height,
+                margin: { l: 60, r: 30, t: 60, b: Math.max(80, base?.margin?.b ?? 60), ...(base.margin || {}) },
+                legend: { orientation: "h", yanchor: "top", y: -0.2, xanchor: "left", x: 0, ...(base.legend || {}) },
+                uniformtext: { mode: "hide", minsize: 10, ...(base.uniformtext || {}) },
+                xaxis: { automargin: true, tickangle: base?.xaxis?.tickangle ?? -45, tickfont: { ...(base?.xaxis?.tickfont || {}), size: base?.xaxis?.tickfont?.size ?? 10 }, ...(base.xaxis || {}) },
+                yaxis: { automargin: true, tickfont: { ...(base?.yaxis?.tickfont || {}), size: base?.yaxis?.tickfont?.size ?? 10 }, ...(base.yaxis || {}) },
+                title: base?.title ? { ...(typeof base.title === 'object' ? base.title : { text: String(base.title) }), x: 0.02 } : undefined,
+              };
+              Object.keys(base).forEach((k) => {
+                if (/^xaxis\d*$/.test(k) && k !== 'xaxis') {
+                  const ax: any = base[k] || {};
+                  next[k] = { ...ax, automargin: true, tickangle: ax.tickangle ?? -45, tickfont: { ...(ax.tickfont || {}), size: ax.tickfont?.size ?? 10 } };
+                } else if (/^yaxis\d*$/.test(k) && k !== 'yaxis') {
+                  const ay: any = base[k] || {};
+                  next[k] = { ...ay, automargin: true, tickfont: { ...(ay.tickfont || {}), size: ay.tickfont?.size ?? 10 } };
+                }
+              });
+              return next;
+            })()}
             config={{ responsive: true, displayModeBar: true }}
             useResizeHandler
             style={{ width: "100%" }}

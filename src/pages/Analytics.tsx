@@ -70,7 +70,6 @@ export default function Analytics() {
           <PlotlyCard title="Audit/Inspection Tracker" endpoint="/analytics/audit-inspection-tracker" height={420} refreshKey={refreshKey} />
           <PlotlyCard title="Location Risk Treemap" endpoint="/analytics/location-risk-treemap" params={{ dataset }} height={420} refreshKey={refreshKey} />
           <PlotlyCard title="Department Spider" endpoint="/analytics/department-spider" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Violation Analysis" endpoint="/analytics/violation-analysis" params={{ dataset }} height={420} refreshKey={refreshKey} />
           <PlotlyCard title="Cost Prediction Analysis" endpoint="/analytics/cost-prediction-analysis" params={{ dataset }} height={420} refreshKey={refreshKey} />
           <PlotlyCard title="Facility Layout Heatmap" endpoint="/analytics/facility-layout-heatmap" height={420} refreshKey={refreshKey} />
           <PlotlyCard title="Facility 3D Heatmap" endpoint="/analytics/facility-3d-heatmap" params={{ dataset, event_type: dataset === 'incident' ? 'Incidents' : 'Hazards' }} height={420} refreshKey={refreshKey} />
