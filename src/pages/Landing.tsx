@@ -5,12 +5,6 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
-import unifiedSafetyBg from "@/assets/unified-safety.jpg";
-import analyticsBg from "@/assets/analytics-bg.jpg";
-import mapsBg from "@/assets/maps-bg.jpg";
-import copilotBg from "@/assets/copilot-bg.jpg";
-import automationBg from "@/assets/automation-bg.jpg";
-import integrationsBg from "@/assets/integrations-bg.jpg";
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -138,7 +132,7 @@ export default function Landing() {
             icon={<Shield className="h-5 w-5" />}
             iconClass="bg-emerald-100 text-emerald-600"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
-            backgroundImage={unifiedSafetyBg}
+            gradientClass="bg-gradient-to-br from-emerald-500/20 via-emerald-600/10 to-transparent"
           />
           <FeatureCard
             title="Actionable Analytics"
@@ -146,7 +140,7 @@ export default function Landing() {
             icon={<BarChart3 className="h-5 w-5" />}
             iconClass="bg-sky-100 text-sky-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
-            backgroundImage={analyticsBg}
+            gradientClass="bg-gradient-to-br from-sky-500/20 via-sky-600/10 to-transparent"
           />
           <FeatureCard
             title="Interactive Maps"
@@ -154,7 +148,7 @@ export default function Landing() {
             icon={<Map className="h-5 w-5" />}
             iconClass="bg-violet-100 text-violet-700"
             className="md:col-span-6 lg:col-span-4 row-span-2 min-h-[180px]"
-            backgroundImage={mapsBg}
+            gradientClass="bg-gradient-to-br from-violet-500/20 via-violet-600/10 to-transparent"
           />
           <FeatureCard
             title="Copilot Q&A"
@@ -162,7 +156,7 @@ export default function Landing() {
             icon={<Bot className="h-5 w-5" />}
             iconClass="bg-amber-100 text-amber-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2"
-            backgroundImage={copilotBg}
+            gradientClass="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent"
           />
           <FeatureCard
             title="Automation"
@@ -170,7 +164,7 @@ export default function Landing() {
             icon={<CheckCircle2 className="h-5 w-5" />}
             iconClass="bg-rose-100 text-rose-600"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
-            backgroundImage={automationBg}
+            gradientClass="bg-gradient-to-br from-rose-500/20 via-rose-600/10 to-transparent"
           />
           <FeatureCard
             title="Integrations"
@@ -178,7 +172,7 @@ export default function Landing() {
             icon={<ArrowRight className="h-5 w-5" />}
             iconClass="bg-indigo-100 text-indigo-600"
             className="md:col-span-6 lg:col-span-8 min-h-[180px]"
-            backgroundImage={integrationsBg}
+            gradientClass="bg-gradient-to-br from-indigo-500/20 via-indigo-600/10 to-transparent"
           />
         </div>
       </section>
@@ -301,29 +295,18 @@ export default function Landing() {
   );
 }
 
-function FeatureCard({ title, desc, icon, iconClass, className, backgroundImage }: { 
+function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }: { 
   title: string; 
   desc: string; 
   icon: React.ReactNode; 
   iconClass?: string; 
   className?: string;
-  backgroundImage?: string;
+  gradientClass?: string;
 }) {
   return (
     <div 
-      className={`rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden ${className ?? ""}`}
-      style={{
-        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
-        backgroundSize: 'cover',
-        backgroundPosition: 'center',
-      }}
+      className={`rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden ${gradientClass ?? ""} ${className ?? ""}`}
     >
-      {/* Overlay for better text readability */}
-      {backgroundImage && (
-        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
-      )}
-      
-      {/* Content */}
       <div className="relative z-10">
         <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full ${iconClass ?? "bg-white/20 text-white"}`}>
           {icon}
