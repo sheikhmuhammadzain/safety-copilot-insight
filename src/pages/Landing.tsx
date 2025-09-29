@@ -5,6 +5,12 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
+import unifiedSafetyBg from "@/assets/unified-safety.jpg";
+import analyticsBg from "@/assets/analytics-bg.jpg";
+import mapsBg from "@/assets/maps-bg.jpg";
+import copilotBg from "@/assets/copilot-bg.jpg";
+import automationBg from "@/assets/automation-bg.jpg";
+import integrationsBg from "@/assets/integrations-bg.jpg";
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -132,6 +138,7 @@ export default function Landing() {
             icon={<Shield className="h-5 w-5" />}
             iconClass="bg-emerald-100 text-emerald-600"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            backgroundImage={unifiedSafetyBg}
           />
           <FeatureCard
             title="Actionable Analytics"
@@ -139,6 +146,7 @@ export default function Landing() {
             icon={<BarChart3 className="h-5 w-5" />}
             iconClass="bg-sky-100 text-sky-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            backgroundImage={analyticsBg}
           />
           <FeatureCard
             title="Interactive Maps"
@@ -146,6 +154,7 @@ export default function Landing() {
             icon={<Map className="h-5 w-5" />}
             iconClass="bg-violet-100 text-violet-700"
             className="md:col-span-6 lg:col-span-4 row-span-2 min-h-[180px]"
+            backgroundImage={mapsBg}
           />
           <FeatureCard
             title="Copilot Q&A"
@@ -153,6 +162,7 @@ export default function Landing() {
             icon={<Bot className="h-5 w-5" />}
             iconClass="bg-amber-100 text-amber-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2"
+            backgroundImage={copilotBg}
           />
           <FeatureCard
             title="Automation"
@@ -160,6 +170,7 @@ export default function Landing() {
             icon={<CheckCircle2 className="h-5 w-5" />}
             iconClass="bg-rose-100 text-rose-600"
             className="md:col-span-3 lg:col-span-4 min-h-[180px]"
+            backgroundImage={automationBg}
           />
           <FeatureCard
             title="Integrations"
@@ -167,6 +178,7 @@ export default function Landing() {
             icon={<ArrowRight className="h-5 w-5" />}
             iconClass="bg-indigo-100 text-indigo-600"
             className="md:col-span-6 lg:col-span-8 min-h-[180px]"
+            backgroundImage={integrationsBg}
           />
         </div>
       </section>
@@ -289,14 +301,36 @@ export default function Landing() {
   );
 }
 
-function FeatureCard({ title, desc, icon, iconClass, className }: { title: string; desc: string; icon: React.ReactNode; iconClass?: string; className?: string }) {
+function FeatureCard({ title, desc, icon, iconClass, className, backgroundImage }: { 
+  title: string; 
+  desc: string; 
+  icon: React.ReactNode; 
+  iconClass?: string; 
+  className?: string;
+  backgroundImage?: string;
+}) {
   return (
-    <div className={`rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 ${className ?? ""}`}>
-      <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full ${iconClass ?? "bg-white/20 text-white"}`}>
-        {icon}
+    <div 
+      className={`rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden ${className ?? ""}`}
+      style={{
+        backgroundImage: backgroundImage ? `url(${backgroundImage})` : undefined,
+        backgroundSize: 'cover',
+        backgroundPosition: 'center',
+      }}
+    >
+      {/* Overlay for better text readability */}
+      {backgroundImage && (
+        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
+      )}
+      
+      {/* Content */}
+      <div className="relative z-10">
+        <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full ${iconClass ?? "bg-white/20 text-white"}`}>
+          {icon}
+        </div>
+        <div className="text-lg font-semibold text-white">{title}</div>
+        <div className="mt-1 text-sm text-white/80">{desc}</div>
       </div>
-      <div className="text-lg font-semibold text-white">{title}</div>
-      <div className="mt-1 text-sm text-white/80">{desc}</div>
     </div>
   );
 }
