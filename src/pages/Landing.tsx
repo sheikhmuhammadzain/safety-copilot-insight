@@ -87,7 +87,7 @@ export default function Landing() {
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
               <Link
                 to="/dashboard"
-                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-lg transform transition-all duration-200 hover:shadow-xl hover:scale-105 active:scale-95 relative before:absolute before:inset-0 before:bg-gradient-to-t before:from-black/10 before:to-transparent before:rounded-lg"
+                className="inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-200 hover:shadow-[0_12px_24px_rgba(0,0,0,0.4),0_6px_12px_rgba(0,0,0,0.3)] hover:scale-105 hover:-translate-y-1 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg"
               >
                 Open Dashboard
                 <ArrowRight className="h-4 w-4" />
