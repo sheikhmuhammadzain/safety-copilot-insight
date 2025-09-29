@@ -5,6 +5,7 @@ import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
+import { TestimonialsSection } from "@/components/ui/testimonials-with-marquee";
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -52,6 +53,61 @@ export default function Landing() {
     };
   // run on initial mount and when pathname changes
   }, [location.pathname]);
+
+  // Testimonials used by the marquee section
+  const testimonials = [
+    {
+      author: {
+        name: "HSE Director",
+        handle: "@northplant-hse",
+        avatar:
+          "https://images.unsplash.com/photo-1544005313-94ddf0286df2?w=150&h=150&fit=crop&crop=faces",
+      },
+      text:
+        "Within weeks we uncovered patterns across departments that were invisible before. Safety Co‑pilot shortened our investigations from days to hours.",
+    },
+    {
+      author: {
+        name: "Plant Manager",
+        handle: "@unit-a-manager",
+        avatar:
+          "https://images.unsplash.com/photo-1502685104226-ee32379fefbe?w=150&h=150&fit=crop&crop=faces",
+      },
+      text:
+        "The department spider and timeline helped us prioritize actions and communicate risk clearly in daily stand‑ups.",
+    },
+    {
+      author: {
+        name: "Safety Engineer",
+        handle: "@field-safety",
+        avatar:
+          "https://images.unsplash.com/photo-1527980965255-d3b416303d12?w=150&h=150&fit=crop&crop=faces",
+      },
+      text:
+        "Wordclouds by department quickly summarize hundreds of notes. I can brief leadership with evidence in minutes.",
+    },
+    {
+      author: {
+        name: "Data Analyst",
+        handle: "@hse-analytics",
+        avatar:
+          "https://images.unsplash.com/photo-1547425260-76bcadfb4f2c?w=150&h=150&fit=crop&crop=faces",
+      },
+      text:
+        "APIs are clean and the app structure is solid (shadcn + Tailwind). We wired new KPIs without touching the UI.",
+      href: "https://safetycopilot.app",
+    },
+    {
+      author: {
+        name: "Compliance Lead",
+        handle: "@audit-qms",
+        avatar:
+          "https://images.unsplash.com/photo-1508214751196-bcfd4ca60f91?w=150&h=150&fit=crop&crop=faces",
+      },
+      text:
+        "Pareto and root cause flows align directly with our audit actions. Less spreadsheet work, more prevention.",
+    },
+  ];
   return (
     <div className="relative min-h-screen bg-grid-dark text-white">
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
@@ -74,7 +130,7 @@ export default function Landing() {
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 relative z-10" ref={heroRef}>
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_2s_ease-in-out_infinite] before:pointer-events-none">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
               AI-powered Safety Analytics
             </div>
@@ -198,14 +254,19 @@ export default function Landing() {
           <UseCase title="Operations" bullet1="On-floor visibility" bullet2="Quick audits" bullet3="Issue resolution" />
         </div>
       </section>
-
-      {/* Testimonials (Glass, no animations) */}
+{/* 
+      Testimonials
       <section id="testimonials" className="mx-auto max-w-7xl px-6 py-16">
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-          <Quote content="Within weeks we uncovered patterns that were invisible before." author="HSE Director" />
-          <Quote content="The copilot lets our team ask questions and act faster." author="Plant Manager" />
+        <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.25)]">
+          <TestimonialsSection
+            title="Trusted across HSE teams"
+            description="Leaders and engineers use Safety Co‑pilot to investigate faster, communicate clearer, and prevent more incidents."
+            testimonials={testimonials}
+            className="bg-transparent py-0"
+            durationSec={90}
+          />
         </div>
-      </section>
+      </section> */}
 
       {/* CTA (Glass, no animations) */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
