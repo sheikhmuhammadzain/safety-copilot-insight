@@ -36,7 +36,7 @@ const EXAMPLE_PROMPTS = [
 
 export default function Agent2() {
   const [question, setQuestion] = useState("");
-  const [dataset, setDataset] = useState<"incident" | "hazard" | "audit" | "inspection" | "all">("incident");
+  const [dataset, setDataset] = useState<"incident" | "hazard" | "audit" | "inspection" | "all">("all");
   const [response, setResponse] = useState<AgentResponse | null>(null);
   const [loading, setLoading] = useState(false);
   const [history, setHistory] = useState<Array<{ question: string; response: AgentResponse }>>([]);
@@ -180,7 +180,7 @@ export default function Agent2() {
                 "Finalizing report..."
               ]}
               
-                interval={1100}
+                interval={2200}
                 className="text-xl md:text-2xl"
               />
             </CardContent>
