@@ -28,12 +28,10 @@ interface AgentResponse {
 
 const EXAMPLE_PROMPTS = [
   "Top 5 departments with most incidents",
-  "Weekly incident trend with average severity and total cost",
   "Incidents per location with average severity",
-  "Top 10 violation types",
-  "Audit completion rates by month",
-  "Consequence matrix for incidents",
-  "Create prioritized action list for top 3 locations",
+  "Top 10 department of hazards",
+  "Top 5 department of audits",
+  "Top 3 department of inspections",
 ];
 
 export default function Agent2() {

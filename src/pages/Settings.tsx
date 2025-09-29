@@ -46,7 +46,7 @@ export default function Settings() {
       timezone: "UTC"
     },
     api: {
-      baseUrl: "http://127.0.0.1:8000",
+      baseUrl: "http://103.18.20.205:8087",
       timeout: 30,
       retryAttempts: 3
     },
@@ -258,7 +258,7 @@ export default function Settings() {
                 id="apiBaseUrl"
                 value={settings.api.baseUrl}
                 onChange={(e) => updateSettings("api", "baseUrl", e.target.value)}
-                placeholder="http://127.0.0.1:8000"
+                placeholder="http://103.18.20.205:8087"
               />
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
