@@ -129,6 +129,10 @@ export default {
             transform: "translate(-50%,-40%) scale(1)",
           },
         },
+        shimmer: {
+          "0%": { "background-position": "200% 0" },
+          "100%": { "background-position": "-200% 0" },
+        },
       },
       animation: {
         "accordion-down": "accordion-down 0.2s ease-out",
@@ -138,6 +142,7 @@ export default {
         "slide-up": "slideUp 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
         "scale-in": "scaleIn 0.6s cubic-bezier(0.25, 0.46, 0.45, 0.94) forwards",
         "spotlight": "spotlight 2s ease 0.75s 1 forwards",
+        "shimmer": "shimmer 2s ease-in-out infinite",
       },
       fontFamily: {
         sans: ["var(--font-sans)"],

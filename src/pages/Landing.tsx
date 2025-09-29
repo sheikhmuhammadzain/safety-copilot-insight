@@ -74,7 +74,7 @@ export default function Landing() {
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 relative z-10" ref={heroRef}>
           <div className="mx-auto max-w-3xl text-center">
-            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5">
+            <div className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_2s_ease-in-out_infinite] before:pointer-events-none">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
               AI-powered Safety Analytics
             </div>

@@ -72,6 +72,9 @@ All colors MUST be HSL for consistency */
     --gradient-primary: linear-gradient(135deg, hsl(174 84% 35%), hsl(174 84% 45%));
     --gradient-success: linear-gradient(135deg, hsl(142 76% 36%), hsl(142 76% 46%));
     --gradient-warning: linear-gradient(135deg, hsl(38 92% 50%), hsl(38 92% 60%));
+    
+    /* Shimmer animation */
+    --shimmer: linear-gradient(110deg, transparent 35%, rgba(255,255,255,0.2) 50%, transparent 65%);
 
     --sidebar-background: 210 42.8571% 97.2549%;
     --sidebar-foreground: 0 0% 0%;
