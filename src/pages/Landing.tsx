@@ -320,7 +320,7 @@ function FeatureCard({ title, desc, icon, iconClass, className, backgroundImage 
     >
       {/* Overlay for better text readability */}
       {backgroundImage && (
-        <div className="absolute inset-0 bg-black/60 backdrop-blur-[1px]" />
+        <div className="absolute inset-0 bg-black/80 backdrop-blur-sm" />
       )}
       
       {/* Content */}
