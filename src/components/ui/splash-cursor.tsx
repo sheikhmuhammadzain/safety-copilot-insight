@@ -54,21 +54,22 @@ function pointerPrototype(): Pointer {
 
 export default function SplashCursor({
   SIM_RESOLUTION = 128,
-  DYE_RESOLUTION = 1024,
+  DYE_RESOLUTION = 512,
   CAPTURE_RESOLUTION = 512,
-  DENSITY_DISSIPATION = 2,
-  VELOCITY_DISSIPATION = 0.5,
-  PRESSURE = 0.8,
-  PRESSURE_ITERATIONS = 20,
-  CURL = 30,
-  SPLAT_RADIUS = 0.25,
-  SPLAT_FORCE = 6000,
-  SHADING = true,
-  COLOR_UPDATE_SPEED = 10,
+  DENSITY_DISSIPATION = 1.5,
+  VELOCITY_DISSIPATION = 0.3,
+  PRESSURE = 0.6,
+  PRESSURE_ITERATIONS = 15,
+  CURL = 25,
+  SPLAT_RADIUS = 0.18,
+  SPLAT_FORCE = 4000,
+  SHADING = false,
+  COLOR_UPDATE_SPEED = 8,
   BACK_COLOR = { r: 0, g: 0, b: 0 },
   TRANSPARENT = true
 }: SplashCursorProps) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const rafRef = useRef<number>();
 
   useEffect(() => {
     const canvas = canvasRef.current;
@@ -852,15 +853,17 @@ export default function SplashCursor({
 
     let lastUpdateTime = Date.now();
     let colorUpdateTimer = 0.0;
+    let isActive = true;
 
     function updateFrame() {
+      if (!isActive) return;
       const dt = calcDeltaTime();
       if (resizeCanvas()) initFramebuffers();
       updateColors(dt);
       applyInputs();
       step(dt);
       render(null);
-      requestAnimationFrame(updateFrame);
+      rafRef.current = requestAnimationFrame(updateFrame);
     }
 
     function calcDeltaTime() {
@@ -1206,6 +1209,14 @@ export default function SplashCursor({
       },
       false
     );
+
+    // Cleanup function
+    return () => {
+      isActive = false;
+      if (rafRef.current) {
+        cancelAnimationFrame(rafRef.current);
+      }
+    };
   }, [
     SIM_RESOLUTION,
     DYE_RESOLUTION,
@@ -1225,7 +1236,12 @@ export default function SplashCursor({
 
   return (
     <div className="fixed top-0 left-0 z-0 pointer-events-none w-full h-full">
-      <canvas ref={canvasRef} id="fluid" className="w-screen h-screen block opacity-30"></canvas>
+      <canvas 
+        ref={canvasRef} 
+        id="fluid" 
+        className="w-screen h-screen block opacity-20 mix-blend-screen"
+        style={{ willChange: 'transform' }}
+      ></canvas>
     </div>
   );
 }

@@ -141,10 +141,15 @@ export default function Landing() {
   return (
     <div className="relative min-h-screen bg-grid-dark text-white">
       <SplashCursor 
-        CURL={30}
-        SPLAT_RADIUS={0.25}
-        DENSITY_DISSIPATION={2}
-        VELOCITY_DISSIPATION={0.5}
+        SIM_RESOLUTION={128}
+        DYE_RESOLUTION={512}
+        CURL={25}
+        SPLAT_RADIUS={0.18}
+        SPLAT_FORCE={4000}
+        DENSITY_DISSIPATION={1.5}
+        VELOCITY_DISSIPATION={0.3}
+        PRESSURE={0.6}
+        COLOR_UPDATE_SPEED={8}
       />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
       {/* Navbar */}
