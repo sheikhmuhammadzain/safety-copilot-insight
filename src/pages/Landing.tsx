@@ -152,19 +152,53 @@ export default function Landing() {
         COLOR_UPDATE_SPEED={8}
       />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
-      {/* Navbar */}
-      <header className="sticky top-0 z-40 border-b border-border/60 bg-white/5 backdrop-blur transition-all duration-300">
-        <div className="mx-auto max-w-7xl px-6 py-4 flex items-center justify-between">
-          <div className="flex items-center gap-2 group">
-            <img src="/logo.png" alt="Logo" className="h-7 w-7 rounded-md object-contain transition-transform duration-300 group-hover:scale-110" />
-            <span className="font-semibold tracking-tight text-white transition-colors duration-300 group-hover:text-primary">Safety Copilot</span>
-          </div>
-          <div className="flex items-center gap-3">
-            <Link to="/dashboard" className="group inline-flex items-center gap-2 rounded-full border border-white/20 px-4 py-2 text-sm text-white transition-all duration-300 hover:bg-white/10 hover:border-white/30 hover:scale-105">
-              Go to Dashboard <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+      {/* Navbar - Pill Shaped Glassmorphism */}
+      <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
+        <nav className="relative rounded-full border border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-6 py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
+          {/* Gradient overlay */}
+          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
+          
+          <div className="relative flex items-center justify-between">
+            {/* Logo */}
+            <Link to="/" className="flex items-center gap-2.5 group">
+              <div className="relative">
+                <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300" />
+                <img 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  className="relative h-8 w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
+                />
+              </div>
+              <span className="font-bold text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide">
+                Safety Copilot
+              </span>
             </Link>
+
+            {/* Nav Links */}
+            <div className="flex items-center gap-1">
+              <a 
+                href="#features" 
+                className="px-4 py-2 text-sm font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
+              >
+                Features
+              </a>
+              <a 
+                href="#use-cases" 
+                className="px-4 py-2 text-sm font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
+              >
+                Use Cases
+              </a>
+              <Link 
+                to="/dashboard" 
+                className="group relative ml-2 inline-flex items-center gap-2 rounded-full bg-primary/90 px-5 py-2 text-sm font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:bg-primary hover:shadow-xl hover:shadow-primary/30 hover:scale-105 active:scale-95 overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <span className="relative">Dashboard</span>
+                <ArrowRight className="relative h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+              </Link>
+            </div>
           </div>
-        </div>
+        </nav>
       </header>
 
       {/* Hero */}
