@@ -6,6 +6,8 @@ import { useEffect, useRef, useState } from "react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
 import { TestimonialsSection } from "@/components/ui/testimonials-with-marquee";
+import { Typewriter } from "@/components/ui/typewriter";
+import SplashCursor from "@/components/ui/splash-cursor";
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -14,18 +16,18 @@ export default function Landing() {
   const [isVisible, setIsVisible] = useState(false);
   const location = useLocation();
 
-  // Intersection observer for scroll animations
+  // Intersection observer for scroll animations with smoother settings
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
         entries.forEach((entry) => {
           if (entry.isIntersecting) {
             entry.target.classList.add('animate-fade-up');
-            entry.target.classList.remove('opacity-0', 'translate-y-8');
+            entry.target.classList.remove('opacity-0', 'translate-y-12', 'scale-95');
           }
         });
       },
-      { threshold: 0.1, rootMargin: '50px' }
+      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
     );
 
     // Observe all animatable elements
@@ -138,6 +140,12 @@ export default function Landing() {
   ];
   return (
     <div className="relative min-h-screen bg-grid-dark text-white">
+      <SplashCursor 
+        CURL={30}
+        SPLAT_RADIUS={0.25}
+        DENSITY_DISSIPATION={2}
+        VELOCITY_DISSIPATION={0.5}
+      />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
       {/* Navbar */}
       <header className="sticky top-0 z-40 border-b border-border/60 bg-white/5 backdrop-blur transition-all duration-300">
@@ -157,8 +165,8 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 relative z-10" ref={heroRef}>
-          <div className={`mx-auto max-w-3xl text-center transition-all duration-1000 ease-out ${
-            isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          <div className={`mx-auto max-w-3xl text-center transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
+            isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95'
           }`}>
             <div className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none transition-all duration-700 delay-200 ${
               isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
@@ -169,7 +177,14 @@ export default function Landing() {
             <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight leading-tight transition-all duration-1000 delay-300 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
-              Drive safer operations with actionable insights
+              Drive safer operations with actionable{" "}
+              <Typewriter
+                words={["insights", "analytics", "decisions", "prevention", "intelligence"]}
+                className="text-primary"
+                typingSpeed={70}
+                deletingSpeed={40}
+                delayBetweenWords={2200}
+              />
             </h1>
             <p className={`mt-4 text-base md:text-lg text-white/80 leading-relaxed transition-all duration-1000 delay-500 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
@@ -181,10 +196,10 @@ export default function Landing() {
             }`}>
               <Link
                 to="/dashboard"
-                className="group inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-300 ease-out hover:shadow-[0_16px_32px_rgba(0,0,0,0.4),0_8px_16px_rgba(0,0,0,0.3)] hover:scale-105 hover:-translate-y-2 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg"
+                className="group inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.4)] hover:scale-110 hover:-translate-y-2 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg overflow-hidden after:absolute after:inset-0 after:rounded-lg after:opacity-0 after:transition-opacity after:duration-500 hover:after:opacity-100 after:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent_70%)]"
               >
                 Open Dashboard
-                <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+                <ArrowRight className="h-4 w-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-2 group-hover:scale-110" />
               </Link>
               <a href="#features" className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-3 text-white transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-105">
                 Learn More
@@ -429,10 +444,10 @@ function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }:
 }) {
   return (
     <div 
-      className={`group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:scale-105 hover:border-white/25 hover:-translate-y-2 ${gradientClass ?? ""} ${className ?? ""}`}
+      className={`group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl shadow-[0_10px_30px_rgba(0,0,0,0.25)] h-full flex flex-col p-6 relative overflow-hidden transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3 before:absolute before:inset-0 before:bg-gradient-to-br before:from-white/[0.05] before:to-transparent before:opacity-0 hover:before:opacity-100 before:transition-opacity before:duration-700 ${gradientClass ?? ""} ${className ?? ""}`}
     >
       <div className="relative z-10">
-        <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-300 group-hover:scale-110 ${iconClass ?? "bg-white/20 text-white"}`}>
+        <div className={`mb-3 inline-flex h-10 w-10 items-center justify-center rounded-full transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:rotate-12 ${iconClass ?? "bg-white/20 text-white"}`}>
           {icon}
         </div>
         <div className="text-lg font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
@@ -444,8 +459,8 @@ function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }:
 
 function Stat({ value, label }: { value: string; label: string }) {
   return (
-    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-500 hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] hover:scale-105 hover:border-white/25 hover:-translate-y-1">
-      <div className="text-3xl font-extrabold tracking-tight text-white transition-all duration-300 group-hover:scale-110">{value}</div>
+    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.35)] hover:scale-110 hover:border-white/30 hover:-translate-y-2 cursor-default">
+      <div className="text-3xl font-extrabold tracking-tight text-white transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:text-primary">{value}</div>
       <div className="mt-1 text-xs text-white/80 transition-colors duration-300 group-hover:text-white/90">{label}</div>
     </div>
   );
@@ -453,12 +468,12 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function UseCase({ title, bullet1, bullet2, bullet3 }: { title: string; bullet1: string; bullet2: string; bullet3: string }) {
   return (
-    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-500 hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] hover:scale-105 hover:border-white/25 hover:-translate-y-2">
+    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3">
       <div className="text-base font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
       <ul className="mt-3 space-y-2 text-sm text-white/80">
-        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet1}</li>
-        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet2}</li>
-        <li className="flex items-center gap-2 transition-all duration-300 group-hover:text-white/90"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-300 group-hover:scale-125" />{bullet3}</li>
+        <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet1}</li>
+        <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet2}</li>
+        <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet3}</li>
       </ul>
     </div>
   );
