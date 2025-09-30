@@ -23,12 +23,18 @@ export default function Maps() {
         const res = await getHtml("/maps/single", { dataset: mapType });
         setMapData(res.html);
       }
-    } catch (error) {
+    } catch (error: any) {
+      console.error("Map loading error:", error);
+      const errorMessage = error?.response?.data?.detail || error?.message || "Failed to load map data";
       toast({
-        title: "Error",
-        description: "Failed to load map data",
+        title: "Error Loading Map",
+        description: errorMessage,
         variant: "destructive"
       });
+      // Keep the previous map data if available, otherwise show empty
+      if (!mapData) {
+        setMapData("");
+      }
     } finally {
       setLoading(false);
     }
@@ -168,7 +174,65 @@ export default function Maps() {
             ) : (
               <div className="h-96 w-full rounded-lg overflow-hidden border">
                 <iframe
-                  srcDoc={mapData}
+                  srcDoc={`
+                    <style>
+                      /* Popup styling */
+                      .leaflet-popup-content-wrapper {
+                        background: rgba(255, 255, 255, 0.98) !important;
+                        border-radius: 8px !important;
+                        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15) !important;
+                        padding: 4px !important;
+                        min-width: 140px !important;
+                      }
+                      .leaflet-popup-content {
+                        margin: 8px 12px !important;
+                        font-family: 'Segoe UI', Arial, sans-serif !important;
+                        font-size: 13px !important;
+                        line-height: 1.6 !important;
+                        color: #1f2937 !important;
+                        white-space: nowrap !important;
+                      }
+                      .leaflet-popup-tip {
+                        background: rgba(255, 255, 255, 0.98) !important;
+                      }
+                      
+                      /* Permanent labels/tooltips - Better styling */
+                      .leaflet-tooltip {
+                        background: rgba(255, 255, 255, 0.95) !important;
+                        border: 1px solid rgba(0, 0, 0, 0.2) !important;
+                        border-radius: 4px !important;
+                        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.25) !important;
+                        color: #111827 !important;
+                        font-family: 'Segoe UI', Arial, sans-serif !important;
+                        font-size: 11px !important;
+                        font-weight: 600 !important;
+                        padding: 3px 6px !important;
+                        white-space: nowrap !important;
+                        pointer-events: none !important;
+                        text-shadow: 0 1px 2px rgba(255, 255, 255, 0.8) !important;
+                      }
+                      
+                      /* Remove tooltip arrow for cleaner look */
+                      .leaflet-tooltip-top:before,
+                      .leaflet-tooltip-bottom:before,
+                      .leaflet-tooltip-left:before,
+                      .leaflet-tooltip-right:before {
+                        display: none !important;
+                      }
+                      
+                      /* Make labels more compact and readable */
+                      .leaflet-tooltip.leaflet-tooltip-permanent {
+                        opacity: 0.9 !important;
+                      }
+                      
+                      /* Hover state for tooltips */
+                      .leaflet-tooltip:hover {
+                        opacity: 1 !important;
+                        z-index: 1000 !important;
+                      }
+                    </style>
+                    ${mapData}
+                  `}
                   className="w-full h-full border-none"
                   title="Interactive Safety Map"
                 />

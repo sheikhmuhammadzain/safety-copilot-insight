@@ -7,13 +7,15 @@ import ShadcnParetoCard from "@/components/charts/ShadcnParetoCard";
 import ShadcnHeatmapCard from "@/components/charts/ShadcnHeatmapCard";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useKpi } from "@/hooks/useKpi";
-import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw } from "lucide-react";
+import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw, Calendar } from "lucide-react";
 import { RecentList } from "@/components/dashboard/RecentList";
 import { getRecentIncidents, getRecentHazards, getRecentAudits } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 
 export default function Overview() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
+  const [dateRange, setDateRange] = useState<string>("all");
   // KPIs sourced from real KPI endpoints that return Plotly indicator figures
   const incidentsTotal = useKpi(
     "/kpis/incident-total",
@@ -71,6 +73,19 @@ export default function Overview() {
             </div>
           </div>
           <div className="flex items-center gap-3">
+            <Select value={dateRange} onValueChange={setDateRange}>
+              <SelectTrigger className="w-40">
+                <Calendar className="h-4 w-4 mr-2" />
+                <SelectValue placeholder="Date Range" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">All Time</SelectItem>
+                <SelectItem value="3m">Last 3 Months</SelectItem>
+                <SelectItem value="6m">Last 6 Months</SelectItem>
+                <SelectItem value="1y">Last Year</SelectItem>
+                <SelectItem value="ytd">Year to Date</SelectItem>
+              </SelectContent>
+            </Select>
             <button
               className="inline-flex items-center gap-2 rounded-md border border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-700 hover:bg-slate-50"
               onClick={() => setRefreshKey(Date.now())}
@@ -131,7 +146,7 @@ export default function Overview() {
         <div className="grid grid-cols-1 lg:grid-cols-12 gap-6">
           {/* Trends: Hazards */}
           <div className="lg:col-span-6 relative">
-            <ShadcnLineCard title="Hazards Trend" endpoint="/analytics/data/incident-trend" params={{ dataset: "hazard" }} />
+            <ShadcnLineCard title="Hazards Trend" endpoint="/analytics/data/incident-trend" params={{ dataset: "hazard", date_range: dateRange }} />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -145,25 +160,10 @@ export default function Overview() {
               </Tooltip>
             </TooltipProvider>
           </div>
-          <div className="lg:col-span-6 relative">
-            <ShadcnLineCard title="Hazard Cost Trend" endpoint="/analytics/data/incident-cost-trend" params={{ dataset: "hazard" }} />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Monthly sum of estimated hazard costs. Highlights cost impact trends by month.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
 
           {/* Trends: Incidents */}
           <div className="lg:col-span-6 relative">
-            <ShadcnLineCard title="Incidents Trend" endpoint="/analytics/data/incident-trend" params={{ dataset: "incident" }} />
+            <ShadcnLineCard title="Incidents Trend" endpoint="/analytics/data/incident-trend" params={{ dataset: "incident", date_range: dateRange }} />
             <TooltipProvider>
               <Tooltip>
                 <TooltipTrigger asChild>
@@ -173,21 +173,6 @@ export default function Overview() {
                 </TooltipTrigger>
                 <TooltipContent side="left" className="max-w-xs text-slate-700">
                   Monthly incident count trend. Peaks indicate periods with more incidents; valleys indicate improvement.
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="lg:col-span-6 relative">
-            <ShadcnLineCard title="Incident Cost Trend" endpoint="/analytics/data/incident-cost-trend" params={{ dataset: "incident" }} />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Monthly total of incident costs. Use it to assess financial impact and prioritize actions.
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

@@ -58,21 +58,56 @@ export default function Analytics() {
       </header>
 
       {/* Main Content */}
-      <main className="p-6 space-y-6">
-        {/* Core Analytics */}
-        <div className="grid grid-cols-1 gap-6">
-          <PlotlyCard title="HSE Scorecard" endpoint="/analytics/hse-scorecard" height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="HSE Performance Index" endpoint="/analytics/hse-performance-index" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Risk Calendar Heatmap" endpoint="/analytics/risk-calendar-heatmap" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Consequence Matrix" endpoint="/analytics/consequence-matrix" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Data Quality Metrics" endpoint="/analytics/data-quality-metrics" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Comprehensive Timeline" endpoint="/analytics/comprehensive-timeline" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Audit/Inspection Tracker" endpoint="/analytics/audit-inspection-tracker" height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Location Risk Treemap" endpoint="/analytics/location-risk-treemap" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Department Spider" endpoint="/analytics/department-spider" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Cost Prediction Analysis" endpoint="/analytics/cost-prediction-analysis" params={{ dataset }} height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Facility Layout Heatmap" endpoint="/analytics/facility-layout-heatmap" height={420} refreshKey={refreshKey} />
-          <PlotlyCard title="Facility 3D Heatmap" endpoint="/analytics/facility-3d-heatmap" params={{ dataset, event_type: dataset === 'incident' ? 'Incidents' : 'Hazards' }} height={420} refreshKey={refreshKey} />
+      <main className="p-6 space-y-8">
+        {/* Section 1: Performance & Risk Overview */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Performance & Risk Overview</h2>
+          <div className="grid grid-cols-1 gap-6">
+            <PlotlyCard title="HSE Performance Index" endpoint="/analytics/hse-performance-index" params={{ dataset }} height={420} refreshKey={refreshKey} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PlotlyCard title="Risk Calendar Heatmap" endpoint="/analytics/risk-calendar-heatmap" params={{ dataset }} height={420} refreshKey={refreshKey} />
+            <PlotlyCard title="Consequence Matrix" endpoint="/analytics/consequence-matrix" params={{ dataset }} height={420} refreshKey={refreshKey} />
+          </div>
+        </div>
+
+        {/* Section 2: Timeline & Tracking */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Timeline & Tracking</h2>
+          <div className="grid grid-cols-1 gap-6">
+            <PlotlyCard title="Comprehensive Timeline" endpoint="/analytics/comprehensive-timeline" params={{ dataset }} height={420} refreshKey={refreshKey} />
+            <PlotlyCard title="Audit/Inspection Tracker" endpoint="/analytics/audit-inspection-tracker" height={420} refreshKey={refreshKey} />
+          </div>
+        </div>
+
+        {/* Section 3: Location & Department Analysis */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Location & Department Analysis</h2>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PlotlyCard title="Location Risk Treemap" endpoint="/analytics/location-risk-treemap" params={{ dataset }} height={420} refreshKey={refreshKey} />
+            <PlotlyCard title="Department Spider" endpoint="/analytics/department-spider" params={{ dataset }} height={420} refreshKey={refreshKey} />
+          </div>
+        </div>
+
+        {/* Section 4: Facility Heatmaps */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Facility Risk Visualization</h2>
+          <div className="grid grid-cols-1 gap-6">
+            <PlotlyCard title="Facility Layout Heatmap" endpoint="/analytics/facility-layout-heatmap" height={600} refreshKey={refreshKey} />
+          </div>
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+            <PlotlyCard title="3D Incidents Heat Map" endpoint="/analytics/facility-3d-heatmap" params={{ dataset: 'incident', event_type: 'Incidents' }} height={600} refreshKey={refreshKey} />
+            <PlotlyCard title="3D Hazards Heat Map" endpoint="/analytics/facility-3d-heatmap" params={{ dataset: 'hazard', event_type: 'Hazards' }} height={600} refreshKey={refreshKey} />
+          </div>
+        </div>
+
+        {/* Section 5: Predictive & Quality Analysis */}
+        <div className="space-y-4">
+          <h2 className="text-xl font-semibold text-foreground">Predictive & Quality Analysis</h2>
+          <div className="grid grid-cols-1 gap-6">
+            <PlotlyCard title="Cost Prediction Analysis" endpoint="/analytics/cost-prediction-analysis" params={{ dataset }} height={420} refreshKey={refreshKey} />
+            <PlotlyCard title="Data Quality Metrics" endpoint="/analytics/data-quality-metrics" params={{ dataset }} height={800} refreshKey={refreshKey} />
+          </div>
         </div>
 
         {/* Conversion Analytics */}
@@ -97,10 +132,9 @@ export default function Analytics() {
               {/* Existing Plotly visualizations */}
               <PlotlyCard title="Funnel" endpoint="/analytics/conversion/funnel" height={420} refreshKey={refreshKey} />
               <PlotlyCard title="Time Lag" endpoint="/analytics/conversion/time-lag" height={420} refreshKey={refreshKey} />
-              <LinksSankey />
-              <PlotlyCard title="Department Matrix" endpoint="/analytics/conversion/department-matrix" height={420} refreshKey={refreshKey} />
-              <LinksNetwork />
-              <PlotlyCard title="Prevention Effectiveness" endpoint="/analytics/conversion/prevention-effectiveness" height={420} refreshKey={refreshKey} />
+              <PlotlyCard title="Hazard to Incident Flow Analysis" endpoint="/analytics/conversion/sankey" height={600} refreshKey={refreshKey} />
+              <PlotlyCard title="Department Matrix" endpoint="/analytics/conversion/department-matrix" height={700} refreshKey={refreshKey} />
+              <PlotlyCard title="Prevention Effectiveness" endpoint="/analytics/conversion/prevention-effectiveness" height={700} refreshKey={refreshKey} />
               <PlotlyCard title="Metrics Gauge" endpoint="/analytics/conversion/metrics-gauge" height={420} refreshKey={refreshKey} />
             </div>
           </CardContent>

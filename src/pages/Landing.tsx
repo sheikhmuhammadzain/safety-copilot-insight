@@ -152,30 +152,33 @@ export default function Landing() {
         COLOR_UPDATE_SPEED={8}
       />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
-      {/* Navbar - Pill Shaped Glassmorphism */}
-      <header className="fixed top-6 left-1/2 -translate-x-1/2 z-50 w-[95%] max-w-5xl">
-        <nav className="relative rounded-full border border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-6 py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
+      {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
+      <header className="fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[95%] max-w-5xl px-2 md:px-0">
+        <nav className="relative rounded-full border border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6 py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
           {/* Gradient overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
           
-          <div className="relative flex items-center justify-between">
+          <div className="relative flex items-center justify-between gap-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-2.5 group">
+            <Link to="/" className="flex items-center gap-1.5 md:gap-2.5 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300" />
                 <img 
                   src="/logo.png" 
                   alt="Logo" 
-                  className="relative h-8 w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
+                  className="relative h-6 w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
                 />
               </div>
-              <span className="font-bold text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide">
+              <span className="font-bold text-sm md:text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide hidden sm:inline">
                 Safety Copilot
+              </span>
+              <span className="font-bold text-sm text-white transition-all duration-300 group-hover:text-primary sm:hidden">
+                SC
               </span>
             </Link>
 
-            {/* Nav Links */}
-            <div className="flex items-center gap-1">
+            {/* Nav Links - Desktop */}
+            <div className="hidden md:flex items-center gap-1">
               <a 
                 href="#features" 
                 className="px-4 py-2 text-sm font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
@@ -195,6 +198,24 @@ export default function Landing() {
                 <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative">Dashboard</span>
                 <ArrowRight className="relative h-4 w-4 transition-transform duration-500 group-hover:translate-x-1" />
+              </Link>
+            </div>
+
+            {/* Nav Links - Mobile */}
+            <div className="flex md:hidden items-center gap-1">
+              <a 
+                href="#features" 
+                className="px-2.5 py-1.5 text-xs font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
+              >
+                Features
+              </a>
+              <Link 
+                to="/dashboard" 
+                className="group relative inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:bg-primary hover:shadow-xl hover:shadow-primary/30 active:scale-95 overflow-hidden"
+              >
+                <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                <span className="relative">Dashboard</span>
+                <ArrowRight className="relative h-3 w-3" />
               </Link>
             </div>
           </div>
@@ -233,13 +254,19 @@ export default function Landing() {
             <div className={`mt-8 flex flex-wrap items-center justify-center gap-3 transition-all duration-1000 delay-700 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
-              <Link
-                to="/dashboard"
-                className="group inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.4)] hover:scale-110 hover:-translate-y-2 active:scale-95 active:translate-y-0 relative border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg overflow-hidden after:absolute after:inset-0 after:rounded-lg after:opacity-0 after:transition-opacity after:duration-500 hover:after:opacity-100 after:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent_70%)]"
-              >
-                Open Dashboard
-                <ArrowRight className="h-4 w-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-2 group-hover:scale-110" />
-              </Link>
+              <div className="relative inline-block">
+                {/* Green glow effect */}
+                <div className="absolute -inset-4 bg-primary/30 rounded-2xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+                <div className="absolute -inset-2 bg-primary/40 rounded-xl blur-xl opacity-0 group-hover:opacity-80 transition-opacity duration-500" />
+                
+                <Link
+                  to="/dashboard"
+                  className="group relative inline-flex items-center gap-2 rounded-lg bg-primary px-5 py-3 font-medium text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2),0_0_40px_rgba(132,204,22,0.3)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.4),0_0_60px_rgba(132,204,22,0.6)] hover:scale-110 hover:-translate-y-2 active:scale-95 active:translate-y-0 border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg overflow-hidden after:absolute after:inset-0 after:rounded-lg after:opacity-0 after:transition-opacity after:duration-500 hover:after:opacity-100 after:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent_70%)]"
+                >
+                  Open Dashboard
+                  <ArrowRight className="h-4 w-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-2 group-hover:scale-110" />
+                </Link>
+              </div>
               <a href="#features" className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-3 text-white transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-105">
                 Learn More
                 <ArrowRight className="h-4 w-4 opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1" />
@@ -249,22 +276,29 @@ export default function Landing() {
 
           {/* Device frame with dashboard image */}
           <div
-            className={`mx-auto mt-12 md:mt-16 max-w-6xl transition-all duration-1200 delay-900 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
+            className={`mx-auto mt-12 md:mt-16 max-w-6xl transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-[1000ms] ${
+              isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-16 scale-90'
             }`}
             style={{
               transform: `translateY(${Math.round(parallaxY)}px) scale(${parallaxScale})`,
-              transition: "transform 0.1s cubic-bezier(0.25, 0.46, 0.45, 0.94)",
+              transition: "transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)",
             }}
           >
-            <div className="rounded-[28px] border border-white/10 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65)] p-2 hover:shadow-[0_30px_100px_rgba(0,0,0,0.8)] transition-shadow duration-700">
-              <div className="rounded-2xl overflow-hidden bg-black">
-                <img
-                  src="/dashboard.png"
-                  alt="Safety Copilot dashboard preview"
-                  className="w-full h-auto object-cover transition-transform duration-700 hover:scale-105"
-                  loading="eager"
-                />
+            <div className="relative group">
+              {/* Green glow layers */}
+              <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-primary/30 to-primary/40 rounded-[32px] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-pulse" />
+              <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/50 via-transparent to-primary/50 rounded-[30px] blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-700" />
+              
+              <div className="relative rounded-[28px] border border-white/10 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65),0_0_80px_rgba(132,204,22,0.15)] hover:shadow-[0_40px_120px_rgba(0,0,0,0.9),0_0_100px_rgba(132,204,22,0.3)] hover:border-primary/30 transition-all duration-700 ease-out p-2">
+                <div className="rounded-2xl overflow-hidden bg-black relative">
+                  <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10" />
+                  <img
+                    src="/dashboard.png"
+                    alt="Safety Copilot dashboard preview"
+                    className="w-full h-auto object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
+                    loading="eager"
+                  />
+                </div>
               </div>
             </div>
           </div>
