@@ -239,26 +239,26 @@ export default function Landing() {
       />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
-      <header ref={navRef} className="fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[95%] max-w-5xl px-2 md:px-0 origin-center">
-        <nav className="relative rounded-full border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6 py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
+      <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
+        <nav className="relative rounded-full border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
           {/* Gradient overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
           
-          <div className="relative flex items-center justify-between gap-2">
+          <div className="relative flex items-center justify-between gap-1 sm:gap-2">
             {/* Logo */}
-            <Link to="/" className="flex items-center gap-1.5 md:gap-2.5 group flex-shrink-0">
+            <Link to="/" className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300" />
                 <img 
                   src="/logo.png" 
                   alt="Logo" 
-                  className="relative h-6 w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
+                  className="relative h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
                 />
               </div>
-              <span className="font-bold text-sm md:text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide hidden sm:inline">
+              <span className="font-bold text-xs sm:text-sm md:text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide hidden xs:inline">
                 Safety Copilot
               </span>
-              <span className="font-bold text-sm text-white transition-all duration-300 group-hover:text-primary sm:hidden">
+              <span className="font-bold text-xs text-white transition-all duration-300 group-hover:text-primary xs:hidden">
                 SC
               </span>
             </Link>
@@ -288,20 +288,20 @@ export default function Landing() {
             </div>
 
             {/* Nav Links - Mobile */}
-            <div className="flex md:hidden items-center gap-1">
+            <div className="flex md:hidden items-center gap-0.5 sm:gap-1">
               <a 
                 href="#features" 
-                className="px-2.5 py-1.5 text-xs font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10"
+                className="hidden xs:block px-2 sm:px-2.5 py-1.5 text-[10px] sm:text-xs font-medium text-white/80 rounded-full transition-all duration-300 hover:text-white hover:bg-white/10 whitespace-nowrap"
               >
                 Features
               </a>
               <Link 
                 to="/dashboard" 
-                className="group relative inline-flex items-center gap-1.5 rounded-full bg-primary/90 px-3 py-1.5 text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:bg-primary hover:shadow-xl hover:shadow-primary/30 active:scale-95 overflow-hidden"
+                className="group relative inline-flex items-center gap-1 sm:gap-1.5 rounded-full bg-primary/90 px-2.5 sm:px-3 py-1.5 text-[10px] sm:text-xs font-semibold text-primary-foreground shadow-lg shadow-primary/20 transition-all duration-500 hover:bg-primary hover:shadow-xl hover:shadow-primary/30 active:scale-95 overflow-hidden whitespace-nowrap"
               >
                 <span className="absolute inset-0 bg-gradient-to-r from-white/20 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                 <span className="relative">Dashboard</span>
-                <ArrowRight className="relative h-3 w-3" />
+                <ArrowRight className="relative h-2.5 w-2.5 sm:h-3 sm:w-3" />
               </Link>
             </div>
           </div>

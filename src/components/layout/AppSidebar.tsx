@@ -6,7 +6,8 @@ import {
   Database, 
   Settings,
   Home,
-  Cloud
+  Cloud,
+  TrendingUp
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
 import {
@@ -27,6 +28,7 @@ const navigationItems = [
   { title: "Maps", url: "/maps", icon: Map },
   { title: "Wordclouds", url: "/wordclouds", icon: Cloud },
   { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Advanced Analytics", url: "/advanced-analytics", icon: TrendingUp },
   { title: "Agent", url: "/agent", icon: Bot },
   { title: "Workbooks", url: "/workbooks", icon: Database },
   { title: "Settings", url: "/settings", icon: Settings },
