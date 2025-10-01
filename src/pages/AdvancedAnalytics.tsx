@@ -16,8 +16,8 @@ import {
 import axios from "axios";
 import { PyramidChart } from "@/components/charts/PyramidChart";
 
-// API Base URL
-const API_BASE = "http://localhost:8000";
+// API Base URL from environment variable
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 interface FilterState {
   startDate: string;
