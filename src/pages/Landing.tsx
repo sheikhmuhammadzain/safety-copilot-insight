@@ -3,18 +3,29 @@ import { Shield, BarChart3, Map, Bot, ArrowRight, CheckCircle2, Twitter, Github,
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useEffect, useRef, useState } from "react";
+import { gsap } from "gsap";
+import { useGSAP } from "@gsap/react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
 import { TestimonialsSection } from "@/components/ui/testimonials-with-marquee";
 import { Typewriter } from "@/components/ui/typewriter";
 import SplashCursor from "@/components/ui/splash-cursor";
 import { Highlighter } from "@/components/ui/highlighter";
+import SplitText from "@/components/ui/SplitText";
+
+gsap.registerPlugin(useGSAP);
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
+  const navRef = useRef<HTMLElement>(null);
+  const badgeRef = useRef<HTMLDivElement>(null);
+  const headingRef = useRef<HTMLHeadingElement>(null);
+  const subheadingRef = useRef<HTMLParagraphElement>(null);
+  const ctaRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLDivElement>(null);
   const [parallaxY, setParallaxY] = useState(0);
   const [parallaxScale, setParallaxScale] = useState(1);
-  const [isVisible, setIsVisible] = useState(false);
+  const [highlighterKey, setHighlighterKey] = useState(0);
   const location = useLocation();
 
   // Intersection observer for scroll animations with smoother settings
@@ -38,11 +49,85 @@ export default function Landing() {
     return () => observer.disconnect();
   }, []);
 
-  // Hero visibility trigger
-  useEffect(() => {
-    const timer = setTimeout(() => setIsVisible(true), 100);
-    return () => clearTimeout(timer);
+  // GSAP Navbar animation with wobbly effect
+  useGSAP(() => {
+    if (navRef.current) {
+      const tl = gsap.timeline();
+      
+      tl.fromTo(
+        navRef.current,
+        { 
+          scaleX: 1,
+          opacity: 0,
+        },
+        { 
+          scaleX: 1.15,
+          opacity: 1,
+          duration: 0.6,
+          ease: "power2.out",
+        }
+      )
+      .to(navRef.current, {
+        scaleX: 0.95,
+        duration: 0.3,
+        ease: "power2.inOut",
+      })
+      .to(navRef.current, {
+        scaleX: 1.05,
+        duration: 0.25,
+        ease: "power2.inOut",
+      })
+      .to(navRef.current, {
+        scaleX: 1,
+        duration: 0.2,
+        ease: "power2.out",
+      });
+    }
   }, []);
+
+  // GSAP Hero animations
+  useGSAP(() => {
+    const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.3 });
+
+    // Animate badge
+    tl.fromTo(
+      badgeRef.current,
+      { opacity: 0, scale: 0.8, y: 20 },
+      { opacity: 1, scale: 1, y: 0, duration: 0.6 }
+    );
+
+    // Animate heading
+    tl.fromTo(
+      headingRef.current,
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.8 },
+      "-=0.3"
+    );
+
+    // Animate subheading
+    tl.fromTo(
+      subheadingRef.current,
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.8, onComplete: () => setHighlighterKey(prev => prev + 1) },
+      "-=0.4"
+    );
+
+    // Animate CTA buttons
+    tl.fromTo(
+      ctaRef.current,
+      { opacity: 0, y: 30 },
+      { opacity: 1, y: 0, duration: 0.8 },
+      "-=0.4"
+    );
+
+    // Animate dashboard image
+    tl.fromTo(
+      imageRef.current,
+      { opacity: 0, y: 60, scale: 0.9 },
+      { opacity: 1, y: 0, scale: 1, duration: 1.2 },
+      "-=0.6"
+    );
+  }, { scope: heroRef });
 
   useEffect(() => {
     const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -154,8 +239,8 @@ export default function Landing() {
       />
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
-      <header className="fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[95%] max-w-5xl px-2 md:px-0">
-        <nav className="relative rounded-full border border-white/10 bg-black/40 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6 py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
+      <header ref={navRef} className="fixed top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[96%] md:w-[95%] max-w-5xl px-2 md:px-0 origin-center">
+        <nav className="relative rounded-full border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-3 md:px-6 py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
           {/* Gradient overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
           
@@ -226,18 +311,12 @@ export default function Landing() {
       {/* Hero */}
       <section className="relative overflow-hidden">
         <div className="mx-auto max-w-7xl px-6 py-24 lg:py-32 relative z-10" ref={heroRef}>
-          <div className={`mx-auto max-w-3xl text-center transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] ${
-            isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-12 scale-95'
-          }`}>
-            <div className={`inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none transition-all duration-700 delay-200 ${
-              isVisible ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-            }`}>
+          <div className="mx-auto max-w-3xl text-center">
+            <div ref={badgeRef} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-white/80 mb-5 relative overflow-hidden before:absolute before:inset-0 before:bg-[image:var(--shimmer)] before:bg-[length:200%_100%] before:animate-[shimmer_4s_ease-in-out_infinite] before:pointer-events-none opacity-0">
               <CheckCircle2 className="h-3.5 w-3.5 text-primary" />
               AI-powered Safety Analytics
             </div>
-            <h1 className={`text-4xl md:text-6xl font-extrabold tracking-tight leading-tight transition-all duration-1000 delay-300 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}>
+            <h1 ref={headingRef} className="text-4xl md:text-6xl font-extrabold tracking-tight leading-tight opacity-0">
               Drive safer operations with actionable{" "}
               <Typewriter
                 words={["insights", "analytics", "decisions", "prevention", "intelligence"]}
@@ -247,22 +326,18 @@ export default function Landing() {
                 delayBetweenWords={2200}
               />
             </h1>
-            <p className={`mt-4 text-base md:text-lg text-white/80 leading-relaxed transition-all duration-1000 delay-500 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}>
+            <p ref={subheadingRef} className="mt-4 text-base md:text-lg text-white/80 leading-relaxed opacity-0">
               Explore{" "}
-              <Highlighter action="underline" color="#84cc16" strokeWidth={2} animationDuration={800} isView={true}>
+              <Highlighter key={`highlight-1-${highlighterKey}`} action="underline" color="#84cc16" strokeWidth={2} animationDuration={800} isView={false}>
                 incidents, hazards, audits
               </Highlighter>{" "}
-              and inspections in one place. Ask{" "}
-              <Highlighter action="highlight" color="rgba(132, 204, 22, 0.3)" strokeWidth={1.5} animationDuration={1000} isView={true}>
-                natural-language questions
+              and inspections in one place. Ask natural-language questions, view live maps, and make{" "}
+              <Highlighter key={`highlight-2-${highlighterKey}`} action="highlight" color="rgba(132, 204, 22, 0.3)" strokeWidth={1.5} animationDuration={1000} isView={false}>
+                faster decisions
               </Highlighter>
-              , view live maps, and make faster decisions.
+              .
             </p>
-            <div className={`mt-8 flex flex-wrap items-center justify-center gap-3 transition-all duration-1000 delay-700 ${
-              isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-            }`}>
+            <div ref={ctaRef} className="mt-8 flex flex-wrap items-center justify-center gap-3 opacity-0">
               <div className="relative inline-block">
                 {/* Green glow effect */}
                 <div className="absolute -inset-4 bg-primary/30 rounded-2xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
@@ -285,9 +360,8 @@ export default function Landing() {
 
           {/* Device frame with dashboard image */}
           <div
-            className={`mx-auto mt-12 md:mt-16 max-w-6xl transition-all duration-[1400ms] ease-[cubic-bezier(0.16,1,0.3,1)] delay-[1000ms] ${
-              isVisible ? 'opacity-100 translate-y-0 scale-100' : 'opacity-0 translate-y-16 scale-90'
-            }`}
+            ref={imageRef}
+            className="mx-auto mt-12 md:mt-16 max-w-6xl opacity-0"
             style={{
               transform: `translateY(${Math.round(parallaxY)}px) scale(${parallaxScale})`,
               transition: "transform 0.15s cubic-bezier(0.16, 1, 0.3, 1)",
