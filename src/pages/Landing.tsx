@@ -298,7 +298,10 @@ export default function Landing() {
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-primary/30 to-primary/40 rounded-[32px] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-pulse" />
               <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/50 via-transparent to-primary/50 rounded-[30px] blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-700" />
               
-              <div className="relative rounded-[28px] border border-white/10 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65),0_0_80px_rgba(132,204,22,0.15)] hover:shadow-[0_40px_120px_rgba(0,0,0,0.9),0_0_100px_rgba(132,204,22,0.3)] hover:border-primary/30 transition-all duration-700 ease-out p-2">
+              {/* Neon green border */}
+              <div className="absolute -inset-[1px] rounded-[30px] bg-gradient-to-r from-primary/40 via-primary/30 to-primary/40 opacity-30 blur-sm group-hover:opacity-60 transition-opacity duration-700" />
+              
+              <div className="relative rounded-[28px] border border-primary/40 bg-black/50 shadow-[0_20px_80px_rgba(0,0,0,0.65),0_0_40px_rgba(132,204,22,0.2)] hover:shadow-[0_40px_120px_rgba(0,0,0,0.9),0_0_60px_rgba(132,204,22,0.4)] hover:border-primary/60 transition-all duration-700 ease-out p-2">
                 <div className="rounded-2xl overflow-hidden bg-black relative">
                   <div className="absolute inset-0 bg-gradient-to-tr from-primary/10 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none z-10" />
                   <img
