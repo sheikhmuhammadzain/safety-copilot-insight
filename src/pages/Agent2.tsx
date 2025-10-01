@@ -8,7 +8,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Bot, Send, Code, BarChart3, FileText, Sparkles, ChevronDown } from "lucide-react";
+import { Send, Code, BarChart3, FileText, Sparkles, ChevronDown } from "lucide-react";
 import Plot from "react-plotly.js";
 import { runAgent } from "@/lib/api";
 import ReactMarkdown from "react-markdown";
@@ -75,7 +75,7 @@ export default function Agent2() {
           <div className="flex items-center space-x-4">
             <SidebarTrigger />
             <div className="flex items-center space-x-2">
-              <Bot className="h-6 w-6 text-primary" />
+              <img src="/copilot-logo.png" alt="Copilot" className="h-12 w-12 object-contain" />
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Safety Copilot</h1>
                 <p className="text-sm text-muted-foreground">AI-powered safety analysis assistant</p>
@@ -95,7 +95,7 @@ export default function Agent2() {
         <Card>
           <CardHeader>
             <CardTitle className="flex items-center space-x-2">
-              <Bot className="h-5 w-5" />
+              <img src="/copilot-logo.png" alt="Copilot" className="h-12 w-12 object-contain" />
               <span>Ask Your Safety Question</span>
             </CardTitle>
           </CardHeader>

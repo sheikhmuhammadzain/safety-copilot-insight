@@ -426,7 +426,7 @@ export default function Landing() {
           <FeatureCard
             title="Copilot Q&A"
             desc="Ask natural questions to analyze data."
-            icon={<Bot className="h-5 w-5" />}
+            icon={<img src="/copilot-logo.png" alt="Copilot" className="h-5 w-5 object-contain" />}
             iconClass="bg-amber-100 text-amber-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400"
             gradientClass="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent"
