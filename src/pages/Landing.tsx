@@ -8,6 +8,7 @@ import { Spotlight } from "@/components/ui/spotlight";
 import { TestimonialsSection } from "@/components/ui/testimonials-with-marquee";
 import { Typewriter } from "@/components/ui/typewriter";
 import SplashCursor from "@/components/ui/splash-cursor";
+import { Highlighter } from "@/components/ui/highlighter";
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -249,7 +250,15 @@ export default function Landing() {
             <p className={`mt-4 text-base md:text-lg text-white/80 leading-relaxed transition-all duration-1000 delay-500 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}>
-              Explore incidents, hazards, audits and inspections in one place. Ask natural-language questions, view live maps, and make faster decisions.
+              Explore{" "}
+              <Highlighter action="underline" color="#84cc16" strokeWidth={2} animationDuration={800} isView={true}>
+                incidents, hazards, audits
+              </Highlighter>{" "}
+              and inspections in one place. Ask{" "}
+              <Highlighter action="highlight" color="rgba(132, 204, 22, 0.3)" strokeWidth={1.5} animationDuration={1000} isView={true}>
+                natural-language questions
+              </Highlighter>
+              , view live maps, and make faster decisions.
             </p>
             <div className={`mt-8 flex flex-wrap items-center justify-center gap-3 transition-all duration-1000 delay-700 ${
               isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
