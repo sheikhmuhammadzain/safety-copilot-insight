@@ -541,18 +541,36 @@ export default function Landing() {
       <section className="mx-auto max-w-7xl px-6 pb-24">
         <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
           <div 
-            className="rounded-3xl border border-white/15 p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] transition-shadow duration-500"
+            className="relative rounded-3xl border border-white/15 p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] transition-shadow duration-500"
             style={{ 
-              backgroundColor: 'rgba(255, 255, 255, 0.1)',
-              backdropFilter: 'blur(24px)',
-              WebkitBackdropFilter: 'blur(24px)'
+              backgroundColor: 'rgba(0, 0, 0, 0.90)',
+              backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
             }}
           >
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Ready to explore your safety data?</h2>
             <p className="mt-2 text-white/80">Jump straight into the dashboard. No sign in required.</p>
             <div className="mt-6">
-              <Link to="/dashboard" className="group inline-flex items-center gap-2 rounded-lg bg-primary px-6 py-3 font-medium text-primary-foreground shadow transition-all duration-300 hover:scale-105 hover:shadow-lg">
-                Go to Dashboard <ArrowRight className="h-4 w-4 transition-transform duration-300 group-hover:translate-x-1" />
+              <Link 
+                to="/dashboard" 
+                className="group relative inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 font-semibold text-primary-foreground transition-all duration-300 hover:translate-y-[-4px] active:translate-y-[2px]"
+                style={{
+                  boxShadow: '0 6px 0 0 rgb(100, 150, 20), 0 8px 20px rgba(0, 0, 0, 0.4)',
+                  transform: 'translateY(0)',
+                }}
+                onMouseEnter={(e) => {
+                  e.currentTarget.style.boxShadow = '0 8px 0 0 rgb(100, 150, 20), 0 12px 30px rgba(0, 0, 0, 0.5)';
+                }}
+                onMouseLeave={(e) => {
+                  e.currentTarget.style.boxShadow = '0 6px 0 0 rgb(100, 150, 20), 0 8px 20px rgba(0, 0, 0, 0.4)';
+                }}
+                onMouseDown={(e) => {
+                  e.currentTarget.style.boxShadow = '0 2px 0 0 rgb(100, 150, 20), 0 4px 10px rgba(0, 0, 0, 0.3)';
+                }}
+                onMouseUp={(e) => {
+                  e.currentTarget.style.boxShadow = '0 8px 0 0 rgb(100, 150, 20), 0 12px 30px rgba(0, 0, 0, 0.5)';
+                }}
+              >
+                Go to Dashboard <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
               </Link>
             </div>
           </div>
@@ -671,11 +689,10 @@ function Stat({ value, label }: { value: string; label: string }) {
 function UseCase({ title, bullet1, bullet2, bullet3 }: { title: string; bullet1: string; bullet2: string; bullet3: string }) {
   return (
     <div 
-      className="group rounded-2xl border border-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3"
+      className="group relative rounded-2xl border border-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3"
       style={{ 
-        backgroundColor: 'rgba(255, 255, 255, 0.1)',
-        backdropFilter: 'blur(24px)',
-        WebkitBackdropFilter: 'blur(24px)'
+        backgroundColor: 'rgba(0, 0, 0, 0.85)',
+        backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
       }}
     >
       <div className="text-base font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
