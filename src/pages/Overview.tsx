@@ -154,8 +154,17 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Monthly count of hazards over time. Use it to see rising or improving safety trends.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Hazards Trend</p>
+                  <p className="text-sm mb-2">Shows the number of hazards identified each month over time.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Total Hazards Identified per Month
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Rising trend:</strong> More hazards being identified (could indicate better reporting)</li>
+                    <li>• <strong>Falling trend:</strong> Fewer hazards (could indicate improved conditions or underreporting)</li>
+                    <li>• <strong>Use case:</strong> Track proactive hazard identification efforts</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -171,8 +180,17 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Monthly incident count trend. Peaks indicate periods with more incidents; valleys indicate improvement.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Incidents Trend</p>
+                  <p className="text-sm mb-2">Displays the total number of incidents reported each month.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Total Incidents per Month
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Peaks:</strong> Months with higher incident counts (investigate causes)</li>
+                    <li>• <strong>Valleys:</strong> Months with fewer incidents (positive trend)</li>
+                    <li>• <strong>Use case:</strong> Monitor reactive safety performance over time</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -188,8 +206,17 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Distribution of incident types (counts). Quickly see which categories occur most often.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Incident Types Distribution</p>
+                  <p className="text-sm mb-2">Shows how many incidents fall into each category or type.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Number of Incidents per Type
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Highest bars:</strong> Most common incident types</li>
+                    <li>• <strong>Categories:</strong> Near-miss, property damage, injury, environmental, etc.</li>
+                    <li>• <strong>Use case:</strong> Prioritize prevention efforts on most frequent types</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -203,8 +230,17 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Pareto of root causes with cumulative percentage. Focus on the vital few causes driving most incidents.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Root Cause Pareto Chart</p>
+                  <p className="text-sm mb-2">Identifies the top root causes responsible for most incidents (80/20 rule).</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Cumulative % = (Sum of Top Causes / Total) × 100
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Bars:</strong> Count of incidents per root cause</li>
+                    <li>• <strong>Line:</strong> Cumulative percentage (aim for 80% with fewest causes)</li>
+                    <li>• <strong>Use case:</strong> Focus corrective actions on top 3-5 causes for maximum impact</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -220,8 +256,17 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Most frequent inspection findings. Use this to prioritize corrective actions.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Top Inspection Findings</p>
+                  <p className="text-sm mb-2">Lists the most commonly identified issues during safety inspections.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Number of Times Finding Was Reported
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Top findings:</strong> Issues that appear most frequently across inspections</li>
+                    <li>• <strong>Examples:</strong> Housekeeping, PPE violations, equipment issues</li>
+                    <li>• <strong>Use case:</strong> Prioritize corrective actions and training needs</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>
@@ -237,8 +282,18 @@ export default function Overview() {
                     <Info className="h-4 w-4" />
                   </button>
                 </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-xs text-slate-700">
-                  Average metric by department and month. Darker cells indicate higher values in that period.
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Department × Month Heatmap</p>
+                  <p className="text-sm mb-2">Shows average risk/severity scores by department and month. Helps identify patterns.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Avg = Sum(Scores) / Count per Department-Month
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Color scale:</strong> Light = low values, Dark = high values</li>
+                    <li>• <strong>Rows:</strong> Different departments</li>
+                    <li>• <strong>Columns:</strong> Different months</li>
+                    <li>• <strong>Use case:</strong> Spot departments or time periods with elevated risk</li>
+                  </ul>
                 </TooltipContent>
               </Tooltip>
             </TooltipProvider>

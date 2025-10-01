@@ -14,6 +14,7 @@ import Workbooks from "./pages/WorkbooksReal";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
 import AdvancedAnalytics from "./pages/AdvancedAnalytics";
+import DataHealth from "./pages/DataHealth";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Wordclouds from "./pages/Wordclouds";
@@ -41,6 +42,7 @@ const App = () => (
             <Route path="/analytics" element={<Analytics />} />
             <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="/workbooks" element={<Workbooks />} />
+            <Route path="/data-health" element={<DataHealth />} />
             <Route path="/settings" element={<Settings />} />
             {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
             <Route path="*" element={<NotFound />} />

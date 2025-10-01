@@ -494,8 +494,33 @@ export default function AdvancedAnalytics() {
                 {/* TRIR */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">TRIR</CardTitle>
-                    <CardDescription>Total Recordable Incident Rate</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm">TRIR</CardTitle>
+                        <CardDescription>Total Recordable Incident Rate</CardDescription>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p className="font-semibold mb-2">TRIR - Total Recordable Incident Rate</p>
+                            <p className="text-sm mb-2">Measures the number of recordable work-related injuries per 200,000 hours worked.</p>
+                            <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                              TRIR = (Total Recordable Cases × 200,000) / Total Hours Worked
+                            </p>
+                            <ul className="text-xs space-y-1">
+                              <li>• <strong>Recordable cases:</strong> Injuries requiring medical treatment beyond first aid</li>
+                              <li>• <strong>200,000 hours:</strong> Equivalent to 100 employees working 40 hours/week for 50 weeks</li>
+                              <li>• <strong>Industry benchmark:</strong> Below 3.0 is considered good</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold" style={{ color: kpiSummary.trir.color }}>
@@ -511,8 +536,33 @@ export default function AdvancedAnalytics() {
                 {/* LTIR */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">LTIR</CardTitle>
-                    <CardDescription>Lost Time Incident Rate</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm">LTIR</CardTitle>
+                        <CardDescription>Lost Time Incident Rate</CardDescription>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p className="font-semibold mb-2">LTIR - Lost Time Incident Rate</p>
+                            <p className="text-sm mb-2">Measures incidents that result in an employee being unable to work the next scheduled shift.</p>
+                            <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                              LTIR = (Lost Time Incidents × 200,000) / Total Hours Worked
+                            </p>
+                            <ul className="text-xs space-y-1">
+                              <li>• <strong>Lost time incident:</strong> Employee misses at least one full day of work</li>
+                              <li>• <strong>Excludes:</strong> Day of injury and first aid cases</li>
+                              <li>• <strong>Industry benchmark:</strong> Below 1.0 is considered excellent</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">
@@ -527,8 +577,33 @@ export default function AdvancedAnalytics() {
                 {/* PSTIR */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">PSTIR</CardTitle>
-                    <CardDescription>Process Safety Total Incident Rate</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm">PSTIR</CardTitle>
+                        <CardDescription>Process Safety Total Incident Rate</CardDescription>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p className="font-semibold mb-2">PSTIR - Process Safety Total Incident Rate</p>
+                            <p className="text-sm mb-2">Measures incidents related to process safety (fires, explosions, chemical releases).</p>
+                            <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                              PSTIR = (Process Safety Events × 200,000) / Total Hours Worked
+                            </p>
+                            <ul className="text-xs space-y-1">
+                              <li>• <strong>Process safety events:</strong> Unplanned releases, fires, explosions</li>
+                              <li>• <strong>Focus:</strong> Major hazard scenarios and catastrophic risks</li>
+                              <li>• <strong>Industry benchmark:</strong> Below 0.5 is considered good</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold">
@@ -543,8 +618,33 @@ export default function AdvancedAnalytics() {
                 {/* Near-Miss Ratio */}
                 <Card>
                   <CardHeader>
-                    <CardTitle className="text-sm">Near-Miss Ratio</CardTitle>
-                    <CardDescription>Near-Miss to Incident Ratio</CardDescription>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <CardTitle className="text-sm">Near-Miss Ratio</CardTitle>
+                        <CardDescription>Near-Miss to Incident Ratio</CardDescription>
+                      </div>
+                      <TooltipProvider>
+                        <Tooltip>
+                          <TooltipTrigger asChild>
+                            <Button variant="ghost" size="icon" className="h-6 w-6">
+                              <Info className="h-3 w-3" />
+                            </Button>
+                          </TooltipTrigger>
+                          <TooltipContent className="max-w-sm">
+                            <p className="font-semibold mb-2">Near-Miss Ratio</p>
+                            <p className="text-sm mb-2">Compares near-miss reports to actual incidents. Higher ratio indicates better safety culture.</p>
+                            <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                              Ratio = Near-Miss Reports / Total Incidents
+                            </p>
+                            <ul className="text-xs space-y-1">
+                              <li>• <strong>Near-miss:</strong> Event that could have caused injury but didn't</li>
+                              <li>• <strong>Good ratio:</strong> 10:1 or higher (10 near-misses per incident)</li>
+                              <li>• <strong>Indicates:</strong> Strong reporting culture and proactive hazard identification</li>
+                            </ul>
+                          </TooltipContent>
+                        </Tooltip>
+                      </TooltipProvider>
+                    </div>
                   </CardHeader>
                   <CardContent>
                     <div className="text-3xl font-bold" style={{ color: kpiSummary.near_miss_ratio.color }}>
@@ -661,8 +761,35 @@ export default function AdvancedAnalytics() {
           {riskTrend && !loading && (
             <Card>
               <CardHeader>
-                <CardTitle>Risk Trend Projection</CardTitle>
-                <CardDescription>Average risk score trends and forecast</CardDescription>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle>Risk Trend Projection</CardTitle>
+                    <CardDescription>Average risk score trends and forecast</CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-8 w-8">
+                          <Info className="h-4 w-4" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="font-semibold mb-2">Risk Trend Projection</p>
+                        <p className="text-sm mb-2">Shows historical average risk scores and predicts future trends.</p>
+                        <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                          Avg Risk = Sum(Risk Scores) / Total Events
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• <strong>Risk score:</strong> Calculated from severity × likelihood (1-5 scale)</li>
+                          <li>• <strong>Historical data:</strong> Past 6 months of actual risk scores</li>
+                          <li>• <strong>Forecast:</strong> Next 3 months prediction based on trend</li>
+                          <li>• <strong>Trend analysis:</strong> Shows if risks are increasing or decreasing</li>
+                        </ul>
+                        <p className="text-xs mt-2 text-muted-foreground">Lower scores indicate better risk management</p>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
               </CardHeader>
               <CardContent>
                 <ResponsiveContainer width="100%" height={300}>
