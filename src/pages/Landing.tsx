@@ -540,7 +540,14 @@ export default function Landing() {
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
         <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
-          <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] transition-shadow duration-500">
+          <div 
+            className="rounded-3xl border border-white/15 p-10 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.35)] transition-shadow duration-500"
+            style={{ 
+              backgroundColor: 'rgba(255, 255, 255, 0.1)',
+              backdropFilter: 'blur(24px)',
+              WebkitBackdropFilter: 'blur(24px)'
+            }}
+          >
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Ready to explore your safety data?</h2>
             <p className="mt-2 text-white/80">Jump straight into the dashboard. No sign in required.</p>
             <div className="mt-6">
@@ -663,7 +670,14 @@ function Stat({ value, label }: { value: string; label: string }) {
 
 function UseCase({ title, bullet1, bullet2, bullet3 }: { title: string; bullet1: string; bullet2: string; bullet3: string }) {
   return (
-    <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3">
+    <div 
+      className="group rounded-2xl border border-white/15 p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.08] hover:border-white/30 hover:-translate-y-3"
+      style={{ 
+        backgroundColor: 'rgba(255, 255, 255, 0.1)',
+        backdropFilter: 'blur(24px)',
+        WebkitBackdropFilter: 'blur(24px)'
+      }}
+    >
       <div className="text-base font-semibold text-white transition-colors duration-300 group-hover:text-white">{title}</div>
       <ul className="mt-3 space-y-2 text-sm text-white/80">
         <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet1}</li>
