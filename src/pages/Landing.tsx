@@ -12,6 +12,7 @@ import { Typewriter } from "@/components/ui/typewriter";
 import SplashCursor from "@/components/ui/splash-cursor";
 import { Highlighter } from "@/components/ui/highlighter";
 import SplitText from "@/components/ui/SplitText";
+import { ShimmerButton } from "@/components/ui/shimmer-button";
 
 gsap.registerPlugin(useGSAP);
 
@@ -225,7 +226,7 @@ export default function Landing() {
     },
   ];
   return (
-    <div className="relative min-h-screen bg-grid-dark text-white">
+    <div className="relative min-h-screen bg-black text-white bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem]">
       <SplashCursor 
         SIM_RESOLUTION={128}
         DYE_RESOLUTION={512}
@@ -237,10 +238,10 @@ export default function Landing() {
         PRESSURE={0.6}
         COLOR_UPDATE_SPEED={8}
       />
-      <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
+      <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="white" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
-        <nav className="relative rounded-full border border-white/10 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
+        <nav className="relative rounded-full border border-white/20 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
           {/* Gradient overlay */}
           <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
           
@@ -351,9 +352,19 @@ export default function Landing() {
                   <ArrowRight className="h-4 w-4 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-2 group-hover:scale-110" />
                 </Link>
               </div>
-              <a href="#features" className="group inline-flex items-center gap-2 rounded-lg border border-white/15 bg-white/5 px-5 py-3 text-white transition-all duration-300 hover:bg-white/10 hover:border-white/25 hover:scale-105">
-                Learn More
-                <ArrowRight className="h-4 w-4 opacity-60 transition-all duration-300 group-hover:opacity-100 group-hover:translate-x-1" />
+              <a href="#features">
+                <ShimmerButton 
+                  className="shadow-2xl"
+                  shimmerColor="#84cc16"
+                  shimmerSize="0.1em"
+                  background="rgba(0, 0, 0, 0.8)"
+                  borderRadius="100px"
+                >
+                  <span className="inline-flex items-center gap-2 text-center text-sm font-medium tracking-tight whitespace-nowrap text-white">
+                    Learn More
+                    <ArrowRight className="h-4 w-4" />
+                  </span>
+                </ShimmerButton>
               </a>
             </div>
           </div>
@@ -368,6 +379,31 @@ export default function Landing() {
             }}
           >
             <div className="relative group">
+              {/* Animated fog/smog layers */}
+              <div className="absolute -inset-20 pointer-events-none overflow-visible z-0">
+                {/* Fog layer 1 */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-1"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)'
+                  }}
+                />
+                {/* Fog layer 2 */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-2"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)'
+                  }}
+                />
+                {/* Fog layer 3 */}
+                <div 
+                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-3"
+                  style={{
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)'
+                  }}
+                />
+              </div>
+
               {/* Green glow layers */}
               <div className="absolute -inset-1 bg-gradient-to-r from-primary/40 via-primary/30 to-primary/40 rounded-[32px] blur-2xl opacity-40 group-hover:opacity-70 transition-opacity duration-700 animate-pulse" />
               <div className="absolute -inset-0.5 bg-gradient-to-br from-primary/50 via-transparent to-primary/50 rounded-[30px] blur-xl opacity-0 group-hover:opacity-60 transition-opacity duration-700" />
@@ -452,7 +488,7 @@ export default function Landing() {
 
 
       {/* Stats strip */}
-      <section id="stats" className="border-y border-white/10">
+      <section id="stats" className="border-y border-white/10 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
             <Stat value="3.1k+" label="Incidents Analyzed" />
@@ -517,7 +553,7 @@ export default function Landing() {
       </section>
 
       {/* Footer */}
-      <footer className="border-t border-white/10 bg-transparent">
+      <footer className="border-t border-white/10 bg-black/60 backdrop-blur-2xl">
         <div className="mx-auto max-w-7xl px-6 py-12">
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
             <div className="rounded-3xl border border-white/15 bg-white/10 backdrop-blur-xl p-8 md:p-10 shadow-[0_10px_30px_rgba(0,0,0,0.25)] hover:shadow-[0_15px_35px_rgba(0,0,0,0.3)] transition-shadow duration-500">

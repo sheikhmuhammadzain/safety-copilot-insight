@@ -156,3 +156,100 @@ All colors MUST be HSL for consistency */
     letter-spacing: var(--tracking-normal);
   }
 }
+
+/* Shimmer Button Animations */
+@keyframes shimmer-slide {
+  to {
+    transform: translate(calc(100cqw - 100%), 0);
+  }
+}
+
+@keyframes spin-around {
+  0% {
+    transform: translateZ(0) rotate(0);
+  }
+  15%,
+  35% {
+    transform: translateZ(0) rotate(90deg);
+  }
+  65%,
+  85% {
+    transform: translateZ(0) rotate(270deg);
+  }
+  100% {
+    transform: translateZ(0) rotate(360deg);
+  }
+}
+
+.animate-shimmer-slide {
+  animation: shimmer-slide var(--speed) ease-in-out infinite alternate;
+}
+
+.animate-spin-around {
+  animation: spin-around calc(var(--speed) * 2) infinite linear;
+}
+
+/* Fog/Smog Drift Animations */
+@keyframes fog-drift-1 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.3;
+  }
+  33% {
+    transform: translate(30px, -20px) scale(1.1);
+    opacity: 0.5;
+  }
+  66% {
+    transform: translate(-20px, 30px) scale(0.9);
+    opacity: 0.4;
+  }
+}
+
+@keyframes fog-drift-2 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.2;
+  }
+  33% {
+    transform: translate(-40px, 25px) scale(1.15);
+    opacity: 0.4;
+  }
+  66% {
+    transform: translate(35px, -30px) scale(0.85);
+    opacity: 0.3;
+  }
+}
+
+@keyframes fog-drift-3 {
+  0%, 100% {
+    transform: translate(0, 0) scale(1);
+    opacity: 0.25;
+  }
+  33% {
+    transform: translate(25px, 35px) scale(0.95);
+    opacity: 0.35;
+  }
+  66% {
+    transform: translate(-30px, -25px) scale(1.05);
+    opacity: 0.45;
+  }
+}
+
+.animate-fog-drift-1 {
+  animation: fog-drift-1 20s ease-in-out infinite;
+}
+
+.animate-fog-drift-2 {
+  animation: fog-drift-2 25s ease-in-out infinite;
+  animation-delay: 5s;
+}
+
+.animate-fog-drift-3 {
+  animation: fog-drift-3 30s ease-in-out infinite;
+  animation-delay: 10s;
+}
+
+/* Radial gradient utility */
+.bg-gradient-radial {
+  background-image: radial-gradient(circle, var(--tw-gradient-stops));
+}
