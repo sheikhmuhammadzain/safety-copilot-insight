@@ -13,6 +13,8 @@ import SplashCursor from "@/components/ui/splash-cursor";
 import { Highlighter } from "@/components/ui/highlighter";
 import SplitText from "@/components/ui/SplitText";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
+import CurvedLoop from "@/components/ui/CurvedLoop";
+import GlassSurface from "@/components/ui/GlassSurface";
 
 gsap.registerPlugin(useGSAP);
 
@@ -241,11 +243,18 @@ export default function Landing() {
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="white" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
-        <nav className="relative rounded-full border border-white/20 backdrop-blur-xl shadow-[0_8px_32px_rgba(0,0,0,0.4)] px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 md:py-3.5 transition-all duration-500 hover:border-white/20 hover:bg-black/50 hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)]">
-          {/* Gradient overlay */}
-          <div className="absolute inset-0 rounded-full bg-gradient-to-r from-white/[0.03] via-transparent to-white/[0.03] pointer-events-none" />
-          
-          <div className="relative flex items-center justify-between gap-1 sm:gap-2">
+        <GlassSurface
+          width="100%"
+          height="auto"
+          borderRadius={9999}
+          brightness={10}
+          opacity={0.2}
+          blur={15}
+          displace={5}
+          className="shadow-[0_8px_32px_rgba(0,0,0,0.4)] hover:shadow-[0_12px_48px_rgba(0,0,0,0.5)] transition-all duration-500"
+        >
+          <nav className="relative w-full px-2 sm:px-3 md:px-6 py-2 sm:py-2.5 md:py-3.5">
+            <div className="relative flex items-center justify-between gap-1 sm:gap-2">
             {/* Logo */}
             <Link to="/" className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 group flex-shrink-0">
               <div className="relative">
@@ -307,6 +316,7 @@ export default function Landing() {
             </div>
           </div>
         </nav>
+        </GlassSurface>
       </header>
 
       {/* Hero */}
@@ -536,6 +546,18 @@ export default function Landing() {
           />
         </div>
       </section> */}
+
+      {/* Curved Loop Marquee */}
+      <section className="w-full pb-32 overflow-hidden">
+        <CurvedLoop 
+          marqueeText="Safety  ✦  Analytics  ✦ Insights  ✦  Prevention  ✦  Compliance ✦  Excellence  ✦"
+          speed={2}
+          curveAmount={400}
+          direction="left"
+          interactive={true}
+          className="text-primary"
+        />
+      </section>
 
       {/* CTA */}
       <section className="mx-auto max-w-7xl px-6 pb-24">
