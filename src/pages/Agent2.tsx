@@ -315,7 +315,7 @@ export default function Agent2() {
     const params = new URLSearchParams({
       question: q,
       dataset: d,
-      model: "x-ai/grok-4-fast:free"
+      model: "x-ai/grok-code-fast-1"
     });
 
     const ws = new WebSocket(`${WS_BASE}/ws/agent/stream?${params}`);

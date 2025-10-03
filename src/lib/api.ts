@@ -241,3 +241,96 @@ export async function getChartInsightsForEndpoint(endpoint: string, params?: Rec
   const res = await api.get<ChartInsightsResponse>(path, { params });
   return res.data;
 }
+
+// Filter Options
+export type FilterOption = {
+  value: string;
+  label: string;
+  count: number;
+};
+
+export type DateRangeInfo = {
+  min_date: string | null;
+  max_date: string | null;
+  total_records: number;
+};
+
+export type NumericRange = {
+  min: number;
+  max: number;
+  avg: number;
+  median: number;
+  count: number;
+};
+
+export type FilterOptionsResponse = {
+  dataset: string;
+  date_range: DateRangeInfo;
+  departments: FilterOption[];
+  locations: FilterOption[];
+  sublocations: FilterOption[];
+  statuses: FilterOption[];
+  incident_types: FilterOption[];
+  violation_types: FilterOption[];
+  severity_range: NumericRange;
+  risk_range: NumericRange;
+  total_records: number;
+};
+
+export type CombinedFilterOptionsResponse = {
+  incident: FilterOptionsResponse;
+  hazard: FilterOptionsResponse;
+  last_updated: string;
+};
+
+export async function getFilterOptions(dataset: "incident" | "hazard" = "incident") {
+  const res = await api.get<FilterOptionsResponse>("/analytics/filter-options", {
+    params: { dataset },
+  });
+  return res.data;
+}
+
+export async function getCombinedFilterOptions() {
+  const res = await api.get<CombinedFilterOptionsResponse>("/analytics/filter-options/combined");
+  return res.data;
+}
+
+// Enhanced Tooltips
+export type CountItem = {
+  name: string;
+  count: number;
+};
+
+export type ScoreStats = {
+  avg: number;
+  max: number;
+  min: number;
+};
+
+export type RecentItem = {
+  title: string;
+  department: string;
+  date: string;
+  severity: number | null;
+};
+
+export type MonthDetailedData = {
+  month: string;
+  total_count: number;
+  departments: CountItem[];
+  types: CountItem[];
+  severity: ScoreStats | null;
+  risk: ScoreStats | null;
+  recent_items: RecentItem[];
+};
+
+export type DetailedTrendResponse = {
+  labels: string[];
+  series: { name: string; data: number[] }[];
+  details: MonthDetailedData[];
+};
+
+export async function getDetailedTrend(params?: Record<string, any>) {
+  const res = await api.get<DetailedTrendResponse>("/analytics/data/incident-trend-detailed", { params });
+  return res.data;
+}
