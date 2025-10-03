@@ -1121,7 +1121,7 @@ export default function Agent2() {
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground pt-1">
-                          Generating response...
+                          Thinking...
                         </div>
                       )}
                     </div>
