@@ -652,6 +652,18 @@ export function ChatBubble() {
                             h1: ({node, ...props}) => <h1 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />,
                             h2: ({node, ...props}) => <h2 className="text-base font-semibold text-gray-900 mb-2 mt-3" {...props} />,
                             h3: ({node, ...props}) => <h3 className="text-sm font-semibold text-gray-900 mb-1 mt-2" {...props} />,
+                            table: ({node, children, ...props}) => (
+                              <div className="my-4 overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                                <table className="min-w-full divide-y divide-gray-200" {...props}>
+                                  {children}
+                                </table>
+                              </div>
+                            ),
+                            thead: ({node, ...props}) => <thead className="bg-gradient-to-r from-primary/10 to-lime-600/10" {...props} />,
+                            tbody: ({node, ...props}) => <tbody className="bg-white divide-y divide-gray-200" {...props} />,
+                            tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
+                            th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />,
+                            td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-gray-900" {...props} />,
                           }}
                         >
                           {msg.analysis}

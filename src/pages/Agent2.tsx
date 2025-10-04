@@ -881,7 +881,20 @@ export default function Agent2() {
                                   <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono break-all" {...props}>{children}</code>
                                 ) : (
                                   <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words" {...props}>{children}</code>
-                                )
+                                ),
+                              // Add table renderers so saved messages display tables nicely too
+                              table: ({node, children, ...props}) => (
+                                <div className="my-4 overflow-x-auto rounded-lg border border-border shadow-sm">
+                                  <table className="min-w-full divide-y divide-border" {...props}>
+                                    {children}
+                                  </table>
+                                </div>
+                              ),
+                              thead: ({node, ...props}) => <thead className="bg-muted/50" {...props} />,
+                              tbody: ({node, ...props}) => <tbody className="bg-card divide-y divide-border" {...props} />,
+                              tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
+                              th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
+                              td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
                             }}
                           >
                             {msg.analysis}
