@@ -198,12 +198,53 @@ export default function Agent2() {
   const isAnswerModeRef = useRef<boolean>(false); // Track if we switched to answer mode
   const bottomRef = useRef<HTMLDivElement | null>(null); // Ref for auto-scroll to bottom
 
-  // Auto-scroll to bottom when response completes
+  // Auto-scroll to bottom only when response completes (not during streaming)
+  // Removed auto-scroll during streaming to prevent jittery behavior
+
+  // Save message to history when streaming completes
   useEffect(() => {
-    if (!isStreaming && bottomRef.current) {
-      bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    // Only save when streaming stops and we have a message ID
+    if (!isStreaming && currentMessageIdRef.current && currentQuestion) {
+      const messageId = currentMessageIdRef.current;
+      
+      // Check if already saved
+      if (savedMessageIdsRef.current.has(messageId)) {
+        return;
+      }
+      
+      // Check if we have content to save
+      const hasContent = Boolean(
+        currentQuestion ||
+        currentAnalysis ||
+        finalAnswer ||
+        toolCalls.length > 0 ||
+        response
+      );
+      
+      if (!hasContent) {
+        return;
+      }
+      
+      console.log('💾 Saving message to history:', messageId, currentQuestion);
+      
+      // Mark as saved
+      savedMessageIdsRef.current.add(messageId);
+      
+      // Save to history
+      setConversationHistory(prev => [
+        ...prev,
+        {
+          id: messageId,
+          question: currentQuestion,
+          dataset: currentDataset,
+          toolCalls: toolCalls.slice(),
+          analysis: currentAnalysis || finalAnswer || response?.analysis || "",
+          response: response || null,
+          timestamp: Date.now(),
+        },
+      ]);
     }
-  }, [isStreaming]);
+  }, [isStreaming, currentQuestion, currentAnalysis, finalAnswer, toolCalls, response, currentDataset]);
 
   // Load conversation from localStorage on mount
   useEffect(() => {
@@ -284,8 +325,11 @@ export default function Agent2() {
     const d = overrideDataset ?? dataset;
     if (!q) return;
 
+    // Generate unique message ID FIRST
+    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
+    currentMessageIdRef.current = messageId;
+    
     // Clear previous message states before starting new one
-    setCurrentQuestion("");
     setResponse(null);
     setCurrentAnalysis("");
     setFinalAnswer("");
@@ -296,11 +340,7 @@ export default function Agent2() {
     setCurrentStage("");
     isAnswerModeRef.current = false; // Reset answer mode
     
-    // Generate unique message ID and mark as unsaved
-    const messageId = `msg_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-    currentMessageIdRef.current = messageId;
-    
-    // Set new question and dataset
+    // Set new question and dataset AFTER clearing
     setCurrentQuestion(q);
     setCurrentDataset(d);
     
@@ -315,7 +355,7 @@ export default function Agent2() {
     const params = new URLSearchParams({
       question: q,
       dataset: d,
-      model: "x-ai/grok-code-fast-1"
+      model: "z-ai/glm-4.5-air:free"
     });
 
     const ws = new WebSocket(`${WS_BASE}/ws/agent/stream?${params}`);
@@ -424,46 +464,28 @@ export default function Agent2() {
             }
           }
           
-          // Save to conversation history immediately using state callbacks to capture latest values
-          setToolCalls(latestToolCalls => {
-            setCurrentAnalysis(latestAnalysis => {
-              setFinalAnswer(latestFinalAnswer => {
-                setResponse(latestResponse => {
-                  const messageId = currentMessageIdRef.current;
-                  if (messageId && !savedMessageIdsRef.current.has(messageId)) {
-                    console.log('💾 Saving message immediately on complete:', messageId);
-                    savedMessageIdsRef.current.add(messageId);
-                    
-                    setConversationHistory(prev => [
-                      ...prev,
-                      {
-                        id: messageId,
-                        question: currentQuestion,
-                        dataset: currentDataset,
-                        toolCalls: latestToolCalls.slice(),
-                        analysis: latestAnalysis || latestFinalAnswer || data.data?.analysis || "",
-                        response: latestResponse || data.data || null,
-                        timestamp: Date.now(),
-                      },
-                    ]);
-                  }
-                  return latestResponse;
-                });
-                return latestFinalAnswer;
-              });
-              return latestAnalysis;
-            });
-            return latestToolCalls;
-          });
-          
           setIsStreaming(false);
           setLoading(false);
           ws.close();
           
-          // Scroll to bottom after a brief delay to ensure DOM is updated
+          // Clear current message states after saving to prevent duplicate rendering
           setTimeout(() => {
-            bottomRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            setCurrentQuestion("");
+            setCurrentAnalysis("");
+            setFinalAnswer("");
+            setToolCalls([]);
+            setResponse(null);
+            setThinkingText("");
+            currentMessageIdRef.current = null;
           }, 100);
+          
+          // Scroll to bottom only after response is complete and DOM is fully updated
+          // Use longer delay to avoid jittery behavior
+          setTimeout(() => {
+            if (bottomRef.current) {
+              bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+            }
+          }, 300);
           
           toast({
             title: "Analysis Complete",

@@ -18,13 +18,26 @@ import DataHealth from "./pages/DataHealth";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
 import Wordclouds from "./pages/Wordclouds";
-import FloatingChatButton from "@/components/ui/FloatingChatButton";
+import { ChatBubble } from "@/components/chat/ChatBubble";
+import { useLocation } from "react-router-dom";
 
 const queryClient = new QueryClient();  
+
+// Component to conditionally render ChatBubble based on route
+const ConditionalChatBubble = () => {
+  const location = useLocation();
+  
+  // Don't show chat bubble on Agent page (full interface) or Landing page
+  const showChatBubble = location.pathname !== "/agent" && location.pathname !== "/";
+  
+  return showChatBubble ? <ChatBubble /> : null;
+};
 
 const App = () => (
   <QueryClientProvider client={queryClient}>
     <TooltipProvider>
+      <Toaster />
+      <Sonner />
       <BrowserRouter>
         <Routes>
           {/* Public landing page without sidebar layout */}
@@ -48,8 +61,8 @@ const App = () => (
             <Route path="*" element={<NotFound />} />
           </Route>
         </Routes>
-        {/* Global floating chat button */}
-        <FloatingChatButton />
+        {/* Global floating chat bubble - only show when not on Agent or Landing page */}
+        <ConditionalChatBubble />
       </BrowserRouter>
     </TooltipProvider>
   </QueryClientProvider>
