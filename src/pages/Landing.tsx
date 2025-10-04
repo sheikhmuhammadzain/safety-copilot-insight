@@ -15,6 +15,7 @@ import SplitText from "@/components/ui/SplitText";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
 import CurvedLoop from "@/components/ui/CurvedLoop";
 import GlassSurface from "@/components/ui/GlassSurface";
+import CountUp from "@/components/ui/CountUp";
 
 gsap.registerPlugin(useGSAP);
 
@@ -501,16 +502,16 @@ export default function Landing() {
       <section id="stats" className="border-y border-white/10 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
-            <Stat value="3.1k+" label="Incidents Analyzed" />
+            <Stat value={3.1} suffix="k+" label="Incidents Analyzed" />
           </div>
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200">
-            <Stat value="1.2k+" label="Hazards Tracked" />
+            <Stat value={1.2} suffix="k+" label="Hazards Tracked" />
           </div>
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300">
-            <Stat value="89%" label="Audit Completion" />
+            <Stat value={89} suffix="%" label="Audit Completion" />
           </div>
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400">
-            <Stat value="24" label="Facility Zones" />
+            <Stat value={24} suffix="" label="Facility Zones" />
           </div>
         </div>
       </section>
@@ -571,29 +572,19 @@ export default function Landing() {
           >
             <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white">Ready to explore your safety data?</h2>
             <p className="mt-2 text-white/80">Jump straight into the dashboard. No sign in required.</p>
-            <div className="mt-6">
-              <Link 
-                to="/dashboard" 
-                className="group relative inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 font-semibold text-primary-foreground transition-all duration-300 hover:translate-y-[-4px] active:translate-y-[2px]"
-                style={{
-                  boxShadow: '0 6px 0 0 rgb(100, 150, 20), 0 8px 20px rgba(0, 0, 0, 0.4)',
-                  transform: 'translateY(0)',
-                }}
-                onMouseEnter={(e) => {
-                  e.currentTarget.style.boxShadow = '0 8px 0 0 rgb(100, 150, 20), 0 12px 30px rgba(0, 0, 0, 0.5)';
-                }}
-                onMouseLeave={(e) => {
-                  e.currentTarget.style.boxShadow = '0 6px 0 0 rgb(100, 150, 20), 0 8px 20px rgba(0, 0, 0, 0.4)';
-                }}
-                onMouseDown={(e) => {
-                  e.currentTarget.style.boxShadow = '0 2px 0 0 rgb(100, 150, 20), 0 4px 10px rgba(0, 0, 0, 0.3)';
-                }}
-                onMouseUp={(e) => {
-                  e.currentTarget.style.boxShadow = '0 8px 0 0 rgb(100, 150, 20), 0 12px 30px rgba(0, 0, 0, 0.5)';
-                }}
-              >
-                Go to Dashboard <ArrowRight className="h-5 w-5 transition-transform duration-300 group-hover:translate-x-1" />
-              </Link>
+            <div className="mt-6 flex justify-center">
+              <div className="relative inline-block">
+                {/* Green glow effect */}
+                <div className="absolute -inset-4 bg-primary/30 rounded-2xl blur-2xl opacity-60 group-hover:opacity-100 transition-opacity duration-500 animate-pulse" />
+                <div className="absolute -inset-2 bg-primary/40 rounded-xl blur-xl opacity-0 group-hover:opacity-80 transition-opacity duration-500" />
+                
+                <Link 
+                  to="/dashboard" 
+                  className="group relative inline-flex items-center gap-2 rounded-lg bg-primary px-8 py-4 font-semibold text-primary-foreground shadow-[0_8px_16px_rgba(0,0,0,0.3),0_4px_8px_rgba(0,0,0,0.2),0_0_40px_rgba(132,204,22,0.3)] transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_40px_rgba(0,0,0,0.5),0_10px_20px_rgba(0,0,0,0.4),0_0_60px_rgba(132,204,22,0.6)] hover:scale-110 hover:-translate-y-2 active:scale-95 active:translate-y-0 border-t border-white/20 before:absolute before:inset-0 before:bg-gradient-to-b before:from-white/20 before:via-transparent before:to-black/10 before:rounded-lg overflow-hidden after:absolute after:inset-0 after:rounded-lg after:opacity-0 after:transition-opacity after:duration-500 hover:after:opacity-100 after:bg-[radial-gradient(circle_at_50%_120%,rgba(255,255,255,0.3),transparent_70%)]"
+                >
+                  Go to Dashboard <ArrowRight className="h-5 w-5 transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:translate-x-2 group-hover:scale-110" />
+                </Link>
+              </div>
             </div>
           </div>
         </div>
@@ -616,14 +607,14 @@ export default function Landing() {
                   <MapPin className="h-4 w-4" /> <span>Karachi, PK</span>
                 </div>
                 <div className="mt-4 flex items-center gap-3">
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="Twitter"><Twitter className="h-4 w-4 text-white" /></a>
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="Github"><Github className="h-4 w-4 text-white" /></a>
-                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="#" aria-label="LinkedIn"><Linkedin className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" aria-label="Twitter"><Twitter className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" aria-label="Github"><Github className="h-4 w-4 text-white" /></a>
+                  <a className="inline-flex items-center justify-center h-9 w-9 rounded-full border border-white/15 transition-all duration-300 hover:bg-white/10 hover:scale-110 hover:border-white/25" href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn"><Linkedin className="h-4 w-4 text-white" /></a>
                 </div>
               </div>
 
               {/* Links */}
-              <div className="md:col-span-5 grid grid-cols-2 gap-8">
+              <div className="md:col-span-5 grid grid-cols-3 gap-6">
                 <div>
                   <div className="text-sm font-medium text-white">Product</div>
                   <ul className="mt-3 space-y-2 text-sm text-white/80">
@@ -640,32 +631,43 @@ export default function Landing() {
                     <li><Link to="/agent" className="hover:text-white">Copilot</Link></li>
                   </ul>
                 </div>
+                <div>
+                  <div className="text-sm font-medium text-white">Engro EPCL</div>
+                  <ul className="mt-3 space-y-2 text-sm text-white/80">
+                    <li><a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Who We Are</a></li>
+                    <li><a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Investor Relations</a></li>
+                    <li><a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Social Impact</a></li>
+                    <li><a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Life @ EPCL</a></li>
+                  </ul>
+                </div>
               </div>
 
               {/* Contact + Newsletter */}
               <div className="md:col-span-3">
                 <div className="text-sm font-medium text-white">Contact</div>
                 <ul className="mt-3 space-y-2 text-sm text-white/80">
-                  <li className="flex items-center gap-2"><Mail className="h-4 w-4" /> hello@safetycopilot.app</li>
-                  <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +92 300 0000000</li>
+                  <li className="flex items-start gap-2">
+                    <MapPin className="h-4 w-4 mt-0.5 flex-shrink-0" />
+                    <span className="text-xs leading-relaxed">8th Floor, The Harbour Front Building, Marine Drive, Block 4, Clifton, Karachi</span>
+                  </li>
+                  <li className="flex items-center gap-2"><Phone className="h-4 w-4" /> +92 21 111 411 411</li>
                 </ul>
-                <div className="mt-5 text-sm font-medium text-white">Newsletter</div>
-                <form className="mt-2 flex items-center gap-2">
-                  <Input placeholder="Enter your email" className="bg-white/10 border-white/20 text-white placeholder:text-white/60" />
-                  <Button className="bg-primary text-primary-foreground">Subscribe</Button>
-                </form>
-                <p className="mt-1 text-[11px] text-white/60">No spam. Unsubscribe anytime.</p>
+                <div className="mt-5 text-sm font-medium text-white">Office Hours</div>
+                <p className="mt-2 text-xs text-white/80">Mon to Fri: 9 am - 5 pm (PST)</p>
               </div>
             </div>
 
             {/* Legal Row */}
             <div className="mt-8 pt-6 border-t border-white/10 flex flex-col md:flex-row items-center justify-between gap-4 text-xs text-white/70">
-              <div>© {new Date().getFullYear()} Safety Copilot. All rights reserved.</div>
+              <div className="flex flex-col md:flex-row items-center gap-2 md:gap-4">
+                <span>© {new Date().getFullYear()} Engro Polymer & Chemicals. All rights reserved.</span>
+                <span className="hidden md:inline">•</span>
+                <span>Powered by Safety Copilot</span>
+              </div>
               <div className="flex items-center gap-4">
-                <a href="#" className="hover:text-white">Privacy</a>
-                <a href="#" className="hover:text-white">Terms</a>
-                <a href="#" className="hover:text-white">Security</a>
-                <a href="#" className="hover:text-white">Status</a>
+                <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Privacy Policy</a>
+                <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Disclaimer</a>
+                <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Sitemap</a>
               </div>
               </div>
             </div>
@@ -699,10 +701,20 @@ function FeatureCard({ title, desc, icon, iconClass, className, gradientClass }:
   );
 }
 
-function Stat({ value, label }: { value: string; label: string }) {
+function Stat({ value, suffix = '', label }: { value: number; suffix?: string; label: string }) {
   return (
     <div className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 text-center shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.35)] hover:scale-110 hover:border-white/30 hover:-translate-y-2 cursor-default">
-      <div className="text-3xl font-extrabold tracking-tight text-white transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:text-primary">{value}</div>
+      <div className="text-3xl font-extrabold tracking-tight text-white transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:text-primary">
+        <CountUp
+          from={0}
+          to={value}
+          separator=","
+          direction="up"
+          duration={2}
+          className="count-up-text"
+        />
+        {suffix}
+      </div>
       <div className="mt-1 text-xs text-white/80 transition-colors duration-300 group-hover:text-white/90">{label}</div>
     </div>
   );
