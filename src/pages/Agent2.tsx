@@ -191,12 +191,42 @@ export default function Agent2() {
   const [currentDataset, setCurrentDataset] = useState<string>(dataset);
   const websocketRef = useRef<WebSocket | null>(null);
   const [queriesOpen, setQueriesOpen] = useState(false);
+  const [debouncedAnalysis, setDebouncedAnalysis] = useState("");
   
   // Use ref for immediate tracking (no async state delays)
   const currentMessageIdRef = useRef<string | null>(null);
   const savedMessageIdsRef = useRef<Set<string>>(new Set());
   const isAnswerModeRef = useRef<boolean>(false); // Track if we switched to answer mode
   const bottomRef = useRef<HTMLDivElement | null>(null); // Ref for auto-scroll to bottom
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce markdown rendering during streaming to allow complete tokens
+  useEffect(() => {
+    const content = currentAnalysis || finalAnswer;
+    
+    if (!isStreaming) {
+      // When not streaming, render immediately
+      setDebouncedAnalysis(content);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    } else {
+      // During streaming, debounce to allow complete markdown tokens
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      debounceTimerRef.current = setTimeout(() => {
+        setDebouncedAnalysis(content);
+      }, 150); // 150ms debounce for smoother rendering
+    }
+    
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [currentAnalysis, finalAnswer, isStreaming]);
 
   // Auto-scroll to bottom only when response completes (not during streaming)
   // Removed auto-scroll during streaming to prevent jittery behavior
@@ -333,6 +363,7 @@ export default function Agent2() {
     setResponse(null);
     setCurrentAnalysis("");
     setFinalAnswer("");
+    setDebouncedAnalysis("");
     setToolCalls([]);
     setStreamEvents([]);
     setThinkingText("");
@@ -373,20 +404,9 @@ export default function Agent2() {
         
         // Handle token-by-token streaming first (don't add to events)
         if (data.type === 'thinking_token' && data.token) {
-          // Detect if we've switched to final answer mode (markdown headers indicate formatted response)
-          if (!isAnswerModeRef.current && (data.token.includes('###') || data.token.includes('##') || data.token.includes('**'))) {
-            isAnswerModeRef.current = true;
-            console.log('🔄 Switched to answer mode - routing to final answer display');
-          }
-          
-          if (isAnswerModeRef.current) {
-            // Route to final answer display
-            setCurrentAnalysis(prev => (prev || "") + data.token!);
-            setFinalAnswer(prev => (prev || "") + data.token!);
-          } else {
-            // Keep in thinking box for actual reasoning
-            setThinkingText(prev => prev + data.token!);
-          }
+          // Backend sends thinking_token for both reasoning and final answer
+          // We accumulate in thinking text until answer_complete arrives
+          setThinkingText(prev => prev + data.token!);
           return;
         }
         
@@ -455,9 +475,12 @@ export default function Agent2() {
           setCurrentAnalysis(prev => (prev || "") + data.content);
         }
         if ((data.type === 'answer_complete' || data.type === 'final_answer_complete') && data.content) {
-          // Some backends send the whole content here; ensure we end with full answer
-          setFinalAnswer(prev => (data.content && data.content.length > (prev?.length || 0) ? data.content : (prev || "")));
-          setCurrentAnalysis(prev => (data.content && data.content.length > (prev?.length || 0) ? data.content : (prev || "")));
+          // Backend sends the complete formatted answer here - replace any accumulated content
+          console.log('✅ Received formatted answer, length:', data.content.length);
+          setFinalAnswer(data.content);
+          setCurrentAnalysis(data.content);
+          // Clear thinking text since we now have the final formatted answer
+          setThinkingText("");
         }
 
         // Completion
@@ -478,6 +501,7 @@ export default function Agent2() {
             setCurrentQuestion("");
             setCurrentAnalysis("");
             setFinalAnswer("");
+            setDebouncedAnalysis("");
             setToolCalls([]);
             setResponse(null);
             setThinkingText("");
@@ -884,7 +908,7 @@ export default function Agent2() {
               <div className="space-y-4">
                 {/* Thinking Stream (Collapsible) - Only show if there's actual reasoning content */}
                 {thinkingText && thinkingText.trim().length > 0 && (
-                  <Collapsible defaultOpen={false}>
+                  <Collapsible defaultOpen={true}>
                     <div className="flex items-start space-x-3">
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                         <Sparkles className="h-4 w-4" />
@@ -1107,11 +1131,6 @@ export default function Agent2() {
                 </div>
                     <div className="flex-1 min-w-0">
                       {currentAnalysis || finalAnswer || response?.analysis ? (
-                        (() => {
-                          const content = currentAnalysis || finalAnswer || response?.analysis || "";
-                          console.log('🎨 Rendering markdown, length:', content.length, 'Has table:', content.includes('|'), 'Preview:', content.substring(0, 100));
-                          return null;
-                        })(),
                         <div className="prose prose-base dark:prose-invert max-w-none break-words
                           prose-p:leading-7 prose-p:my-4 prose-p:text-[15px] prose-p:break-words
                           prose-headings:font-semibold prose-headings:tracking-tight prose-headings:break-words
@@ -1129,7 +1148,9 @@ export default function Agent2() {
                           last:prose-p:mb-0
                           [&>*]:break-words">
                           <ReactMarkdown 
+                            key={`markdown-${isStreaming ? 'streaming' : 'complete'}-${(debouncedAnalysis || response?.analysis || "").length}`}
                             remarkPlugins={[remarkGfm]}
+                            skipHtml={false}
                             components={{
                               p: ({node, ...props}) => <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props} />,
                               ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
@@ -1150,18 +1171,24 @@ export default function Agent2() {
                                   <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words" {...props}>{children}</code>
                                 );
                               },
-                              table: ({node, ...props}) => {
+                              table: ({node, children, ...props}) => {
                                 console.log('📊 Table detected in markdown');
-                                return <table className="border-collapse border border-gray-300 my-4" {...props} />;
+                                return (
+                                  <div className="my-4 overflow-x-auto rounded-lg border border-border shadow-sm">
+                                    <table className="min-w-full divide-y divide-border">
+                                      {children}
+                                    </table>
+                                  </div>
+                                );
                               },
-                              thead: ({node, ...props}) => <thead className="bg-gray-100" {...props} />,
-                              tbody: ({node, ...props}) => <tbody {...props} />,
-                              tr: ({node, ...props}) => <tr className="border-b border-gray-300" {...props} />,
-                              th: ({node, ...props}) => <th className="border border-gray-300 px-4 py-2 font-semibold text-left" {...props} />,
-                              td: ({node, ...props}) => <td className="border border-gray-300 px-4 py-2" {...props} />,
+                              thead: ({node, ...props}) => <thead className="bg-muted/50" {...props} />,
+                              tbody: ({node, ...props}) => <tbody className="bg-card divide-y divide-border" {...props} />,
+                              tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
+                              th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
+                              td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
                             }}
                           >
-                            {currentAnalysis || finalAnswer || response?.analysis || ""}
+                            {debouncedAnalysis || response?.analysis || ""}
                           </ReactMarkdown>
                           {isStreaming && (
                             <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1"></span>

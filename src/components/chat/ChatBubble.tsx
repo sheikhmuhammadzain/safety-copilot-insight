@@ -87,12 +87,42 @@ export function ChatBubble() {
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentDataset, setCurrentDataset] = useState<string>(dataset);
   const [response, setResponse] = useState<AgentResponse | null>(null);
+  const [debouncedAnalysis, setDebouncedAnalysis] = useState("");
   const websocketRef = useRef<WebSocket | null>(null);
   
   const currentMessageIdRef = useRef<string | null>(null);
   const savedMessageIdsRef = useRef<Set<string>>(new Set());
   const isAnswerModeRef = useRef<boolean>(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
+  const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+
+  // Debounce markdown rendering during streaming to allow complete tokens
+  useEffect(() => {
+    const content = currentAnalysis || finalAnswer;
+    
+    if (!isStreaming) {
+      // When not streaming, render immediately
+      setDebouncedAnalysis(content);
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    } else {
+      // During streaming, debounce to allow complete markdown tokens
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+      
+      debounceTimerRef.current = setTimeout(() => {
+        setDebouncedAnalysis(content);
+      }, 150); // 150ms debounce for smoother rendering
+    }
+    
+    return () => {
+      if (debounceTimerRef.current) {
+        clearTimeout(debounceTimerRef.current);
+      }
+    };
+  }, [currentAnalysis, finalAnswer, isStreaming]);
 
   // Debug: Log when conversation history changes
   useEffect(() => {
@@ -184,6 +214,7 @@ export function ChatBubble() {
     setResponse(null);
     setCurrentAnalysis("");
     setFinalAnswer("");
+    setDebouncedAnalysis("");
     setToolCalls([]);
     setThinkingText("");
     setCurrentCode("");
@@ -224,16 +255,9 @@ export function ChatBubble() {
         const data: StreamEvent = JSON.parse(event.data);
         
         if (data.type === 'thinking_token' && data.token) {
-          if (!isAnswerModeRef.current && (data.token.includes('###') || data.token.includes('##') || data.token.includes('**'))) {
-            isAnswerModeRef.current = true;
-          }
-          
-          if (isAnswerModeRef.current) {
-            setCurrentAnalysis(prev => (prev || "") + data.token!);
-            setFinalAnswer(prev => (prev || "") + data.token!);
-          } else {
-            setThinkingText(prev => prev + data.token!);
-          }
+          // Backend sends thinking_token for both reasoning and final answer
+          // We accumulate in thinking text until answer_complete arrives
+          setThinkingText(prev => prev + data.token!);
           return;
         }
         
@@ -266,6 +290,15 @@ export function ChatBubble() {
 
         if (data.type === 'data_ready' && data.data) {
           setResponse(data.data);
+        }
+
+        if ((data.type === 'answer_complete' || data.type === 'final_answer_complete') && data.content) {
+          // Backend sends the complete formatted answer here - replace any accumulated content
+          console.log('✅ Received formatted answer, length:', data.content.length);
+          setFinalAnswer(data.content);
+          setCurrentAnalysis(data.content);
+          // Clear thinking text since we now have the final formatted answer
+          setThinkingText("");
         }
 
         if (data.type === 'complete' || data.type === 'stream_end') {
@@ -338,9 +371,12 @@ export function ChatBubble() {
             setCurrentQuestion("");
             setCurrentAnalysis("");
             setFinalAnswer("");
+            setDebouncedAnalysis("");
             setToolCalls([]);
             setResponse(null);
+            setThinkingText("");
             currentMessageIdRef.current = null;
+            isAnswerModeRef.current = false;
             console.log('✅ Current message states cleared');
           }, 100);
           
@@ -464,7 +500,7 @@ export function ChatBubble() {
                   <img 
                     src="/copilot-logo.png" 
                     alt="Copilot" 
-                    className="h-14 w-14 object-contain" 
+                    className="h-24 w-24 object-contain" 
                   />
                 </div>
                 <h4 className="text-xl font-semibold text-gray-900 mb-2">How can I help you?</h4>
@@ -839,12 +875,37 @@ export function ChatBubble() {
                   </div>
                 )}
 
+                {/* Thinking Stream (Collapsible) - Show internal reasoning */}
+                {thinkingText && thinkingText.trim().length > 0 && (
+                  <Collapsible defaultOpen={true}>
+                    <div className="bg-white rounded-lg border border-gray-200 p-2.5">
+                      <CollapsibleTrigger asChild>
+                        <button className="flex items-center gap-2 text-xs hover:bg-gray-50 px-2 py-1.5 rounded w-full text-left transition-colors">
+                          <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          <span className="font-medium text-gray-700 flex-1">Thinking Process</span>
+                          <Badge variant="outline" className="text-[10px] h-5">Internal Reasoning</Badge>
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
+                          <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                            {thinkingText}
+                          </pre>
+                        </div>
+                      </CollapsibleContent>
+                    </div>
+                  </Collapsible>
+                )}
+
                 {/* Analysis */}
                 {(currentAnalysis || finalAnswer) && (
                   <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 max-w-[90%] border border-gray-100 shadow-sm">
                     <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:list-disc prose-ul:ml-4 prose-ol:list-decimal prose-ol:ml-4 prose-li:text-gray-700 prose-li:my-1">
                       <ReactMarkdown 
+                        key={`markdown-${isStreaming ? 'streaming' : 'complete'}-${(debouncedAnalysis || "").length}`}
                         remarkPlugins={[remarkGfm]}
+                        skipHtml={false}
                         components={{
                           p: ({node, ...props}) => <p className="mb-3 leading-relaxed" {...props} />,
                           strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
@@ -854,9 +915,24 @@ export function ChatBubble() {
                           h1: ({node, ...props}) => <h1 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />,
                           h2: ({node, ...props}) => <h2 className="text-base font-semibold text-gray-900 mb-2 mt-3" {...props} />,
                           h3: ({node, ...props}) => <h3 className="text-sm font-semibold text-gray-900 mb-1 mt-2" {...props} />,
+                          table: ({node, children, ...props}) => {
+                            console.log('📊 Table component rendered!', { node, children, props });
+                            return (
+                              <div className="my-4 overflow-x-auto rounded-lg border border-gray-200 shadow-sm">
+                                <table className="min-w-full divide-y divide-gray-200">
+                                  {children}
+                                </table>
+                              </div>
+                            );
+                          },
+                          thead: ({node, ...props}) => <thead className="bg-gradient-to-r from-primary/10 to-lime-600/10" {...props} />,
+                          tbody: ({node, ...props}) => <tbody className="bg-white divide-y divide-gray-200" {...props} />,
+                          tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
+                          th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />,
+                          td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-gray-900" {...props} />,
                         }}
                       >
-                        {currentAnalysis || finalAnswer}
+                        {debouncedAnalysis || ""}
                       </ReactMarkdown>
                       {isStreaming && (
                         <span className="inline-block w-2 h-4 bg-gradient-to-r from-primary to-lime-600 animate-pulse ml-1 rounded-full"></span>
