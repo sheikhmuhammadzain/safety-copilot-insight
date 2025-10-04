@@ -10,6 +10,7 @@ import Plot from "react-plotly.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import AITextLoading from "@/components/motion/AITextLoading";
 
 interface AgentResponse {
   code: string;
@@ -520,10 +521,23 @@ export function ChatBubble() {
 
                 {/* AI Response */}
                 <div className="space-y-2">
-                  {/* Tool Calls */}
+                  {/* Thinking & Planning (historical) - hide tool calls inside */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && (
-                    <div className="space-y-1.5">
-                      {msg.toolCalls.map((tc, tcIdx) => {
+                    <Collapsible>
+                      <div className="bg-white rounded-xl border border-gray-100 p-3 shadow-sm">
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-2.5 text-xs hover:bg-gray-50 px-3 py-2 rounded-lg w-full text-left transition-all">
+                            <ChevronRight className="h-3.5 w-3.5 text-gray-400" />
+                            <div className="w-7 h-7 rounded-lg bg-gradient-to-br from-green-50 to-emerald-50 flex items-center justify-center">
+                              <Sparkles className="h-4 w-4 text-primary" />
+                            </div>
+                            <AITextLoading compact staticText="Click to view chain of thought" className="font-semibold text-gray-800 flex-1" />
+                            <Badge variant="secondary" className="text-[10px] h-5 bg-blue-50 text-blue-700 border-0">Tools: {msg.toolCalls.length}</Badge>
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-3 space-y-1.5">
+                            {msg.toolCalls.map((tc, tcIdx) => {
                         const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                         const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
                         
@@ -634,7 +648,10 @@ export function ChatBubble() {
                           </Collapsible>
                         );
                       })}
-                    </div>
+                          </div>
+                        </CollapsibleContent>
+                      </div>
+                    </Collapsible>
                   )}
 
                   {/* Analysis */}
@@ -699,10 +716,27 @@ export function ChatBubble() {
             {/* Current Response */}
             {(isStreaming || currentAnalysis || toolCalls.length > 0) && (
               <div className="space-y-2">
-                {/* Tool Calls */}
-                {toolCalls.length > 0 && (
-                  <div className="space-y-1.5">
-                    {toolCalls.map((tc, idx) => {
+                {/* Thinking & Planning (live) */}
+                {(thinkingText?.trim().length > 0 || toolCalls.length > 0) && (
+                  <Collapsible>
+                    <div className="bg-white rounded-lg border border-gray-200 p-2.5">
+                      <CollapsibleTrigger asChild>
+                        <button className="flex items-center gap-2 text-xs hover:bg-gray-50 px-2 py-1.5 rounded w-full text-left transition-colors">
+                          <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
+                          <Sparkles className="h-3.5 w-3.5 text-primary" />
+                          {isStreaming ? (
+                            <AITextLoading compact texts={["Thinking & Planning", "Reasoning & Tools", "Planning Steps"]} className="font-medium text-gray-700 flex-1" />
+                          ) : (
+                            <AITextLoading compact staticText="Click to view chain of thought" className="font-medium text-gray-700 flex-1" />
+                          )}
+                          {toolCalls.length > 0 && <Badge variant="outline" className="text-[10px] h-5">Tools: {toolCalls.length}</Badge>}
+                        </button>
+                      </CollapsibleTrigger>
+                      <CollapsibleContent>
+                        <div className="mt-3 space-y-2">
+                          {toolCalls.length > 0 && (
+                            <div className="space-y-1.5">
+                              {toolCalls.map((tc, idx) => {
                       const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                       const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
                       const hasSummary = tc.result && typeof tc.result === 'object' && (tc.result.summary || tc.result.description);
@@ -884,31 +918,23 @@ export function ChatBubble() {
                         </Collapsible>
                       );
                     })}
-                  </div>
-                )}
-
-                {/* Thinking Stream (Collapsible) - Show internal reasoning */}
-                {thinkingText && thinkingText.trim().length > 0 && (
-                  <Collapsible defaultOpen={true}>
-                    <div className="bg-white rounded-lg border border-gray-200 p-2.5">
-                      <CollapsibleTrigger asChild>
-                        <button className="flex items-center gap-2 text-xs hover:bg-gray-50 px-2 py-1.5 rounded w-full text-left transition-colors">
-                          <ChevronRight className="h-3.5 w-3.5 text-gray-500" />
-                          <Sparkles className="h-3.5 w-3.5 text-primary" />
-                          <span className="font-medium text-gray-700 flex-1">Thinking Process</span>
-                          <Badge variant="outline" className="text-[10px] h-5">Internal Reasoning</Badge>
-                        </button>
-                      </CollapsibleTrigger>
-                      <CollapsibleContent>
-                        <div className="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                          <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
-                            {thinkingText}
-                          </pre>
+                            </div>
+                          )}
+                          {thinkingText && thinkingText.trim().length > 0 && (
+                            <div className="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
+                              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                                {thinkingText}
+                              </pre>
+                            </div>
+                          )}
                         </div>
                       </CollapsibleContent>
                     </div>
                   </Collapsible>
                 )}
+
+                {/* Thinking Stream (Collapsible) - Show internal reasoning */}
+                {/* Removed separate Thinking Process section; it's inside the Thinking & Planning group above */}
 
                 {/* Analysis */}
                 {(currentAnalysis || finalAnswer) && (

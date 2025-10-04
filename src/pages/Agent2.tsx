@@ -16,6 +16,7 @@ import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/component
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
+import AITextLoading from "@/components/motion/AITextLoading";
 
 interface AgentResponse {
   code: string;
@@ -665,10 +666,24 @@ export default function Agent2() {
 
                 {/* Historical Assistant Response */}
                 <div className="space-y-4">
-                  {/* Historical Tool Calls */}
+                  {/* Historical Thinking & Planning (tools inside) */}
                   {msg.toolCalls && msg.toolCalls.length > 0 && (
-                    <div className="space-y-2">
-                      {msg.toolCalls.map((tc, idx) => {
+                    <Collapsible>
+                      <div className="flex items-start space-x-3">
+                        <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                          <Sparkles className="h-4 w-4" />
+                        </div>
+                        <div className="flex-1">
+                          <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
+                            <ChevronRight className="h-4 w-4" />
+                            <AITextLoading compact staticText="Click to view chain of thoughts" className="font-semibold" />
+                            <Badge variant="secondary" className="ml-auto text-xs">Tools: {msg.toolCalls.length}</Badge>
+                          </button>
+                          </CollapsibleTrigger>
+                          <CollapsibleContent>
+                            <div className="mt-2 space-y-2 pl-3">
+                              {msg.toolCalls.map((tc, idx) => {
                         const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                         const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
                         const shouldAutoExpand = hasTableData || hasChartData;
@@ -839,7 +854,11 @@ export default function Agent2() {
                           </Collapsible>
                         );
                       })}
-                    </div>
+                            </div>
+                          </CollapsibleContent>
+                        </div>
+                      </div>
+                    </Collapsible>
                   )}
 
                   {/* Historical Analysis */}
@@ -935,10 +954,33 @@ export default function Agent2() {
             {/* Current Assistant Response Container */}
             {(isStreaming || response || currentAnalysis || finalAnswer || toolCalls.length > 0 || thinkingText) && (
               <div className="space-y-4">
-                {/* Tool Calls */}
-        {toolCalls.length > 0 && (
-                  <div className="space-y-2">
-                    {toolCalls.map((tc, idx) => {
+                {/* Thinking & Planning (live) - tools nested inside */}
+        {(thinkingText?.trim().length > 0 || toolCalls.length > 0) && (
+                  <Collapsible defaultOpen={false}>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
+                            <ChevronRight className="h-4 w-4" />
+                            {isStreaming ? (
+                              <AITextLoading compact texts={["Thinking & Planning", "Reasoning & Tools", "Planning Steps"]} className="font-semibold" />
+                            ) : (
+                              <AITextLoading compact staticText="Click to view chain of thought" className="font-semibold" />
+                            )}
+                            {toolCalls.length > 0 && (
+                              <Badge variant="secondary" className="ml-auto text-xs">Tools: {toolCalls.length}</Badge>
+                            )}
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-2 space-y-2 pl-3">
+                            {/* Tool Calls */}
+                            {toolCalls.length > 0 && (
+                              <div className="space-y-2">
+                                {toolCalls.map((tc, idx) => {
                       // Check if result has table or chart data
                       const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                       const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
@@ -1115,32 +1157,19 @@ export default function Agent2() {
                             </CollapsibleContent>
                         </div>
                       </div>
-                      </Collapsible>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {/* Thinking Stream (Collapsible) - moved below Tool Calls for better UX */}
-                {thinkingText && thinkingText.trim().length > 0 && (
-                  <Collapsible defaultOpen={true}>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <CollapsibleTrigger asChild>
-                          <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
-                            <ChevronRight className="h-4 w-4" />
-                            <span className="font-semibold">Thinking Process</span>
-                            <Badge variant="secondary" className="ml-2 text-xs">Internal Reasoning</Badge>
-                          </button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="mt-2 pl-3">
-                            <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground font-mono whitespace-pre-wrap">
-                              {thinkingText}
-                            </div>
+                                </Collapsible>
+                                );
+                              })}
+                              </div>
+                            )}
+                            {/* Thinking text */}
+                            {thinkingText && thinkingText.trim().length > 0 && (
+                              <div className="mt-1 pl-1">
+                                <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground font-mono whitespace-pre-wrap">
+                                  {thinkingText}
+                                </div>
+                              </div>
+                            )}
                           </div>
                         </CollapsibleContent>
                       </div>
@@ -1241,7 +1270,7 @@ export default function Agent2() {
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground pt-1">
-                          Thinking...
+                          Analyzing Data...
                         </div>
                       )}
                     </div>

@@ -18,6 +18,8 @@ interface AITextLoadingProps {
   texts?: string[];
   className?: string;
   interval?: number;
+  compact?: boolean;
+  staticText?: string;
 }
 
 export default function AITextLoading({
@@ -30,28 +32,33 @@ export default function AITextLoading({
   ],
   className,
   interval = 1500,
+  compact = false,
+  staticText,
 }: AITextLoadingProps) {
   const [currentTextIndex, setCurrentTextIndex] = useState(0);
 
   useEffect(() => {
+    if (staticText) {
+      return; // no cycling when static text is provided
+    }
     const timer = setInterval(() => {
       setCurrentTextIndex((prevIndex) => (prevIndex + 1) % texts.length);
     }, interval);
 
     return () => clearInterval(timer);
-  }, [interval, texts.length]);
+  }, [interval, texts.length, staticText]);
 
   return (
-    <div className="flex items-center justify-center p-8">
+    <div className={`flex items-center ${compact ? "justify-start p-0" : "justify-center p-8"}`}>
       <motion.div
-        className="relative px-4 py-2 w-full"
+        className={compact ? "relative px-0 py-0 w-auto" : "relative px-4 py-2 w-full"}
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ duration: 0.4 }}
       >
         <AnimatePresence mode="wait">
           <motion.div
-            key={currentTextIndex}
+            key={staticText ? `static-${staticText}` : currentTextIndex}
             initial={{ opacity: 0, y: 20 }}
             animate={{
               opacity: 1,
@@ -69,11 +76,11 @@ export default function AITextLoading({
               },
             }}
             className={cn(
-              "flex justify-center text-3xl font-bold bg-gradient-to-r from-neutral-950 via-neutral-400 to-neutral-950 dark:from-white dark:via-neutral-600 dark:to-white bg-[length:200%_100%] bg-clip-text text-transparent whitespace-nowrap min-w-max",
+              `flex ${compact ? "justify-start" : "justify-center"} ${compact ? "text-sm" : "text-3xl"} font-bold bg-gradient-to-r from-neutral-950 via-neutral-400 to-neutral-950 dark:from-white dark:via-neutral-600 dark:to-white bg-[length:200%_100%] bg-clip-text text-transparent whitespace-nowrap min-w-max`,
               className
             )}
           >
-            {texts[currentTextIndex]}
+            {staticText ?? texts[currentTextIndex]}
           </motion.div>
         </AnimatePresence>
       </motion.div>
