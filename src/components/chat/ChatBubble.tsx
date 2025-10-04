@@ -942,6 +942,21 @@ export function ChatBubble() {
                           tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
                           th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />,
                           td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-gray-900" {...props} />,
+                            img: ({node, ...props}: any) => {
+                              const src: string = String(props.src || "");
+                              let normalized = src;
+                              try {
+                                if (src.includes('quickchart.io/chart')) {
+                                  const u = new URL(src);
+                                  const c = u.searchParams.get('c');
+                                  if (c) {
+                                    u.searchParams.set('c', c);
+                                    normalized = u.toString();
+                                  }
+                                }
+                              } catch {}
+                              return <img {...props} src={normalized} className="rounded-md border" />;
+                            },
                         }}
                       >
                         {debouncedAnalysis || ""}

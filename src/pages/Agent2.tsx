@@ -895,6 +895,22 @@ export default function Agent2() {
                               tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
                               th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
                               td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
+                              img: ({node, ...props}: any) => {
+                                const src: string = String(props.src || "");
+                                let normalized = src;
+                                try {
+                                  if (src.includes('quickchart.io/chart')) {
+                                    const u = new URL(src);
+                                    const c = u.searchParams.get('c');
+                                    if (c) {
+                                      // Ensure chart config is properly encoded
+                                      u.searchParams.set('c', c);
+                                      normalized = u.toString();
+                                    }
+                                  }
+                                } catch {}
+                                return <img {...props} src={normalized} className="rounded-md border" />;
+                              },
                             }}
                           >
                             {msg.analysis}
@@ -919,33 +935,6 @@ export default function Agent2() {
             {/* Current Assistant Response Container */}
             {(isStreaming || response || currentAnalysis || finalAnswer || toolCalls.length > 0 || thinkingText) && (
               <div className="space-y-4">
-                {/* Thinking Stream (Collapsible) - Only show if there's actual reasoning content */}
-                {thinkingText && thinkingText.trim().length > 0 && (
-                  <Collapsible defaultOpen={true}>
-                    <div className="flex items-start space-x-3">
-                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
-                        <Sparkles className="h-4 w-4" />
-                      </div>
-                      <div className="flex-1">
-                        <CollapsibleTrigger asChild>
-                          <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
-                            <ChevronRight className="h-4 w-4" />
-                            <span className="font-semibold">Thinking Process</span>
-                            <Badge variant="secondary" className="ml-2 text-xs">Internal Reasoning</Badge>
-                          </button>
-                        </CollapsibleTrigger>
-                        <CollapsibleContent>
-                          <div className="mt-2 pl-3">
-                            <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground font-mono whitespace-pre-wrap">
-                              {thinkingText}
-                            </div>
-                          </div>
-                        </CollapsibleContent>
-                      </div>
-                    </div>
-                  </Collapsible>
-                )}
-
                 {/* Tool Calls */}
         {toolCalls.length > 0 && (
                   <div className="space-y-2">
@@ -1132,6 +1121,33 @@ export default function Agent2() {
                   </div>
                 )}
 
+                {/* Thinking Stream (Collapsible) - moved below Tool Calls for better UX */}
+                {thinkingText && thinkingText.trim().length > 0 && (
+                  <Collapsible defaultOpen={true}>
+                    <div className="flex items-start space-x-3">
+                      <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
+                        <Sparkles className="h-4 w-4" />
+                      </div>
+                      <div className="flex-1">
+                        <CollapsibleTrigger asChild>
+                          <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
+                            <ChevronRight className="h-4 w-4" />
+                            <span className="font-semibold">Thinking Process</span>
+                            <Badge variant="secondary" className="ml-2 text-xs">Internal Reasoning</Badge>
+                          </button>
+                        </CollapsibleTrigger>
+                        <CollapsibleContent>
+                          <div className="mt-2 pl-3">
+                            <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground font-mono whitespace-pre-wrap">
+                              {thinkingText}
+                            </div>
+                          </div>
+                        </CollapsibleContent>
+                      </div>
+                    </div>
+                  </Collapsible>
+                )}
+
                 {/* Main Response - Always show during streaming or when we have content */}
                 {(isStreaming || currentAnalysis || finalAnswer || response?.analysis) && (
                   <div className="flex items-start space-x-3">
@@ -1199,6 +1215,22 @@ export default function Agent2() {
                               tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
                               th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
                               td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
+                              img: ({node, ...props}: any) => {
+                                const src: string = String(props.src || "");
+                                let normalized = src;
+                                try {
+                                  if (src.includes('quickchart.io/chart')) {
+                                    const u = new URL(src);
+                                    const c = u.searchParams.get('c');
+                                    if (c) {
+                                      // Keep as-is; QuickChart expects the encoded config under `c`
+                                      u.searchParams.set('c', c);
+                                      normalized = u.toString();
+                                    }
+                                  }
+                                } catch {}
+                                return <img {...props} src={normalized} className="rounded-md border" />;
+                              },
                             }}
                           >
                             {debouncedAnalysis || response?.analysis || ""}
