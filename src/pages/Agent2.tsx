@@ -391,7 +391,12 @@ export default function Agent2() {
         }
         
         if (data.type === 'answer_token' && data.token) {
-          setCurrentAnalysis(prev => (prev || "") + data.token!);
+          console.log('📝 Answer token received:', data.token);
+          setCurrentAnalysis(prev => {
+            const newContent = (prev || "") + data.token!;
+            console.log('📊 Current analysis length:', newContent.length, 'Has table:', newContent.includes('|'));
+            return newContent;
+          });
           setFinalAnswer(prev => (prev || "") + data.token!);
           return;
         }
@@ -819,38 +824,39 @@ export default function Agent2() {
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
                         <Sparkles className="h-4 w-4" />
                       </div>
-                      <div className="flex-1">
-                        <div className="prose prose-base dark:prose-invert max-w-none
-                          prose-p:leading-7 prose-p:my-4 prose-p:text-[15px]
-                          prose-headings:font-semibold prose-headings:tracking-tight
+                      <div className="flex-1 min-w-0">
+                        <div className="prose prose-base dark:prose-invert max-w-none break-words
+                          prose-p:leading-7 prose-p:my-4 prose-p:text-[15px] prose-p:break-words
+                          prose-headings:font-semibold prose-headings:tracking-tight prose-headings:break-words
                           prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4
                           prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3
                           prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-2
                           prose-ul:my-4 prose-ul:space-y-2
                           prose-ol:my-4 prose-ol:space-y-2
-                          prose-li:leading-7 prose-li:my-1.5 prose-li:text-[15px]
-                          prose-strong:font-semibold prose-strong:text-foreground
-                          prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                          prose-pre:bg-muted prose-pre:border
+                          prose-li:leading-7 prose-li:my-1.5 prose-li:text-[15px] prose-li:break-words
+                          prose-strong:font-semibold prose-strong:text-foreground prose-strong:break-words
+                          prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:break-all
+                          prose-pre:bg-muted prose-pre:border prose-pre:overflow-x-auto
                           prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:py-1
                           first:prose-p:mt-0
-                          last:prose-p:mb-0">
+                          last:prose-p:mb-0
+                          [&>*]:break-words">
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="space-y-2 my-4">{children}</ul>,
-                              ol: ({ children }) => <ol className="space-y-2 my-4">{children}</ol>,
-                              li: ({ children }) => <li className="leading-7">{children}</li>,
-                              h1: ({ children }) => <h1 className="text-xl font-semibold mt-6 mb-4 first:mt-0">{children}</h1>,
-                              h2: ({ children }) => <h2 className="text-lg font-semibold mt-5 mb-3 first:mt-0">{children}</h2>,
-                              h3: ({ children }) => <h3 className="text-base font-semibold mt-4 mb-2 first:mt-0">{children}</h3>,
-                              strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
-                              code: ({ inline, children }: any) => 
+                              p: ({node, ...props}) => <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props} />,
+                              ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
+                              li: ({node, ...props}) => <li className="leading-relaxed break-words" {...props} />,
+                              h1: ({node, ...props}) => <h1 className="text-xl font-semibold mt-6 mb-4 first:mt-0 break-words" {...props} />,
+                              h2: ({node, ...props}) => <h2 className="text-lg font-semibold mt-5 mb-3 first:mt-0 break-words" {...props} />,
+                              h3: ({node, ...props}) => <h3 className="text-base font-semibold mt-4 mb-2 first:mt-0 break-words" {...props} />,
+                              strong: ({node, ...props}) => <strong className="font-semibold text-foreground break-words" {...props} />,
+                              code: ({ inline, children, ...props }: any) => 
                                 inline ? (
-                                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+                                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono break-all" {...props}>{children}</code>
                                 ) : (
-                                  <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto">{children}</code>
+                                  <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words" {...props}>{children}</code>
                                 )
                             }}
                           >
@@ -1099,40 +1105,60 @@ export default function Agent2() {
                         <Sparkles className="h-4 w-4" />
                       )}
                 </div>
-                    <div className="flex-1">
+                    <div className="flex-1 min-w-0">
                       {currentAnalysis || finalAnswer || response?.analysis ? (
-                        <div className="prose prose-base dark:prose-invert max-w-none
-                          prose-p:leading-7 prose-p:my-4 prose-p:text-[15px]
-                          prose-headings:font-semibold prose-headings:tracking-tight
+                        (() => {
+                          const content = currentAnalysis || finalAnswer || response?.analysis || "";
+                          console.log('🎨 Rendering markdown, length:', content.length, 'Has table:', content.includes('|'), 'Preview:', content.substring(0, 100));
+                          return null;
+                        })(),
+                        <div className="prose prose-base dark:prose-invert max-w-none break-words
+                          prose-p:leading-7 prose-p:my-4 prose-p:text-[15px] prose-p:break-words
+                          prose-headings:font-semibold prose-headings:tracking-tight prose-headings:break-words
                           prose-h1:text-2xl prose-h1:mt-6 prose-h1:mb-4
                           prose-h2:text-xl prose-h2:mt-6 prose-h2:mb-3
                           prose-h3:text-lg prose-h3:mt-5 prose-h3:mb-2
                           prose-ul:my-4 prose-ul:space-y-2
                           prose-ol:my-4 prose-ol:space-y-2
-                          prose-li:leading-7 prose-li:my-1.5 prose-li:text-[15px]
-                          prose-strong:font-semibold prose-strong:text-foreground
-                          prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded
-                          prose-pre:bg-muted prose-pre:border
+                          prose-li:leading-7 prose-li:my-1.5 prose-li:text-[15px] prose-li:break-words
+                          prose-strong:font-semibold prose-strong:text-foreground prose-strong:break-words
+                          prose-code:text-sm prose-code:bg-muted prose-code:px-1.5 prose-code:py-0.5 prose-code:rounded prose-code:break-all
+                          prose-pre:bg-muted prose-pre:border prose-pre:overflow-x-auto
                           prose-blockquote:border-l-primary prose-blockquote:bg-muted/50 prose-blockquote:py-1
                           first:prose-p:mt-0
-                          last:prose-p:mb-0">
+                          last:prose-p:mb-0
+                          [&>*]:break-words">
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({ children }) => <p className="mb-4 last:mb-0">{children}</p>,
-                              ul: ({ children }) => <ul className="space-y-2 my-4">{children}</ul>,
-                              ol: ({ children }) => <ol className="space-y-2 my-4">{children}</ol>,
-                              li: ({ children }) => <li className="leading-7">{children}</li>,
-                              h1: ({ children }) => <h1 className="text-xl font-semibold mt-6 mb-4 first:mt-0">{children}</h1>,
-                              h2: ({ children }) => <h2 className="text-lg font-semibold mt-5 mb-3 first:mt-0">{children}</h2>,
-                              h3: ({ children }) => <h3 className="text-base font-semibold mt-4 mb-2 first:mt-0">{children}</h3>,
-                              strong: ({ children }) => <strong className="font-semibold text-foreground">{children}</strong>,
-                              code: ({ inline, children }: any) => 
-                                inline ? (
-                                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono">{children}</code>
+                              p: ({node, ...props}) => <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props} />,
+                              ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
+                              ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
+                              li: ({node, ...props}) => <li className="leading-relaxed break-words" {...props} />,
+                              h1: ({node, ...props}) => <h1 className="text-xl font-semibold mt-6 mb-4 first:mt-0 break-words" {...props} />,
+                              h2: ({node, ...props}) => <h2 className="text-lg font-semibold mt-5 mb-3 first:mt-0 break-words" {...props} />,
+                              h3: ({node, ...props}) => <h3 className="text-base font-semibold mt-4 mb-2 first:mt-0 break-words" {...props} />,
+                              strong: ({node, ...props}) => <strong className="font-semibold text-foreground break-words" {...props} />,
+                              code: ({ inline, children, ...props }: any) => {
+                                // Log code blocks during streaming
+                                if (!inline && isStreaming) {
+                                  console.log('💻 Rendering code block during streaming:', String(children).substring(0, 50));
+                                }
+                                return inline ? (
+                                  <code className="bg-muted px-1.5 py-0.5 rounded text-sm font-mono break-all" {...props}>{children}</code>
                                 ) : (
-                                  <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto">{children}</code>
-                                )
+                                  <code className="block bg-muted p-3 rounded text-sm font-mono overflow-x-auto whitespace-pre-wrap break-words" {...props}>{children}</code>
+                                );
+                              },
+                              table: ({node, ...props}) => {
+                                console.log('📊 Table detected in markdown');
+                                return <table className="border-collapse border border-gray-300 my-4" {...props} />;
+                              },
+                              thead: ({node, ...props}) => <thead className="bg-gray-100" {...props} />,
+                              tbody: ({node, ...props}) => <tbody {...props} />,
+                              tr: ({node, ...props}) => <tr className="border-b border-gray-300" {...props} />,
+                              th: ({node, ...props}) => <th className="border border-gray-300 px-4 py-2 font-semibold text-left" {...props} />,
+                              td: ({node, ...props}) => <td className="border border-gray-300 px-4 py-2" {...props} />,
                             }}
                           >
                             {currentAnalysis || finalAnswer || response?.analysis || ""}
