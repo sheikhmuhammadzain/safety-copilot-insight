@@ -209,7 +209,7 @@ export function ChatBubble() {
     const params = new URLSearchParams({
       question: q,
       dataset: dataset,
-      model: "z-ai/glm-4.5-air:free"
+      model: "z-ai/glm-4.6"
     });
 
     const ws = new WebSocket(`${WS_BASE}/ws/agent/stream?${params}`);
