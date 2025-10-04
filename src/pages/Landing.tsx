@@ -240,7 +240,7 @@ export default function Landing() {
         PRESSURE={0.6}
         COLOR_UPDATE_SPEED={8}
       />
-      <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="lime" />
+      <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
         <GlassSurface

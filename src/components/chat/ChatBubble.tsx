@@ -604,8 +604,20 @@ export function ChatBubble() {
                   {/* Analysis */}
                   {msg.analysis && (
                     <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 max-w-[90%] border border-gray-100 shadow-sm">
-                      <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900">
-                        <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                      <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:list-disc prose-ul:ml-4 prose-ol:list-decimal prose-ol:ml-4 prose-li:text-gray-700 prose-li:my-1">
+                        <ReactMarkdown 
+                          remarkPlugins={[remarkGfm]}
+                          components={{
+                            p: ({node, ...props}) => <p className="mb-3 leading-relaxed" {...props} />,
+                            strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
+                            ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
+                            ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
+                            li: ({node, ...props}) => <li className="text-gray-700 leading-relaxed" {...props} />,
+                            h1: ({node, ...props}) => <h1 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />,
+                            h2: ({node, ...props}) => <h2 className="text-base font-semibold text-gray-900 mb-2 mt-3" {...props} />,
+                            h3: ({node, ...props}) => <h3 className="text-sm font-semibold text-gray-900 mb-1 mt-2" {...props} />,
+                          }}
+                        >
                           {msg.analysis}
                         </ReactMarkdown>
                       </div>
@@ -830,8 +842,20 @@ export function ChatBubble() {
                 {/* Analysis */}
                 {(currentAnalysis || finalAnswer) && (
                   <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 max-w-[90%] border border-gray-100 shadow-sm">
-                    <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-p:text-gray-700 prose-strong:text-gray-900">
-                      <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                    <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:list-disc prose-ul:ml-4 prose-ol:list-decimal prose-ol:ml-4 prose-li:text-gray-700 prose-li:my-1">
+                      <ReactMarkdown 
+                        remarkPlugins={[remarkGfm]}
+                        components={{
+                          p: ({node, ...props}) => <p className="mb-3 leading-relaxed" {...props} />,
+                          strong: ({node, ...props}) => <strong className="font-semibold text-gray-900" {...props} />,
+                          ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
+                          ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
+                          li: ({node, ...props}) => <li className="text-gray-700 leading-relaxed" {...props} />,
+                          h1: ({node, ...props}) => <h1 className="text-lg font-semibold text-gray-900 mb-2 mt-4" {...props} />,
+                          h2: ({node, ...props}) => <h2 className="text-base font-semibold text-gray-900 mb-2 mt-3" {...props} />,
+                          h3: ({node, ...props}) => <h3 className="text-sm font-semibold text-gray-900 mb-1 mt-2" {...props} />,
+                        }}
+                      >
                         {currentAnalysis || finalAnswer}
                       </ReactMarkdown>
                       {isStreaming && (
