@@ -52,7 +52,7 @@ interface TableData {
 }
 
 interface StreamEvent {
-  type: 'progress' | 'code_chunk' | 'code_generated' | 'analysis_chunk' | 'error' | 'verification' | 'complete' | 'thinking' | 'thinking_token' | 'reflection' | 'data_ready' | 'chain_of_thought' | 'reflection_chunk' | 'reasoning' | 'tool_call' | 'tool_result' | 'answer' | 'answer_token' | 'answer_complete' | 'final_answer' | 'final' | 'final_answer_complete' | 'start' | 'stream_end';
+  type: 'progress' | 'code_chunk' | 'code_generated' | 'analysis_chunk' | 'error' | 'verification' | 'complete' | 'thinking' | 'thinking_token' | 'reasoning_token' | 'reflection' | 'data_ready' | 'chain_of_thought' | 'reflection_chunk' | 'reasoning' | 'tool_call' | 'tool_result' | 'answer' | 'answer_token' | 'answer_complete' | 'final_answer' | 'final' | 'final_answer_complete' | 'start' | 'stream_end';
   message?: string;
   chunk?: string;
   code?: string;
@@ -93,70 +93,275 @@ const QUERIES_BOOK: Array<{
   items: string[];
 }> = [
   {
-    title: 'Incident-related Questions',
+    title: 'Incident Overview & Trends',
     dataset: 'incident',
     items: [
       'Which month/year had the highest number of incidents?',
       'Show the total number of incidents by department.',
       'What percentage of incidents are repeated?',
       'What is the most common incident type?',
-      'What is the average resolution time (in days) for incidents?',
-      'Show the top 10 incidents with the highest risk score.',
       'Which location has the highest number of incidents?',
-      'What percentage of incidents are related to equipment failure?',
-      'Find the correlation between severity score and estimated cost impact.',
-      'How many incidents are missing root cause details?',
+      'Show incident trends over the last 12 months with a line chart.',
+      'What are the top 5 incident titles by frequency?',
     ],
   },
   {
-    title: 'Hazard ID-related Questions',
+    title: 'Incident Risk & Severity Analysis',
+    dataset: 'incident',
+    items: [
+      'Show the top 10 incidents with the highest risk score.',
+      'Find the correlation between severity score and estimated cost impact.',
+      'What is the distribution of actual consequence vs worst-case consequence?',
+      'Which departments have the highest average risk score?',
+      'Show incidents with Tier 1 PSE category.',
+      'What percentage of incidents resulted in C3 - Severe worst-case consequence?',
+    ],
+  },
+  {
+    title: 'Incident Root Cause & Corrective Actions',
+    dataset: 'incident',
+    items: [
+      'How many incidents are missing root cause details?',
+      'What are the top 5 most common root causes?',
+      'How many incidents have missing corrective actions?',
+      'Show the relationship between key factors and contributing factors.',
+      'What percentage of incidents involve PSM compliance systems?',
+      'Which management system noncompliance category appears most?',
+    ],
+  },
+  {
+    title: 'Incident Response & Timeline',
+    dataset: 'incident',
+    items: [
+      'What is the average resolution time (in days) for incidents?',
+      'Show the distribution of reporting delay days.',
+      'Which incidents had the longest resolution times?',
+      'What is the average time from reported date to completion date by department?',
+      'How many incidents are still pending closure?',
+    ],
+  },
+  {
+    title: 'Incident Cost & Impact',
+    dataset: 'incident',
+    items: [
+      'What is the total estimated cost impact of all incidents?',
+      'Show the top 10 incidents by estimated cost impact.',
+      'What is the total estimated manhours impact?',
+      'Compare estimated cost impact by incident type.',
+      'Which materials were most frequently involved in incidents?',
+    ],
+  },
+  {
+    title: 'Hazard Identification & Reporting',
     dataset: 'hazard',
     items: [
       'Show the trend of reported hazards by month.',
       'Which violation type occurs most frequently in hazard reports?',
-      'What is the distribution of worst-case consequence potential in hazards?',
-      'Which department has the highest average risk score for hazards?',
-      'How many hazards are missing corrective actions?',
-      'Show the total and average estimated cost impact of all hazards.',
       'What percentage of hazards are repeated events?',
       'Who are the top 5 reporters with the most hazard IDs?',
+      'Which sections (Projects, Production, etc.) report the most hazards?',
+      'Show hazard reporting by sublocation.',
     ],
   },
   {
-    title: 'Audit & Audit Findings Questions',
+    title: 'Hazard Risk Assessment',
+    dataset: 'hazard',
+    items: [
+      'What is the distribution of worst-case consequence potential in hazards?',
+      'Which department has the highest average risk score for hazards?',
+      'Show the total and average estimated cost impact of all hazards.',
+      'What are the most common relevant consequences in hazard IDs?',
+      'Show hazards with C2 - Serious or higher worst-case consequences.',
+    ],
+  },
+  {
+    title: 'Hazard Actions & Closure',
+    dataset: 'hazard',
+    items: [
+      'How many hazards are missing corrective actions?',
+      'What is the average time from reported date to closure?',
+      'Which hazards had the longest reporting delays?',
+      'Show the status distribution of all hazard IDs.',
+      'How many hazards moved from review to closed status?',
+    ],
+  },
+  {
+    title: 'Audit Overview & Performance',
     dataset: 'audit',
     items: [
       'Show the total number of audits by audit category.',
       'Plot the distribution of audit ratings.',
-      'Which finding location is most common in audit findings?',
-      'Show the distribution of worst-case consequences (C1, C2, C3, C4) in audits.',
       'Which auditor has performed the most audits?',
-      'Show the top 10 most frequent audit findings.',
-      'Calculate the average time taken to close an audit.',
+      'Show the total number of audits done by each inspector.',
+      'What is the breakdown of audits by auditing body (Self, 1st Party, 3rd Party)?',
+      'Which audit types (Insurance, Internal, etc.) are most common?',
     ],
   },
   {
-    title: 'Inspection-related Questions',
+    title: 'Audit Findings & Locations',
+    dataset: 'audit',
+    items: [
+      'Which finding location is most common in audit findings?',
+      'Show the distribution of worst-case consequences (C1, C2, C3, C4) in audits.',
+      'Show the top 10 most frequent audit findings.',
+      'Which companies have the most audit findings?',
+      'What percentage of audit findings involve C3 - Severe consequences?',
+    ],
+  },
+  {
+    title: 'Audit Timeline & Closure',
+    dataset: 'audit',
+    items: [
+      'Calculate the average time taken to close an audit.',
+      'Show the distribution of time from scheduled to closed status.',
+      'Which audits have the longest pending action plans?',
+      'How many audits are currently in "In Progress" status?',
+      'What is the average time from review to closure?',
+    ],
+  },
+  {
+    title: 'Inspection Execution & Coverage',
     dataset: 'inspection',
     items: [
       'Show the total number of inspections per year.',
-      'Which action item priority is most common in inspections?',
-      'How many action items are overdue (due date < today and status not closed)?',
-      'What is the most common worst-case consequence in inspection findings?',
       'Which location has the highest number of inspections?',
-      'What is the closure rate (%) of inspection action items?',
       'Show the total number of inspections done by each inspector.',
+      'What is the distribution of inspections by audit type?',
+      'Which departments are most frequently inspected?',
     ],
   },
   {
-    title: 'Cross-Sheet (Advanced Analysis) Questions',
+    title: 'Inspection Findings & Consequences',
+    dataset: 'inspection',
+    items: [
+      'What is the most common worst-case consequence in inspection findings?',
+      'Show the distribution of violation categories in inspections.',
+      'Which finding locations appear most frequently?',
+      'How many inspections identified unsafe acts vs unsafe conditions?',
+      'What are the most common conversation topics with workforce?',
+    ],
+  },
+  {
+    title: 'Inspection Action Items & Follow-up',
+    dataset: 'inspection',
+    items: [
+      'Which action item priority is most common in inspections?',
+      'How many action items are overdue (due date < today and status not closed)?',
+      'What is the closure rate (%) of inspection action items?',
+      'Show action items grouped by responsible person.',
+      'How many inspections are missing action item details?',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: Department Performance',
     dataset: 'all',
     items: [
       'What are the top 5 departments appearing in both Incidents and Hazards?',
+      'Which departments have high incident counts but low hazard reporting?',
+      'Show department risk scores across all datasets.',
+      'Compare department frequency in Incidents, Hazards, Audits, and Inspections.',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: Consequence & Risk',
+    dataset: 'all',
+    items: [
       'Compare the consequence categories (C1, C2, etc.) between Audit Findings and Incidents.',
       'In departments where hazard risk score > 2, how many incidents have occurred?',
-      'Which locations appear in both Audits and Inspections most frequently?',
+      'What is the correlation between audit findings severity and incident severity?',
+      'Show all records with C3 - Severe or C4 - Catastrophic consequences.',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: Corrective Actions',
+    dataset: 'all',
+    items: [
       'What is the combined ratio of missing corrective actions in Hazards and Incidents?',
+      'Which locations have the most missing corrective actions across all datasets?',
+      'Compare corrective action completion rates between Incidents and Hazards.',
+      'Show the total number of action items across Audits and Inspections.',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: Location & Equipment',
+    dataset: 'all',
+    items: [
+      'Which locations appear in both Audits and Inspections most frequently?',
+      'Show locations with the highest combined risk from Incidents and Hazards.',
+      'Which equipment or materials appear most frequently across incidents?',
+      'Compare location distribution across all four datasets.',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: PSM & Compliance',
+    dataset: 'all',
+    items: [
+      'How many total compliance system violations exist across all datasets?',
+      'Show PSM category breakdown for incidents.',
+      'Which management systems have the most noncompliance entries?',
+      'Compare regulatory compliance across Audits and Inspections.',
+    ],
+  },
+  {
+    title: 'Cross-Dataset: Personnel & Accountability',
+    dataset: 'all',
+    items: [
+      'Who are the most frequent reporters across Incidents and Hazards?',
+      'Show auditors/inspectors with the highest number of findings.',
+      'Which responsible persons appear most frequently in action items?',
+      'Compare personnel involved in incidents vs hazards.',
+    ],
+  },
+  {
+    title: '📊 Chart & Visualization Queries',
+    dataset: 'all',
+    items: [
+      'Create a bar chart showing incidents by month for 2023.',
+      'Plot a line chart of incident trends over time.',
+      'Show a pie chart of incident types distribution.',
+      'Create a bar chart comparing risk scores across departments.',
+      'Generate a scatter plot of severity score vs estimated cost impact.',
+      'Show a stacked bar chart of consequence categories by department.',
+      'Create a time series chart of hazard reporting trends.',
+      'Plot a histogram of resolution time distribution for incidents.',
+      'Show a dual-axis chart comparing incident count and average risk score by month.',
+      'Create a heatmap showing incidents by department and month.',
+    ],
+  },
+  {
+    title: '📅 Date Range & Time-Based Analysis',
+    dataset: 'all',
+    items: [
+      'Show all incidents reported in Q1 2023 (January to March).',
+      'Compare incident counts between 2022 and 2023.',
+      'Find incidents with occurrence dates in the last 90 days.',
+      'Show hazards reported in the last 6 months.',
+      'What were the top 5 incidents in 2022 by cost impact?',
+      'Show audits completed between January 2023 and June 2023.',
+      'Find all overdue action items (due date before today).',
+      'Compare monthly incident rates: 2022 vs 2023.',
+      'Show incidents with resolution time greater than 30 days.',
+      'Find all inspections conducted in the last quarter.',
+      'Show year-over-year growth in hazard reporting.',
+      'Analyze seasonal patterns in incident occurrence (by quarter).',
+    ],
+  },
+  {
+    title: '🔍 Research & Best Practices (Web Search)',
+    dataset: 'all',
+    items: [
+      'What are OSHA requirements for incident reporting and investigation?',
+      'Search for best practices in Process Safety Management (PSM).',
+      'Find the latest ISO 45001 guidelines for safety management systems.',
+      'What are the top 5 root cause analysis methods used in chemical plants?',
+      'Research common causes of equipment failure in polymer manufacturing.',
+      'Find industry benchmarks for safety incident rates in chemical manufacturing.',
+      'What are the recommended corrective actions for catalyst loss in chemical reactors?',
+      'Search for best practices in permit-to-work systems.',
+      'Find case studies on reducing reporting delays in safety incidents.',
+      'What are effective strategies for hazard identification in manufacturing facilities?',
+      'Research mechanical integrity best practices for chemical plants.',
+      'Find guidelines for emergency response planning in polymer facilities.',
     ],
   },
 ];
@@ -188,6 +393,7 @@ export default function Agent2() {
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [finalAnswer, setFinalAnswer] = useState("");
   const [thinkingText, setThinkingText] = useState("");
+  const [reasoningText, setReasoningText] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentDataset, setCurrentDataset] = useState<string>(dataset);
   const websocketRef = useRef<WebSocket | null>(null);
@@ -368,6 +574,7 @@ export default function Agent2() {
     setToolCalls([]);
     setStreamEvents([]);
     setThinkingText("");
+    setReasoningText("");
     setCurrentCode("");
     setCurrentStage("");
     isAnswerModeRef.current = false; // Reset answer mode
@@ -404,6 +611,12 @@ export default function Agent2() {
         console.log('📡 WebSocket message:', data);
         
         // Handle token-by-token streaming first (don't add to events)
+        if (data.type === 'reasoning_token' && data.token) {
+          // Backend sends reasoning_token for the model's thought process
+          setReasoningText(prev => prev + data.token!);
+          return;
+        }
+        
         if (data.type === 'thinking_token' && data.token) {
           // Backend sends thinking_token for both reasoning and final answer
           // We accumulate in thinking text until answer_complete arrives
@@ -480,8 +693,9 @@ export default function Agent2() {
           console.log('✅ Received formatted answer, length:', data.content.length);
           setFinalAnswer(data.content);
           setCurrentAnalysis(data.content);
-          // Clear thinking text since we now have the final formatted answer
+          // Clear thinking and reasoning text since we now have the final formatted answer
           setThinkingText("");
+          setReasoningText("");
         }
 
         // Completion
@@ -506,6 +720,7 @@ export default function Agent2() {
             setToolCalls([]);
             setResponse(null);
             setThinkingText("");
+            setReasoningText("");
             currentMessageIdRef.current = null;
           }, 100);
           
@@ -516,11 +731,6 @@ export default function Agent2() {
               bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
             }
           }, 300);
-          
-          toast({
-            title: "Analysis Complete",
-            description: "Your safety analysis is ready!",
-          });
         }
       } catch (error) {
         console.error('WebSocket message parse error:', error);
@@ -537,6 +747,7 @@ export default function Agent2() {
           title: "WebSocket Error",
           description: "Connection failed. Please try again.",
           variant: "destructive",
+          className: "left-4",
         });
       }
     };
@@ -578,7 +789,7 @@ export default function Agent2() {
     setQuestion(q);
     setDataset(d);
     setQueriesOpen(false);
-    toast({ title: 'Copied', description: 'Query copied and running with the model...' });
+    // Query auto-runs, no toast needed
     startWebSocketStreaming(q, d);
   };
 
@@ -587,7 +798,7 @@ export default function Agent2() {
     savedMessageIdsRef.current.clear();
     currentMessageIdRef.current = null;
     localStorage.removeItem('safety-copilot-conversation');
-    toast({ title: 'Cleared', description: 'Conversation history cleared.' });
+    // Conversation cleared, no toast needed
   };
 
   return (
@@ -686,7 +897,9 @@ export default function Agent2() {
                               {msg.toolCalls.map((tc, idx) => {
                         const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                         const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
-                        const shouldAutoExpand = hasTableData || hasChartData;
+                        const isWebSearch = tc.tool === 'search_web' && tc.result && typeof tc.result === 'object' && tc.result.results && Array.isArray(tc.result.results) && tc.result.results.length > 0;
+                        const isImageSearch = tc.tool === 'search_images' && tc.result && typeof tc.result === 'object' && tc.result.images && Array.isArray(tc.result.images) && tc.result.images.length > 0;
+                        const shouldAutoExpand = hasTableData || hasChartData || isWebSearch || isImageSearch;
                         
                         return (
                           <Collapsible key={idx} defaultOpen={shouldAutoExpand}>
@@ -704,6 +917,9 @@ export default function Agent2() {
                                     )}
                                     {hasChartData && (
                                       <Badge variant="secondary" className="ml-2 text-xs">📈 Chart</Badge>
+                                    )}
+                                    {isWebSearch && (
+                                      <Badge variant="secondary" className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">🔍 {tc.result.results.length} sources</Badge>
                     )}
                   </button>
                 </CollapsibleTrigger>
@@ -721,6 +937,94 @@ export default function Agent2() {
                                       <div className="space-y-3">
                             <div className="text-xs font-semibold text-muted-foreground mb-1">Result</div>
                                         
+                                        {/* Render Web Search Results */}
+                                        {isWebSearch && (
+                                          <div className="space-y-2">
+                                            {tc.result.results.map((source: any, idx: number) => (
+                                              (() => {
+                                                const href: string = String(source.link || "");
+                                                let host = String(source.source || "");
+                                                let path = "";
+                                                try {
+                                                  const u = new URL(href);
+                                                  host = u.hostname.replace(/^www\./, '') || host;
+                                                  path = u.pathname || "";
+                                                } catch {}
+                                                const pathShort = path.length > 60 ? path.slice(0, 60) + '…' : path;
+                                                const favicon = host ? `https://www.google.com/s2/favicons?domain=${host}&sz=64` : '';
+                                                return (
+                                                  <div key={idx} className="border rounded-xl p-3 bg-card hover:shadow-md transition-shadow">
+                                                    <div className="flex items-start justify-between gap-3">
+                                                      <div className="flex-1 min-w-0">
+                                                        <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                                          {favicon && (
+                                                            <img
+                                                              src={favicon}
+                                                              alt={host}
+                                                              className="w-4 h-4 rounded-full border"
+                                                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                            />
+                                                          )}
+                                                          <span className="font-semibold truncate max-w-[40%]">{host || 'source'}</span>
+                                                          {pathShort && <span className="truncate">{pathShort}</span>}
+                                                        </div>
+                                                        <a
+                                                          href={href}
+                                                          target="_blank"
+                                                          rel="noopener noreferrer"
+                                                          className="block text-sm font-semibold text-sky-700 hover:underline mt-1"
+                                                        >
+                                                          {source.title}
+                                                        </a>
+                                                        {source.snippet && (
+                                                          <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                                                            {source.snippet}
+                                                          </p>
+                                                        )}
+                                                      </div>
+                                                      {source.thumbnail && (
+                                                        <img
+                                                          src={source.thumbnail}
+                                                          alt={source.title}
+                                                          className="w-20 h-20 rounded-md object-cover border"
+                                                          onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                        />
+                                                      )}
+                                                    </div>
+                                                  </div>
+                                                );
+                                              })()
+                                            ))}
+                                          </div>
+                                        )}
+                                        
+                                        {/* Render Image Search Results */}
+                                        {isImageSearch && (
+                                          <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                            {tc.result.images.map((img: any, i: number) => (
+                                              <a
+                                                key={i}
+                                                href={img.link || img.imageUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="group relative block overflow-hidden rounded-md border"
+                                              >
+                                                <img
+                                                  src={img.thumbnailUrl || img.imageUrl}
+                                                  alt={img.title || 'image'}
+                                                  className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                                {(img.title || img.source) && (
+                                                  <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1.5 py-1 truncate">
+                                                    {img.title || img.source}
+                                                  </div>
+                                                )}
+                                              </a>
+                                            ))}
+                                          </div>
+                                        )}
+
                                         {/* Render Table if available */}
                                         {hasTableData && (
                                           <div className="overflow-x-auto rounded-lg border">
@@ -837,8 +1141,8 @@ export default function Agent2() {
                       </div>
                                         )}
                                         
-                                        {/* Raw JSON (only if no table/chart) */}
-                                        {!hasTableData && !hasChartData && (
+                                        {/* Raw JSON (only if no table/chart/web search) */}
+                                        {!hasTableData && !hasChartData && !isWebSearch && (
                                           <div className="bg-muted rounded-lg p-3">
                                             <pre className="text-xs font-mono overflow-x-auto max-h-48">
 {typeof tc.result === 'object' ? JSON.stringify(tc.result, null, 2) : tc.result}
@@ -914,8 +1218,23 @@ export default function Agent2() {
                               tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
                               th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
                               td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
+                              a: ({node, ...props}: any) => (
+                                <a 
+                                  {...props} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                                />
+                              ),
                               img: ({node, ...props}: any) => {
                                 const src: string = String(props.src || "");
+                                const alt: string = String(props.alt || "");
+                                
+                                // Hide placeholder images
+                                if (!src || src === 'chart_placeholder' || src.includes('placeholder')) {
+                                  return null;
+                                }
+                                
                                 let normalized = src;
                                 try {
                                   if (src.includes('quickchart.io/chart')) {
@@ -928,7 +1247,19 @@ export default function Agent2() {
                                     }
                                   }
                                 } catch {}
-                                return <img {...props} src={normalized} className="rounded-md border" />;
+                                
+                                return (
+                                  <img 
+                                    {...props} 
+                                    src={normalized} 
+                                    alt={alt}
+                                    className="rounded-md border max-w-full h-auto my-4"
+                                    onError={(e) => {
+                                      // Hide broken images
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                );
                               },
                             }}
                           >
@@ -984,8 +1315,10 @@ export default function Agent2() {
                       // Check if result has table or chart data
                       const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                       const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
+                      const isWebSearch = tc.tool === 'search_web' && tc.result && typeof tc.result === 'object' && tc.result.results && Array.isArray(tc.result.results) && tc.result.results.length > 0;
+                      const isImageSearch = tc.tool === 'search_images' && tc.result && typeof tc.result === 'object' && tc.result.images && Array.isArray(tc.result.images) && tc.result.images.length > 0;
                       // Auto-expand if has visual data
-                      const shouldAutoExpand = hasTableData || hasChartData;
+                      const shouldAutoExpand = hasTableData || hasChartData || isWebSearch || isImageSearch;
                       
                       return (
                       <Collapsible key={idx} defaultOpen={shouldAutoExpand}>
@@ -1008,6 +1341,16 @@ export default function Agent2() {
                                     📈 Chart
                                   </Badge>
                                 )}
+                                {isWebSearch && (
+                                  <Badge variant="secondary" className="ml-2 text-xs bg-blue-50 text-blue-700 border-blue-200">
+                                    🔍 {tc.result.results.length} sources
+                                  </Badge>
+                                )}
+                                {isImageSearch && (
+                                  <Badge variant="secondary" className="ml-2 text-xs bg-purple-50 text-purple-700 border-purple-200">
+                                    🖼️ {tc.result.images.length} images
+                                  </Badge>
+                                )}
                                 {!tc.result && (
                                   <Loader2 className="h-3 w-3 animate-spin ml-auto" />
                     )}
@@ -1027,6 +1370,94 @@ export default function Agent2() {
                           <div className="space-y-3">
                             <div className="text-xs font-semibold text-muted-foreground mb-1">Result</div>
                             
+                            {/* Render Web Search Results */}
+                            {isWebSearch && (
+                              <div className="space-y-2">
+                                {tc.result.results.map((source: any, idx: number) => (
+                                  (() => {
+                                    const href: string = String(source.link || "");
+                                    let host = String(source.source || "");
+                                    let path = "";
+                                    try {
+                                      const u = new URL(href);
+                                      host = u.hostname.replace(/^www\./, '') || host;
+                                      path = u.pathname || "";
+                                    } catch {}
+                                    const pathShort = path.length > 60 ? path.slice(0, 60) + '…' : path;
+                                    const favicon = host ? `https://www.google.com/s2/favicons?domain=${host}&sz=64` : '';
+                                    return (
+                                      <div key={idx} className="border rounded-xl p-3 bg-card hover:shadow-md transition-shadow">
+                                        <div className="flex items-start justify-between gap-3">
+                                          <div className="flex-1 min-w-0">
+                                            <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                                              {favicon && (
+                                                <img
+                                                  src={favicon}
+                                                  alt={host}
+                                                  className="w-4 h-4 rounded-full border"
+                                                  onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                                />
+                                              )}
+                                              <span className="font-semibold truncate max-w-[40%]">{host || 'source'}</span>
+                                              {pathShort && <span className="truncate">{pathShort}</span>}
+                                            </div>
+                                            <a
+                                              href={href}
+                                              target="_blank"
+                                              rel="noopener noreferrer"
+                                              className="block text-sm font-semibold text-sky-700 hover:underline mt-1"
+                                            >
+                                              {source.title}
+                                            </a>
+                                            {source.snippet && (
+                                              <p className="text-sm text-muted-foreground line-clamp-2 mt-0.5">
+                                                {source.snippet}
+                                              </p>
+                                            )}
+                                          </div>
+                                          {source.thumbnail && (
+                                            <img
+                                              src={source.thumbnail}
+                                              alt={source.title}
+                                              className="w-20 h-20 rounded-md object-cover border"
+                                              onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                            />
+                                          )}
+                                        </div>
+                                      </div>
+                                    );
+                                  })()
+                                ))}
+                              </div>
+                            )}
+                            
+                            {/* Render Image Search Results */}
+                            {isImageSearch && (
+                              <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
+                                {tc.result.images.map((img: any, i: number) => (
+                                  <a
+                                    key={i}
+                                    href={img.link || img.imageUrl}
+                                    target="_blank"
+                                    rel="noopener noreferrer"
+                                    className="group relative block overflow-hidden rounded-md border"
+                                  >
+                                    <img
+                                      src={img.thumbnailUrl || img.imageUrl}
+                                      alt={img.title || 'image'}
+                                      className="aspect-square w-full object-cover transition-transform duration-200 group-hover:scale-[1.03]"
+                                      onError={(e) => { (e.target as HTMLImageElement).style.display = 'none'; }}
+                                    />
+                                    {(img.title || img.source) && (
+                                      <div className="absolute bottom-0 left-0 right-0 bg-black/50 text-white text-[10px] px-1.5 py-1 truncate">
+                                        {img.title || img.source}
+                                      </div>
+                                    )}
+                                  </a>
+                                ))}
+                              </div>
+                            )}
+
                             {/* Render Table if available */}
                             {hasTableData && (
                               <div className="overflow-x-auto rounded-lg border">
@@ -1143,8 +1574,8 @@ export default function Agent2() {
                               </div>
                             )}
                             
-                            {/* Raw JSON (collapsed by default if we have table/chart) */}
-                            {!hasTableData && !hasChartData && (
+                            {/* Raw JSON (collapsed by default if we have table/chart/web search) */}
+                            {!hasTableData && !hasChartData && !isWebSearch && (
                                     <div className="bg-muted rounded-lg p-3">
                                       <pre className="text-xs font-mono overflow-x-auto max-h-48">
 {typeof tc.result === 'object' ? JSON.stringify(tc.result, null, 2) : tc.result}
@@ -1162,11 +1593,17 @@ export default function Agent2() {
                               })}
                               </div>
                             )}
-                            {/* Thinking text */}
-                            {thinkingText && thinkingText.trim().length > 0 && (
+                            {/* Reasoning text (model's thought process) */}
+                            {reasoningText && reasoningText.trim().length > 0 && (
                               <div className="mt-1 pl-1">
-                                <div className="bg-muted/50 rounded-lg p-3 text-sm text-muted-foreground font-mono whitespace-pre-wrap">
-                                  {thinkingText}
+                                <div className="flex items-center gap-1 text-[11px] text-muted-foreground mb-1">
+                                  <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-400" />
+                                  <span className="font-medium">Reasoning</span>
+                                </div>
+                                <div className="rounded-md border bg-muted/30 p-2">
+                                  <pre className="m-0 text-xs font-mono leading-relaxed text-muted-foreground whitespace-pre-wrap">
+                                    {reasoningText}
+                                  </pre>
                                 </div>
                               </div>
                             )}
@@ -1244,8 +1681,23 @@ export default function Agent2() {
                               tr: ({node, ...props}) => <tr className="hover:bg-muted/30 transition-colors" {...props} />,
                               th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-foreground uppercase tracking-wider" {...props} />,
                               td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-foreground" {...props} />,
+                              a: ({node, ...props}: any) => (
+                                <a 
+                                  {...props} 
+                                  target="_blank" 
+                                  rel="noopener noreferrer"
+                                  className="text-blue-600 hover:text-blue-800 underline font-medium"
+                                />
+                              ),
                               img: ({node, ...props}: any) => {
                                 const src: string = String(props.src || "");
+                                const alt: string = String(props.alt || "");
+                                
+                                // Hide placeholder images
+                                if (!src || src === 'chart_placeholder' || src.includes('placeholder')) {
+                                  return null;
+                                }
+                                
                                 let normalized = src;
                                 try {
                                   if (src.includes('quickchart.io/chart')) {
@@ -1258,7 +1710,19 @@ export default function Agent2() {
                                     }
                                   }
                                 } catch {}
-                                return <img {...props} src={normalized} className="rounded-md border" />;
+                                
+                                return (
+                                  <img 
+                                    {...props} 
+                                    src={normalized} 
+                                    alt={alt}
+                                    className="rounded-md border max-w-full h-auto my-4"
+                                    onError={(e) => {
+                                      // Hide broken images
+                                      (e.target as HTMLImageElement).style.display = 'none';
+                                    }}
+                                  />
+                                );
                               },
                             }}
                           >
@@ -1427,10 +1891,7 @@ export default function Agent2() {
                     onClick={(e) => {
                       e.stopPropagation();
                       navigator.clipboard.writeText(response.code);
-                      toast({
-                        title: "Code Copied",
-                        description: "Python code copied to clipboard",
-                      });
+                      // Code copied silently
                     }}
                   >
                     Copy

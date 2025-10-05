@@ -41,7 +41,7 @@ interface ChartData {
 }
 
 interface StreamEvent {
-  type: 'progress' | 'code_chunk' | 'code_generated' | 'analysis_chunk' | 'error' | 'verification' | 'complete' | 'thinking' | 'thinking_token' | 'reflection' | 'data_ready' | 'chain_of_thought' | 'reflection_chunk' | 'reasoning' | 'tool_call' | 'tool_result' | 'answer' | 'answer_token' | 'answer_complete' | 'final_answer' | 'final' | 'final_answer_complete' | 'start' | 'stream_end';
+  type: 'progress' | 'code_chunk' | 'code_generated' | 'analysis_chunk' | 'error' | 'verification' | 'complete' | 'thinking' | 'thinking_token' | 'reasoning_token' | 'reflection' | 'data_ready' | 'chain_of_thought' | 'reflection_chunk' | 'reasoning' | 'tool_call' | 'tool_result' | 'answer' | 'answer_token' | 'answer_complete' | 'final_answer' | 'final' | 'final_answer_complete' | 'start' | 'stream_end';
   message?: string;
   chunk?: string;
   code?: string;
@@ -85,6 +85,7 @@ export function ChatBubble() {
   const [toolCalls, setToolCalls] = useState<ToolCall[]>([]);
   const [finalAnswer, setFinalAnswer] = useState("");
   const [thinkingText, setThinkingText] = useState("");
+  const [reasoningText, setReasoningText] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
   const [currentDataset, setCurrentDataset] = useState<string>(dataset);
   const [response, setResponse] = useState<AgentResponse | null>(null);
@@ -218,6 +219,7 @@ export function ChatBubble() {
     setDebouncedAnalysis("");
     setToolCalls([]);
     setThinkingText("");
+    setReasoningText("");
     setCurrentCode("");
     isAnswerModeRef.current = false;
     
@@ -254,6 +256,12 @@ export function ChatBubble() {
     ws.onmessage = (event) => {
       try {
         const data: StreamEvent = JSON.parse(event.data);
+        
+        if (data.type === 'reasoning_token' && data.token) {
+          // Backend sends reasoning_token for the model's thought process
+          setReasoningText(prev => prev + data.token!);
+          return;
+        }
         
         if (data.type === 'thinking_token' && data.token) {
           // Backend sends thinking_token for both reasoning and final answer
@@ -298,8 +306,9 @@ export function ChatBubble() {
           console.log('✅ Received formatted answer, length:', data.content.length);
           setFinalAnswer(data.content);
           setCurrentAnalysis(data.content);
-          // Clear thinking text since we now have the final formatted answer
+          // Clear thinking and reasoning text since we now have the final formatted answer
           setThinkingText("");
+          setReasoningText("");
         }
 
         if (data.type === 'complete' || data.type === 'stream_end') {
@@ -376,6 +385,7 @@ export function ChatBubble() {
             setToolCalls([]);
             setResponse(null);
             setThinkingText("");
+            setReasoningText("");
             currentMessageIdRef.current = null;
             isAnswerModeRef.current = false;
             console.log('✅ Current message states cleared');
@@ -540,6 +550,7 @@ export function ChatBubble() {
                             {msg.toolCalls.map((tc, tcIdx) => {
                         const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                         const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
+                        const isWebSearch = tc.tool === 'search_web' && tc.result && typeof tc.result === 'object' && tc.result.results && Array.isArray(tc.result.results) && tc.result.results.length > 0;
                         
                         return (
                           <Collapsible key={tcIdx} defaultOpen={hasTableData || hasChartData}>
@@ -553,10 +564,55 @@ export function ChatBubble() {
                                   <span className="font-semibold text-gray-800 flex-1">{tc.tool}</span>
                                   {hasTableData && <Badge variant="secondary" className="text-[10px] h-5 bg-blue-50 text-blue-700 border-0">Table</Badge>}
                                   {hasChartData && <Badge variant="secondary" className="text-[10px] h-5 bg-purple-50 text-purple-700 border-0">Chart</Badge>}
+                                  {isWebSearch && <Badge variant="secondary" className="text-[10px] h-5 bg-blue-50 text-blue-700 border-0">🔍 {tc.result.results.length} sources</Badge>}
                                 </button>
                               </CollapsibleTrigger>
                               <CollapsibleContent>
                                 <div className="mt-3 space-y-2">
+                                  {/* Render Web Search Results */}
+                                  {isWebSearch && (
+                                    <div className="space-y-2">
+                                      {tc.result.results.map((source: any, idx: number) => (
+                                        (() => {
+                                          const href: string = String(source.link || "");
+                                          let host = String(source.source || "");
+                                          let path = "";
+                                          try {
+                                            const u = new URL(href);
+                                            host = u.hostname.replace(/^www\./, '') || host;
+                                            path = u.pathname || "";
+                                          } catch {}
+                                          const pathShort = path.length > 60 ? path.slice(0, 60) + '…' : path;
+                                          const favicon = host ? `https://www.google.com/s2/favicons?domain=${host}&sz=64` : '';
+                                          return (
+                                            <div key={idx} className="border rounded-xl p-3 bg-white hover:shadow-md transition-shadow">
+                                              <div className="flex items-start justify-between gap-3">
+                                                <div className="flex-1 min-w-0">
+                                                  <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                                                    {favicon && (
+                                                      <img src={favicon} alt={host} className="w-4 h-4 rounded-full border" onError={(e)=>{(e.target as HTMLImageElement).style.display='none';}} />
+                                                    )}
+                                                    <span className="font-medium truncate max-w-[40%]">{host || 'source'}</span>
+                                                    {pathShort && <span className="truncate">{pathShort}</span>}
+                                                  </div>
+                                                  <a href={href} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-sky-700 hover:underline mt-1">
+                                                    {source.title}
+                                                  </a>
+                                                  {source.snippet && (
+                                                    <p className="text-xs text-gray-600 line-clamp-2 mt-0.5">{source.snippet}</p>
+                                                  )}
+                                                </div>
+                                                {source.thumbnail && (
+                                                  <img src={source.thumbnail} alt={source.title} className="w-16 h-16 rounded-md object-cover border" onError={(e)=>{(e.target as HTMLImageElement).style.display='none';}} />
+                                                )}
+                                              </div>
+                                            </div>
+                                          );
+                                        })()
+                                      ))}
+                                    </div>
+                                  )}
+                                  
                                   {/* Render Chart */}
                                   {hasChartData && (
                                     <div className="bg-gray-50 rounded p-3">
@@ -681,6 +737,48 @@ export function ChatBubble() {
                             tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
                             th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />,
                             td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-gray-900" {...props} />,
+                            a: ({node, ...props}: any) => (
+                              <a 
+                                {...props} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline font-medium"
+                              />
+                            ),
+                            img: ({node, ...props}: any) => {
+                              const src: string = String(props.src || "");
+                              const alt: string = String(props.alt || "");
+                              
+                              // Hide placeholder images
+                              if (!src || src === 'chart_placeholder' || src.includes('placeholder')) {
+                                return null;
+                              }
+                              
+                              let normalized = src;
+                              try {
+                                if (src.includes('quickchart.io/chart')) {
+                                  const u = new URL(src);
+                                  const c = u.searchParams.get('c');
+                                  if (c) {
+                                    u.searchParams.set('c', c);
+                                    normalized = u.toString();
+                                  }
+                                }
+                              } catch {}
+                              
+                              return (
+                                <img 
+                                  {...props} 
+                                  src={normalized} 
+                                  alt={alt}
+                                  className="rounded-md border max-w-full h-auto my-4"
+                                  onError={(e) => {
+                                    // Hide broken images
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              );
+                            },
                           }}
                         >
                           {msg.analysis}
@@ -740,6 +838,7 @@ export function ChatBubble() {
                       const hasTableData = tc.result && typeof tc.result === 'object' && tc.result.table && Array.isArray(tc.result.table);
                       const hasChartData = tc.result && typeof tc.result === 'object' && tc.result.chart_type;
                       const hasSummary = tc.result && typeof tc.result === 'object' && (tc.result.summary || tc.result.description);
+                      const isWebSearch = tc.tool === 'search_web' && tc.result && typeof tc.result === 'object' && tc.result.results && Array.isArray(tc.result.results) && tc.result.results.length > 0;
                       
                       return (
                         <Collapsible key={idx} defaultOpen={hasTableData || hasChartData}>
@@ -752,6 +851,7 @@ export function ChatBubble() {
                                 {!tc.result && <Loader2 className="h-3.5 w-3.5 animate-spin text-primary" />}
                                 {hasTableData && <Badge variant="outline" className="text-[10px] h-5">Table</Badge>}
                                 {hasChartData && <Badge variant="outline" className="text-[10px] h-5">Chart</Badge>}
+                                {isWebSearch && <Badge variant="outline" className="text-[10px] h-5 bg-blue-50 text-blue-700 border-blue-200">🔍 {tc.result.results.length} sources</Badge>}
                               </button>
                             </CollapsibleTrigger>
                             <CollapsibleContent>
@@ -840,8 +940,52 @@ export function ChatBubble() {
                                   </div>
                                 )}
                                 
+                                {/* Show Web Search Results */}
+                                {isWebSearch && (
+                                  <div className="space-y-2">
+                                    {tc.result.results.map((source: any, idx: number) => (
+                                      (() => {
+                                        const href: string = String(source.link || "");
+                                        let host = String(source.source || "");
+                                        let path = "";
+                                        try {
+                                          const u = new URL(href);
+                                          host = u.hostname.replace(/^www\./, '') || host;
+                                          path = u.pathname || "";
+                                        } catch {}
+                                        const pathShort = path.length > 60 ? path.slice(0, 60) + '…' : path;
+                                        const favicon = host ? `https://www.google.com/s2/favicons?domain=${host}&sz=64` : '';
+                                        return (
+                                          <div key={idx} className="border rounded-xl p-3 bg-white hover:shadow-md transition-shadow">
+                                            <div className="flex items-start justify-between gap-3">
+                                              <div className="flex-1 min-w-0">
+                                                <div className="flex items-center gap-2 text-[11px] text-gray-500">
+                                                  {favicon && (
+                                                    <img src={favicon} alt={host} className="w-4 h-4 rounded-full border" onError={(e)=>{(e.target as HTMLImageElement).style.display='none';}} />
+                                                  )}
+                                                  <span className="font-medium truncate max-w-[40%]">{host || 'source'}</span>
+                                                  {pathShort && <span className="truncate">{pathShort}</span>}
+                                                </div>
+                                                <a href={href} target="_blank" rel="noopener noreferrer" className="block text-sm font-semibold text-sky-700 hover:underline mt-1">
+                                                  {source.title}
+                                                </a>
+                                                {source.snippet && (
+                                                  <p className="text-xs text-gray-600 line-clamp-2 mt-0.5">{source.snippet}</p>
+                                                )}
+                                              </div>
+                                              {source.thumbnail && (
+                                                <img src={source.thumbnail} alt={source.title} className="w-16 h-16 rounded-md object-cover border" onError={(e)=>{(e.target as HTMLImageElement).style.display='none';}} />
+                                              )}
+                                            </div>
+                                          </div>
+                                        );
+                                      })()
+                                    ))}
+                                  </div>
+                                )}
+                                
                                 {/* Show summary/description if available */}
-                                {hasSummary && (
+                                {!isWebSearch && hasSummary && (
                                   <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                                     <p className="text-xs text-blue-900 font-medium mb-1">Summary</p>
                                     <p className="text-xs text-blue-800">
@@ -851,7 +995,7 @@ export function ChatBubble() {
                                 )}
                                 
                                 {/* Show other result data (minimal format) */}
-                                {!hasTableData && !hasChartData && !hasSummary && tc.result && (
+                                {!hasTableData && !hasChartData && !hasSummary && !isWebSearch && tc.result && (
                                   <div className="bg-gray-50 rounded-lg p-3 border border-gray-200">
                                     <div className="space-y-2">
                                       {typeof tc.result === 'object' ? (
@@ -920,11 +1064,17 @@ export function ChatBubble() {
                     })}
                             </div>
                           )}
-                          {thinkingText && thinkingText.trim().length > 0 && (
-                            <div className="mt-2 bg-gray-50 rounded-lg p-3 border border-gray-200">
-                              <pre className="text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
-                                {thinkingText}
-                              </pre>
+                          {reasoningText && reasoningText.trim().length > 0 && (
+                            <div className="mt-2">
+                              <div className="flex items-center gap-1 text-[11px] text-gray-500 mb-1">
+                                <span className="inline-block w-1.5 h-1.5 rounded-full bg-purple-400" />
+                                <span className="font-medium">Reasoning</span>
+                              </div>
+                              <div className="rounded-md border bg-gray-50 p-2">
+                                <pre className="m-0 text-xs text-gray-700 whitespace-pre-wrap font-mono leading-relaxed">
+                                  {reasoningText}
+                                </pre>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -968,20 +1118,48 @@ export function ChatBubble() {
                           tr: ({node, ...props}) => <tr className="hover:bg-gray-50 transition-colors" {...props} />,
                           th: ({node, ...props}) => <th className="px-4 py-3 text-left text-xs font-semibold text-gray-700 uppercase tracking-wider" {...props} />,
                           td: ({node, ...props}) => <td className="px-4 py-3 text-sm text-gray-900" {...props} />,
+                            a: ({node, ...props}: any) => (
+                              <a 
+                                {...props} 
+                                target="_blank" 
+                                rel="noopener noreferrer"
+                                className="text-blue-600 hover:text-blue-800 underline font-medium"
+                              />
+                            ),
                             img: ({node, ...props}: any) => {
                               const src: string = String(props.src || "");
+                              const alt: string = String(props.alt || "");
+                              
+                              // Hide placeholder images
+                              if (!src || src === 'chart_placeholder' || src.includes('placeholder')) {
+                                return null;
+                              }
+                              
                               let normalized = src;
                               try {
                                 if (src.includes('quickchart.io/chart')) {
                                   const u = new URL(src);
                                   const c = u.searchParams.get('c');
                                   if (c) {
+                                    // Ensure chart config is properly encoded
                                     u.searchParams.set('c', c);
                                     normalized = u.toString();
                                   }
                                 }
                               } catch {}
-                              return <img {...props} src={normalized} className="rounded-md border" />;
+                              
+                              return (
+                                <img 
+                                  {...props} 
+                                  src={normalized} 
+                                  alt={alt}
+                                  className="rounded-md border max-w-full h-auto"
+                                  onError={(e) => {
+                                    // Hide broken images
+                                    (e.target as HTMLImageElement).style.display = 'none';
+                                  }}
+                                />
+                              );
                             },
                         }}
                       >
