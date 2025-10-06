@@ -877,6 +877,13 @@ export default function Agent2() {
     try {
       console.log('🎤 Starting AssemblyAI voice input...');
       
+      // Check if we're in a secure context (HTTPS or localhost)
+      const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
+      
+      if (!isSecureContext) {
+        throw new Error('Microphone access requires HTTPS. Please use a secure connection.');
+      }
+      
       // Check if getUserMedia is available
       if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
         throw new Error('getUserMedia is not supported in this browser');
@@ -1006,6 +1013,8 @@ export default function Agent2() {
         errorMessage = 'No microphone found. Please check your device.';
       } else if (error.message === 'getUserMedia is not supported in this browser') {
         errorMessage = 'Voice input is not supported in this browser. Please use a modern browser with microphone support.';
+      } else if (error.message === 'Microphone access requires HTTPS. Please use a secure connection.') {
+        errorMessage = 'Voice input requires HTTPS. Please access the app via a secure connection (https://) or use localhost for development.';
       }
       
       toast({
@@ -2484,7 +2493,8 @@ export default function Agent2() {
                   onClick={isListening ? stopVoiceInput : startVoiceInput}
                   size="icon"
                   variant="ghost"
-                  className={`absolute right-12 top-1 rounded-full h-10 w-10 ${isListening ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`}
+                  className={`absolute right-12 top-1 rounded-full h-10 w-10 ${isListening ? 'text-red-500 animate-pulse' : 'text-muted-foreground'} ${!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? 'opacity-50' : ''}`}
+                  title={!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? 'Voice input requires HTTPS' : 'Voice input'}
                 >
                   {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
                 </Button>
