@@ -7,8 +7,8 @@ import { Shield, BarChart3, Map, ArrowRight, CheckCircle2, Twitter, Github, Link
 import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
-// Reveal removed from bottom sections (no animations)
-import { Spotlight } from "@/components/ui/spotlight";
+// Lazy load non-critical visual effects
+const Spotlight = lazy(() => import("@/components/ui/spotlight").then(m => ({ default: m.Spotlight })));
 // Lazy load additional components
 const TestimonialsSection = lazy(() => import("@/components/ui/testimonials-with-marquee").then(m => ({ default: m.TestimonialsSection })));
 import { Typewriter } from "@/components/ui/typewriter";
@@ -20,9 +20,21 @@ import GlassSurface from "@/components/ui/GlassSurface";
 import CountUp from "@/components/ui/CountUp";
 import PerformanceMonitor from "@/components/ui/PerformanceMonitor";
 
-// Lazy load heavy components
+// Lazy load heavy components with higher priority
 const SplashCursor = lazy(() => import("@/components/ui/splash-cursor"));
 const CurvedLoop = lazy(() => import("@/components/ui/CurvedLoop"));
+
+// Preload critical images
+const preloadImages = () => {
+  const images = ['/logo.png', '/dashboard.png'];
+  images.forEach(src => {
+    const link = document.createElement('link');
+    link.rel = 'preload';
+    link.as = 'image';
+    link.href = src;
+    document.head.appendChild(link);
+  });
+};
 
 // Only register GSAP plugins when needed to reduce initial bundle size
 if (typeof window !== 'undefined') {
@@ -42,6 +54,11 @@ export default function Landing() {
   const [highlighterKey, setHighlighterKey] = useState(0);
   const location = useLocation();
 
+  // Preload critical images on mount
+  useEffect(() => {
+    preloadImages();
+  }, []);
+
   // Intersection observer for scroll animations with smoother settings - optimized
   useEffect(() => {
     // Use requestIdleCallback for better performance
@@ -49,7 +66,7 @@ export default function Landing() {
       if ('requestIdleCallback' in window) {
         requestIdleCallback(initObserver);
       } else {
-        setTimeout(initObserver, 0);
+        setTimeout(initObserver, 100); // Small delay to not block initial render
       }
     };
 
@@ -65,7 +82,7 @@ export default function Landing() {
           }
         });
       },
-        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' } // Reduced threshold for faster triggering
+        { threshold: 0.05, rootMargin: '0px 0px -100px 0px' } // Lower threshold, trigger earlier
     );
 
     // Observe all animatable elements
@@ -79,7 +96,7 @@ export default function Landing() {
     return cleanup;
   }, []);
 
-  // GSAP Navbar animation with wobbly effect - optimized
+  // GSAP Navbar animation with wobbly effect - optimized for faster load
   useGSAP(() => {
     if (navRef.current) {
       const tl = gsap.timeline({ paused: true });
@@ -91,25 +108,20 @@ export default function Landing() {
           opacity: 0,
         },
         { 
-          scaleX: 1.15,
+          scaleX: 1.1,
           opacity: 1,
-          duration: 0.4, // Reduced duration
+          duration: 0.25, // Faster duration
           ease: "power2.out",
         }
       )
       .to(navRef.current, {
-        scaleX: 0.95,
-        duration: 0.2, // Reduced duration
-        ease: "power2.inOut",
-      })
-      .to(navRef.current, {
-        scaleX: 1.05,
-        duration: 0.15, // Reduced duration
+        scaleX: 0.97,
+        duration: 0.12, // Faster duration
         ease: "power2.inOut",
       })
       .to(navRef.current, {
         scaleX: 1,
-        duration: 0.1, // Reduced duration
+        duration: 0.08, // Faster duration
         ease: "power2.out",
       });
       
@@ -118,47 +130,47 @@ export default function Landing() {
     }
   }, []);
 
-  // GSAP Hero animations - optimized
+  // GSAP Hero animations - optimized for faster load
   useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: "power2.out" }, delay: 0.2 }); // Reduced delay and changed easing
+    const tl = gsap.timeline({ defaults: { ease: "power2.out" }, delay: 0.1 }); // Further reduced delay
 
     // Animate badge
     tl.fromTo(
       badgeRef.current,
       { opacity: 0, scale: 0.8, y: 20 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.4 } // Reduced duration
+      { opacity: 1, scale: 1, y: 0, duration: 0.3 } // Faster duration
     );
 
     // Animate heading
     tl.fromTo(
       headingRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.6 }, // Reduced duration
-      "-=0.2" // Reduced overlap
+      { opacity: 1, y: 0, duration: 0.4 }, // Faster duration
+      "-=0.15" // More overlap for faster sequence
     );
 
     // Animate subheading
     tl.fromTo(
       subheadingRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.6, onComplete: () => setHighlighterKey(prev => prev + 1) }, // Reduced duration
-      "-=0.3" // Reduced overlap
+      { opacity: 1, y: 0, duration: 0.4, onComplete: () => setHighlighterKey(prev => prev + 1) }, // Faster duration
+      "-=0.2" // More overlap
     );
 
     // Animate CTA buttons
     tl.fromTo(
       ctaRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.6 }, // Reduced duration
-      "-=0.3" // Reduced overlap
+      { opacity: 1, y: 0, duration: 0.4 }, // Faster duration
+      "-=0.2" // More overlap
     );
 
     // Animate dashboard image
     tl.fromTo(
       imageRef.current,
       { opacity: 0, y: 60, scale: 0.9 },
-      { opacity: 1, y: 0, scale: 1, duration: 0.8 }, // Reduced duration
-      "-=0.4" // Reduced overlap
+      { opacity: 1, y: 0, scale: 1, duration: 0.5 }, // Faster duration
+      "-=0.3" // More overlap
     );
   }, { scope: heroRef });
 
@@ -167,20 +179,25 @@ export default function Landing() {
     if (reduceMotion) return;
 
     let ticking = false;
+    let lastScrollTime = 0;
+    const throttleDelay = 16; // ~60fps
+    
     const onScroll = () => {
-      if (!ticking) {
+      const now = Date.now();
+      if (!ticking && now - lastScrollTime > throttleDelay) {
+        lastScrollTime = now;
         requestAnimationFrame(() => {
-      const el = heroRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const viewportH = window.innerHeight || document.documentElement.clientHeight;
-      // Progress as the hero enters and scrolls
-      const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
-      // Gentle parallax values
-      const y = -progress * 24; // px upward shift
-      const scale = 1 + progress * 0.02; // up to 2% scale
-      setParallaxY(y);
-      setParallaxScale(scale);
+          const el = heroRef.current;
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const viewportH = window.innerHeight || document.documentElement.clientHeight;
+          // Progress as the hero enters and scrolls
+          const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
+          // Gentle parallax values
+          const y = -progress * 24; // px upward shift
+          const scale = 1 + progress * 0.02; // up to 2% scale
+          setParallaxY(y);
+          setParallaxScale(scale);
           ticking = false;
         });
         ticking = true;
@@ -266,21 +283,26 @@ export default function Landing() {
   ];
   return (
     <div className="relative min-h-screen bg-black text-white bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem]">
-      <PerformanceMonitor />
-      <Suspense fallback={<div className="fixed top-0 left-0 z-0 pointer-events-none w-full h-full" />}>
+      {/* PerformanceMonitor disabled for better performance */}
+      {/* <PerformanceMonitor /> */}
+      
+      {/* SplashCursor with reduced settings for better performance */}
+      <Suspense fallback={null}>
       <SplashCursor 
-        SIM_RESOLUTION={128}
-        DYE_RESOLUTION={512}
-        CURL={25}
-        SPLAT_RADIUS={0.18}
-        SPLAT_FORCE={4000}
-        DENSITY_DISSIPATION={1.5}
-        VELOCITY_DISSIPATION={0.3}
-        PRESSURE={0.6}
-        COLOR_UPDATE_SPEED={8}
+        SIM_RESOLUTION={64}
+        DYE_RESOLUTION={256}
+        CURL={15}
+        SPLAT_RADIUS={0.15}
+        SPLAT_FORCE={2000}
+        DENSITY_DISSIPATION={2}
+        VELOCITY_DISSIPATION={0.5}
+        PRESSURE={0.5}
+        COLOR_UPDATE_SPEED={5}
       />
       </Suspense>
-      <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
+      <Suspense fallback={null}>
+        <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
+      </Suspense>
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
         <GlassSurface
@@ -375,9 +397,9 @@ export default function Landing() {
               <Typewriter
                 words={["insights", "analytics", "decisions", "prevention", "intelligence"]}
                 className="text-primary"
-                typingSpeed={70}
-                deletingSpeed={40}
-                delayBetweenWords={2200}
+                typingSpeed={50}
+                deletingSpeed={30}
+                delayBetweenWords={1800}
               />
             </h1>
             <p ref={subheadingRef} className="mt-4 text-base md:text-lg text-white/80 leading-relaxed opacity-0">
@@ -432,27 +454,20 @@ export default function Landing() {
             }}
           >
             <div className="relative group">
-              {/* Animated fog/smog layers */}
+              {/* Simplified fog layers - reduced for better performance */}
               <div className="absolute -inset-20 pointer-events-none overflow-visible z-0">
                 {/* Fog layer 1 */}
                 <div 
-                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-1"
+                  className="absolute inset-0 rounded-full blur-2xl animate-fog-drift-1 will-change-transform"
                   style={{
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.15) 0%, rgba(255,255,255,0.08) 40%, transparent 70%)'
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.05) 40%, transparent 70%)'
                   }}
                 />
                 {/* Fog layer 2 */}
                 <div 
-                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-2"
+                  className="absolute inset-0 rounded-full blur-2xl animate-fog-drift-2 will-change-transform"
                   style={{
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.12) 0%, rgba(255,255,255,0.06) 40%, transparent 70%)'
-                  }}
-                />
-                {/* Fog layer 3 */}
-                <div 
-                  className="absolute inset-0 rounded-full blur-3xl animate-fog-drift-3"
-                  style={{
-                    background: 'radial-gradient(circle, rgba(255,255,255,0.1) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)'
+                    background: 'radial-gradient(circle, rgba(255,255,255,0.08) 0%, rgba(255,255,255,0.04) 40%, transparent 70%)'
                   }}
                 />
               </div>
