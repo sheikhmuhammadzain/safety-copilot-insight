@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect } from "react";
+import axios from "axios";
 
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
@@ -8,15 +9,17 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Code, BarChart3, Sparkles, ChevronDown, ChevronRight, StopCircle, Loader2, BookOpen, Copy, Trash2 } from "lucide-react";
+import { Send, Code, BarChart3, Sparkles, ChevronDown, ChevronRight, StopCircle, Loader2, BookOpen, Copy, Trash2, ThumbsUp, ThumbsDown, Share2, RefreshCw, MoreHorizontal, Check, Upload, MoveUp, ArrowUp, Mic, MicOff } from "lucide-react";
 import Plot from "react-plotly.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
+import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
 import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import AITextLoading from "@/components/motion/AITextLoading";
+import VoiceModal from "@/components/VoiceModal";
 
 interface AgentResponse {
   code: string;
@@ -400,6 +403,19 @@ export default function Agent2() {
   const [queriesOpen, setQueriesOpen] = useState(false);
   const [debouncedAnalysis, setDebouncedAnalysis] = useState("");
   
+  // Action button states
+  const [copiedCurrent, setCopiedCurrent] = useState(false);
+  const [copiedHistory, setCopiedHistory] = useState<{[key: number]: boolean}>({});
+  const [likedCurrent, setLikedCurrent] = useState(false);
+  const [dislikedCurrent, setDislikedCurrent] = useState(false);
+  const [likedHistory, setLikedHistory] = useState<{[key: number]: boolean}>({});
+  const [dislikedHistory, setDislikedHistory] = useState<{[key: number]: boolean}>({});
+  const [isListening, setIsListening] = useState(false);
+  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
+  const recognitionRef = useRef<any>(null);
+  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
+  const audioChunksRef = useRef<Blob[]>([]);
+  
   // Use ref for immediate tracking (no async state delays)
   const currentMessageIdRef = useRef<string | null>(null);
   const savedMessageIdsRef = useRef<Set<string>>(new Set());
@@ -774,6 +790,13 @@ export default function Agent2() {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     startWebSocketStreaming();
+    
+    // Scroll to bottom after sending message
+    setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
   };
 
   const handleExampleClick = (prompt: string) => {
@@ -791,6 +814,13 @@ export default function Agent2() {
     setQueriesOpen(false);
     // Query auto-runs, no toast needed
     startWebSocketStreaming(q, d);
+    
+    // Scroll to bottom after picking query
+    setTimeout(() => {
+      if (bottomRef.current) {
+        bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
+      }
+    }, 100);
   };
 
   const clearConversation = () => {
@@ -799,6 +829,178 @@ export default function Agent2() {
     currentMessageIdRef.current = null;
     localStorage.removeItem('safety-copilot-conversation');
     // Conversation cleared, no toast needed
+  };
+
+  // Simple helper to download markdown content as a file
+  const downloadMarkdown = (filename: string, content: string) => {
+    try {
+      const blob = new Blob([content], { type: 'text/markdown;charset=utf-8' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = filename;
+      document.body.appendChild(a);
+      a.click();
+      a.remove();
+      URL.revokeObjectURL(url);
+    } catch (e) {
+      console.error('Failed to download markdown:', e);
+    }
+  };
+
+  // Voice input functionality with AssemblyAI (using axios)
+  const startVoiceInput = async () => {
+    try {
+      console.log('🎤 Starting AssemblyAI voice input...');
+      
+      // Open modal
+      setVoiceModalOpen(true);
+      
+      // Request microphone access
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      
+      setIsListening(true);
+      audioChunksRef.current = [];
+      
+      // Create MediaRecorder to capture audio
+      const mediaRecorder = new MediaRecorder(stream);
+      mediaRecorderRef.current = mediaRecorder;
+      
+      mediaRecorder.ondataavailable = (event) => {
+        if (event.data.size > 0) {
+          audioChunksRef.current.push(event.data);
+        }
+      };
+      
+      mediaRecorder.onstop = async () => {
+        console.log('🛑 Recording stopped, processing...');
+        
+        // Combine audio chunks
+        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
+        
+        // Stop all audio tracks
+        stream.getTracks().forEach(track => track.stop());
+        
+        // Send to AssemblyAI for transcription
+        try {
+          const baseUrl = "https://api.assemblyai.com";
+          const headers = {
+            authorization: "8768531e10a24e46a03d0d9da6f74095",
+          };
+          
+          console.log('📤 Uploading audio to AssemblyAI...');
+          
+          // Step 1: Upload audio file
+          const uploadResponse = await axios.post(`${baseUrl}/v2/upload`, audioBlob, {
+            headers: {
+              ...headers,
+              'Content-Type': 'application/octet-stream',
+            },
+          });
+          
+          const audioUrl = uploadResponse.data.upload_url;
+          console.log('✅ Audio uploaded:', audioUrl);
+          
+          // Step 2: Request transcription
+          const transcriptResponse = await axios.post(
+            `${baseUrl}/v2/transcript`,
+            {
+              audio_url: audioUrl,
+              speech_model: "universal",
+            },
+            { headers }
+          );
+          
+          const transcriptId = transcriptResponse.data.id;
+          console.log('🔄 Transcription started, ID:', transcriptId);
+          
+          // Step 3: Poll for completion
+          const pollingEndpoint = `${baseUrl}/v2/transcript/${transcriptId}`;
+          let attempts = 0;
+          const maxAttempts = 60; // 3 minutes max
+          
+          while (attempts < maxAttempts) {
+            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
+            
+            const pollingResponse = await axios.get(pollingEndpoint, { headers });
+            const transcriptionResult = pollingResponse.data;
+            
+            if (transcriptionResult.status === "completed") {
+              console.log('✅ Transcript:', transcriptionResult.text);
+              setQuestion(transcriptionResult.text);
+              setIsListening(false);
+              break;
+            } else if (transcriptionResult.status === "error") {
+              throw new Error(`Transcription failed: ${transcriptionResult.error}`);
+            }
+            
+            attempts++;
+            console.log(`⏳ Polling... (${attempts}/${maxAttempts})`);
+          }
+          
+          if (attempts >= maxAttempts) {
+            throw new Error('Transcription timeout');
+          }
+          
+        } catch (error: any) {
+          console.error('❌ AssemblyAI error:', error);
+          setIsListening(false);
+          toast({
+            title: "Transcription Error",
+            description: error.message || "Failed to transcribe audio. Please try again.",
+            variant: "destructive",
+            className: "left-4",
+          });
+        }
+      };
+      
+      // Start recording
+      mediaRecorder.start();
+      console.log('🔴 Recording started... (Click mic again to stop, or it will auto-stop in 10 seconds)');
+      
+      // Auto-stop after 10 seconds
+      setTimeout(() => {
+        if (mediaRecorder.state === 'recording') {
+          console.log('⏰ Auto-stopping recording after 10 seconds...');
+          mediaRecorder.stop();
+        }
+      }, 10000);
+      
+    } catch (error: any) {
+      console.error('❌ Microphone access error:', error);
+      setIsListening(false);
+      
+      let errorMessage = 'Failed to access microphone.';
+      if (error.name === 'NotAllowedError') {
+        errorMessage = 'Microphone permission denied. Please allow microphone access.';
+      } else if (error.name === 'NotFoundError') {
+        errorMessage = 'No microphone found. Please check your device.';
+      }
+      
+      toast({
+        title: "Microphone Error",
+        description: errorMessage,
+        variant: "destructive",
+        className: "left-4",
+      });
+    }
+  };
+
+  const stopVoiceInput = () => {
+    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
+      console.log('⏹️ Stopping recording...');
+      mediaRecorderRef.current.stop();
+    }
+  };
+
+  const handleVoiceModalClose = () => {
+    setVoiceModalOpen(false);
+    stopVoiceInput();
+  };
+
+  const handleVoiceSend = () => {
+    stopVoiceInput();
+    setVoiceModalOpen(false); // Close modal immediately
   };
 
   return (
@@ -1191,7 +1393,27 @@ export default function Agent2() {
                           <ReactMarkdown 
                             remarkPlugins={[remarkGfm]}
                             components={{
-                              p: ({node, ...props}) => <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props} />,
+                              p: ({node, children, ...props}) => {
+                                // Check if paragraph contains QuickChart URL
+                                const text = String(children || '');
+                                const quickchartMatch = text.match(/https:\/\/quickchart\.io\/chart\?c=\{[^}]+\}/);
+                                if (quickchartMatch) {
+                                  const chartUrl = quickchartMatch[0];
+                                  return (
+                                    <div className="my-4">
+                                      <iframe
+                                        src={chartUrl}
+                                        width="100%"
+                                        height="400"
+                                        frameBorder="0"
+                                        className="rounded-lg border shadow-sm"
+                                        title="Chart Visualization"
+                                      />
+                                    </div>
+                                  );
+                                }
+                                return <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props}>{children}</p>;
+                              },
                               ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
                               ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
                               li: ({node, ...props}) => <li className="leading-relaxed break-words" {...props} />,
@@ -1265,6 +1487,111 @@ export default function Agent2() {
                           >
                             {msg.analysis}
                           </ReactMarkdown>
+                          
+                          {/* Action Buttons for Historical Messages */}
+                          <div className="flex items-center gap-1 mt-3 pt-3 border-t">
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                              onClick={() => {
+                                navigator.clipboard.writeText(msg.analysis);
+                                setCopiedHistory({...copiedHistory, [msgIdx]: true});
+                                setTimeout(() => {
+                                  setCopiedHistory(prev => {
+                                    const newState = {...prev};
+                                    delete newState[msgIdx];
+                                    return newState;
+                                  });
+                                }, 2000);
+                              }}
+                            >
+                              {copiedHistory[msgIdx] ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-8 px-2 ${likedHistory[msgIdx] ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                              onClick={() => {
+                                setLikedHistory({...likedHistory, [msgIdx]: !likedHistory[msgIdx]});
+                                if (!likedHistory[msgIdx]) {
+                                  setDislikedHistory(prev => {
+                                    const newState = {...prev};
+                                    delete newState[msgIdx];
+                                    return newState;
+                                  });
+                                }
+                              }}
+                            >
+                              <ThumbsUp className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className={`h-8 px-2 ${dislikedHistory[msgIdx] ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                              onClick={() => {
+                                setDislikedHistory({...dislikedHistory, [msgIdx]: !dislikedHistory[msgIdx]});
+                                if (!dislikedHistory[msgIdx]) {
+                                  setLikedHistory(prev => {
+                                    const newState = {...prev};
+                                    delete newState[msgIdx];
+                                    return newState;
+                                  });
+                                }
+                              }}
+                            >
+                              <ThumbsDown className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                              onClick={() => {
+                                if (navigator.share) {
+                                  navigator.share({
+                                    title: 'Safety Analysis',
+                                    text: msg.analysis,
+                                  });
+                                }
+                              }}
+                            >
+                              <Share2 className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                              onClick={() => {
+                                startWebSocketStreaming(msg.question, msg.dataset);
+                              }}
+                            >
+                              <RefreshCw className="h-4 w-4" />
+                            </Button>
+                            <Button
+                              variant="ghost"
+                              size="sm"
+                              className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                            >
+                              <DropdownMenu>
+                                <DropdownMenuTrigger asChild>
+                                  <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                                    <MoreHorizontal className="h-4 w-4" />
+                                  </Button>
+                                </DropdownMenuTrigger>
+                                <DropdownMenuContent align="end" className="w-44">
+                                  <DropdownMenuItem
+                                    onClick={() => {
+                                      const md = msg.analysis || '';
+                                      const fname = `response-${msgIdx + 1}.md`;
+                                      downloadMarkdown(fname, md);
+                                    }}
+                                  >
+                                    Download as .md
+                                  </DropdownMenuItem>
+                                </DropdownMenuContent>
+                              </DropdownMenu>
+                            </Button>
+                          </div>
               </div>
                 </div>
               </div>
@@ -1647,7 +1974,27 @@ export default function Agent2() {
                             remarkPlugins={[remarkGfm]}
                             skipHtml={false}
                             components={{
-                              p: ({node, ...props}) => <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props} />,
+                              p: ({node, children, ...props}) => {
+                                // Check if paragraph contains QuickChart URL
+                                const text = String(children || '');
+                                const quickchartMatch = text.match(/https:\/\/quickchart\.io\/chart\?c=\{[^}]+\}/);
+                                if (quickchartMatch) {
+                                  const chartUrl = quickchartMatch[0];
+                                  return (
+                                    <div className="my-4">
+                                      <iframe
+                                        src={chartUrl}
+                                        width="100%"
+                                        height="400"
+                                        frameBorder="0"
+                                        className="rounded-lg border shadow-sm"
+                                        title="Chart Visualization"
+                                      />
+                                    </div>
+                                  );
+                                }
+                                return <p className="mb-3 leading-relaxed break-words whitespace-pre-wrap" {...props}>{children}</p>;
+                              },
                               ul: ({node, ...props}) => <ul className="list-disc ml-5 mb-3 space-y-1" {...props} />,
                               ol: ({node, ...props}) => <ol className="list-decimal ml-5 mb-3 space-y-1" {...props} />,
                               li: ({node, ...props}) => <li className="leading-relaxed break-words" {...props} />,
@@ -1735,6 +2082,123 @@ export default function Agent2() {
                       ) : (
                         <div className="text-sm text-muted-foreground pt-1">
                           Analyzing Data...
+                        </div>
+                      )}
+                      
+                      {/* Action Buttons - Show only when response is complete */}
+                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis) && (
+                        <div className="flex items-center gap-1 mt-3 pt-3 border-t">
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              const textToCopy = debouncedAnalysis || response?.analysis || finalAnswer || "";
+                              navigator.clipboard.writeText(textToCopy);
+                              setCopiedCurrent(true);
+                              setTimeout(() => setCopiedCurrent(false), 2000);
+                            }}
+                          >
+                            {copiedCurrent ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-8 px-2 ${likedCurrent ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={() => {
+                              setLikedCurrent(!likedCurrent);
+                              if (!likedCurrent) setDislikedCurrent(false);
+                            }}
+                          >
+                            <ThumbsUp className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className={`h-8 px-2 ${dislikedCurrent ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                            onClick={() => {
+                              setDislikedCurrent(!dislikedCurrent);
+                              if (!dislikedCurrent) setLikedCurrent(false);
+                            }}
+                          >
+                            <ThumbsDown className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              if (navigator.share) {
+                                navigator.share({
+                                  title: 'Safety Analysis',
+                                  text: debouncedAnalysis || response?.analysis || finalAnswer || "",
+                                });
+                              }
+                            }}
+                          >
+                            <Share2 className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                            onClick={() => {
+                              if (currentQuestion) {
+                                startWebSocketStreaming(currentQuestion, currentDataset);
+                              }
+                            }}
+                          >
+                            <RefreshCw className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          >
+                            <DropdownMenu>
+                              <DropdownMenuTrigger asChild>
+                                <Button variant="ghost" size="sm" className="h-8 px-2 text-muted-foreground hover:text-foreground">
+                                  <MoreHorizontal className="h-4 w-4" />
+                                </Button>
+                              </DropdownMenuTrigger>
+                              <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuItem
+                                  onClick={() => {
+                                    const md = (debouncedAnalysis || response?.analysis || finalAnswer || '').toString();
+                                    const fname = `response-current.md`;
+                                    downloadMarkdown(fname, md);
+                                  }}
+                                >
+                                  Download as .md
+                                </DropdownMenuItem>
+                              </DropdownMenuContent>
+                            </DropdownMenu>
+                          </Button>
+                        </div>
+                      )}
+                      
+                      {/* Follow-up Questions */}
+                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis) && (
+                        <div className="mt-4 pt-4 border-t">
+                          <p className="text-xs text-muted-foreground font-medium mb-2">Follow-up questions:</p>
+                          <div className="flex flex-wrap gap-2">
+                            {[
+                              "Show me more details",
+                              "Create a chart for this",
+                              "What are the trends?",
+                              "Compare with last year"
+                            ].map((followUp, idx) => (
+                              <button
+                                key={idx}
+                                onClick={() => {
+                                  setQuestion(followUp);
+                                }}
+                                className="px-3 py-1.5 text-xs bg-muted hover:bg-primary/10 border hover:border-primary rounded-full text-muted-foreground hover:text-primary transition-all"
+                              >
+                                {followUp}
+                              </button>
+                            ))}
+                          </div>
                         </div>
                       )}
                     </div>
@@ -1971,27 +2435,27 @@ export default function Agent2() {
                 </div>
               </DialogContent>
             </Dialog>
-            <Select value={dataset} onValueChange={(value: any) => setDataset(value)}>
-              <SelectTrigger className="w-40">
-                <SelectValue />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="incident">Incidents</SelectItem>
-                <SelectItem value="hazard">Hazards</SelectItem>
-                <SelectItem value="audit">Audits</SelectItem>
-                <SelectItem value="inspection">Inspections</SelectItem>
-                <SelectItem value="all">All Data</SelectItem>
-              </SelectContent>
-            </Select>
             
             <div className="flex-1 relative">
               <Input
                 placeholder="Ask about your safety data..."
                 value={question}
                 onChange={(e) => setQuestion(e.target.value)}
-                className="pr-12 h-12 rounded-full"
+                className="pr-24 h-12 rounded-full"
                 disabled={isStreaming}
               />
+              {/* Voice Input Button */}
+              {!isStreaming && (
+                <Button
+                  type="button"
+                  onClick={isListening ? stopVoiceInput : startVoiceInput}
+                  size="icon"
+                  variant="ghost"
+                  className={`absolute right-12 top-1 rounded-full h-10 w-10 ${isListening ? 'text-red-500 animate-pulse' : 'text-muted-foreground'}`}
+                >
+                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
+                </Button>
+              )}
               {isStreaming ? (
                 <Button 
                   type="button" 
@@ -2009,13 +2473,21 @@ export default function Agent2() {
                   size="icon"
                   className="absolute right-1 top-1 rounded-full h-10 w-10"
                 >
-                  <Send className="h-4 w-4" />
+                  <ArrowUp className="h-10 w-10 font-bold" />
                 </Button>
               )}
                   </div>
           </form>
               </div>
       </div>
+
+      {/* Voice Input Modal */}
+      <VoiceModal
+        isOpen={voiceModalOpen}
+        onClose={handleVoiceModalClose}
+        onSend={handleVoiceSend}
+        isListening={isListening}
+      />
     </div>
   );
 }

@@ -5,7 +5,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Send, X, Maximize2, Minimize2, BarChart3, ChevronRight, Loader2, Sparkles, StopCircle } from "lucide-react";
+import { Send, X, Maximize2, Minimize2, BarChart3, ChevronRight, Loader2, Sparkles, StopCircle, Copy, ThumbsUp, ThumbsDown, Share2, RefreshCw, MoreHorizontal, Check, ArrowUp } from "lucide-react";
 import Plot from "react-plotly.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -87,6 +87,12 @@ export function ChatBubble() {
   const [thinkingText, setThinkingText] = useState("");
   const [reasoningText, setReasoningText] = useState("");
   const [currentQuestion, setCurrentQuestion] = useState("");
+  
+  // Action button states
+  const [copied, setCopied] = useState(false);
+  const [liked, setLiked] = useState(false);
+  const [disliked, setDisliked] = useState(false);
+  const [showExamples, setShowExamples] = useState(true);
   const [currentDataset, setCurrentDataset] = useState<string>(dataset);
   const [response, setResponse] = useState<AgentResponse | null>(null);
   const [debouncedAnalysis, setDebouncedAnalysis] = useState("");
@@ -790,6 +796,34 @@ export function ChatBubble() {
               </div>
             ))}
 
+            {/* Example Queries - Show only when no conversation */}
+            {showExamples && conversationHistory.length === 0 && !currentQuestion && !isStreaming && (
+              <div className="space-y-3">
+                <p className="text-sm text-gray-500 font-medium">Try asking:</p>
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-2">
+                  {[
+                    "Show the top 5 incidents with titles",
+                    "What are the most common hazard types?",
+                    "Create a chart of incidents by department",
+                    "Find all audits completed in 2023",
+                    "Show incidents with high risk scores",
+                    "What is the average resolution time?"
+                  ].map((example, idx) => (
+                    <button
+                      key={idx}
+                      onClick={() => {
+                        setQuestion(example);
+                        setShowExamples(false);
+                      }}
+                      className="text-left px-4 py-3 bg-white border border-gray-200 rounded-xl hover:border-primary hover:bg-primary/5 transition-all text-sm text-gray-700 hover:text-primary"
+                    >
+                      {example}
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
+
             {/* Current Question */}
             {currentQuestion && (
               <div className="flex justify-end">
@@ -1169,6 +1203,107 @@ export function ChatBubble() {
                         <span className="inline-block w-2 h-4 bg-gradient-to-r from-primary to-lime-600 animate-pulse ml-1 rounded-full"></span>
                       )}
                     </div>
+                    
+                    {/* Action Buttons - Show only when response is complete */}
+                    {!isStreaming && (currentAnalysis || finalAnswer) && (
+                      <div className="flex items-center gap-1 mt-3 pt-3 border-t border-gray-200">
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            const textToCopy = debouncedAnalysis || currentAnalysis || finalAnswer || "";
+                            navigator.clipboard.writeText(textToCopy);
+                            setCopied(true);
+                            setTimeout(() => setCopied(false), 2000);
+                          }}
+                        >
+                          {copied ? <Check className="h-4 w-4" /> : <Copy className="h-4 w-4" />}
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-2 ${liked ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                          onClick={() => {
+                            setLiked(!liked);
+                            if (!liked) setDisliked(false);
+                          }}
+                        >
+                          <ThumbsUp className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className={`h-8 px-2 ${disliked ? 'text-green-600 hover:text-green-700' : 'text-muted-foreground hover:text-foreground'}`}
+                          onClick={() => {
+                            setDisliked(!disliked);
+                            if (!disliked) setLiked(false);
+                          }}
+                        >
+                          <ThumbsDown className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            if (navigator.share) {
+                              navigator.share({
+                                title: 'Safety Analysis',
+                                text: debouncedAnalysis || currentAnalysis || finalAnswer || "",
+                              });
+                            }
+                          }}
+                        >
+                          <Share2 className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                          onClick={() => {
+                            if (currentQuestion) {
+                              handleSubmit(new Event('submit') as any);
+                            }
+                          }}
+                        >
+                          <RefreshCw className="h-4 w-4" />
+                        </Button>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          className="h-8 px-2 text-muted-foreground hover:text-foreground"
+                        >
+                          <MoreHorizontal className="h-4 w-4" />
+                        </Button>
+                      </div>
+                    )}
+                    
+                    {/* Follow-up Questions */}
+                    {!isStreaming && (currentAnalysis || finalAnswer) && (
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <p className="text-xs text-gray-500 font-medium mb-2">Follow-up questions:</p>
+                        <div className="flex flex-wrap gap-2">
+                          {[
+                            "Show me more details",
+                            "Create a chart for this",
+                            "What are the trends?",
+                            "Compare with last year"
+                          ].map((followUp, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => {
+                                setQuestion(followUp);
+                                setShowExamples(false);
+                              }}
+                              className="px-3 py-1.5 text-xs bg-gray-50 hover:bg-primary/10 border border-gray-200 hover:border-primary rounded-full text-gray-700 hover:text-primary transition-all"
+                            >
+                              {followUp}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    )}
                   </div>
                 )}
               </div>
@@ -1180,19 +1315,6 @@ export function ChatBubble() {
           {/* Input Area */}
           <div className="border-t border-gray-100 p-5 bg-gradient-to-r from-gray-50 to-white rounded-b-2xl">
             <form onSubmit={handleSubmit} className="space-y-3">
-              <Select value={dataset} onValueChange={(value: any) => setDataset(value)}>
-                <SelectTrigger className="w-full border-gray-200 focus:ring-primary focus:border-primary rounded-xl h-10 bg-white shadow-sm">
-                  <SelectValue />
-                </SelectTrigger>
-                <SelectContent className="rounded-xl">
-                  <SelectItem value="incident">📋 Incidents</SelectItem>
-                  <SelectItem value="hazard">⚠️ Hazards</SelectItem>
-                  <SelectItem value="audit">🔍 Audits</SelectItem>
-                  <SelectItem value="inspection">✅ Inspections</SelectItem>
-                  <SelectItem value="all">📊 All Data</SelectItem>
-                </SelectContent>
-              </Select>
-              
               <div className="flex gap-2">
                 <Input
                   placeholder="Ask about your safety data..."
@@ -1215,7 +1337,7 @@ export function ChatBubble() {
                     disabled={!question.trim()}
                     className="bg-gradient-to-r from-primary to-lime-600 hover:from-lime-600 hover:to-primary text-white shadow-md rounded-xl h-12 w-12 disabled:opacity-50 disabled:cursor-not-allowed transition-all"
                   >
-                    <Send className="h-5 w-5" />
+                   <ArrowUp className="h-5 w-5" />
                   </Button>
                 )}
               </div>
