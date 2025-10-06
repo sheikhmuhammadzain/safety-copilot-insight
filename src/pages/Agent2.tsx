@@ -9,7 +9,7 @@ import { Badge } from "@/components/ui/badge";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { useToast } from "@/hooks/use-toast";
-import { Send, Code, BarChart3, Sparkles, ChevronDown, ChevronRight, StopCircle, Loader2, BookOpen, Copy, Trash2, ThumbsUp, ThumbsDown, Share2, RefreshCw, MoreHorizontal, Check, Upload, MoveUp, ArrowUp, Mic, MicOff } from "lucide-react";
+import { Send, Code, BarChart3, Sparkles, ChevronDown, ChevronRight, StopCircle, Loader2, BookOpen, Copy, Trash2, ThumbsUp, ThumbsDown, Share2, RefreshCw, MoreHorizontal, Check, Upload, MoveUp, ArrowUp } from "lucide-react";
 import Plot from "react-plotly.js";
 import ReactMarkdown from "react-markdown";
 import remarkGfm from "remark-gfm";
@@ -19,7 +19,6 @@ import { Prism as SyntaxHighlighter } from 'react-syntax-highlighter';
 import { oneDark } from 'react-syntax-highlighter/dist/esm/styles/prism';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog";
 import AITextLoading from "@/components/motion/AITextLoading";
-import VoiceModal from "@/components/VoiceModal";
 
 interface AgentResponse {
   code: string;
@@ -411,11 +410,6 @@ export default function Agent2() {
   const [dislikedCurrent, setDislikedCurrent] = useState(false);
   const [likedHistory, setLikedHistory] = useState<{[key: number]: boolean}>({});
   const [dislikedHistory, setDislikedHistory] = useState<{[key: number]: boolean}>({});
-  const [isListening, setIsListening] = useState(false);
-  const [voiceModalOpen, setVoiceModalOpen] = useState(false);
-  const recognitionRef = useRef<any>(null);
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const audioChunksRef = useRef<Blob[]>([]);
   
   // Use ref for immediate tracking (no async state delays)
   const currentMessageIdRef = useRef<string | null>(null);
@@ -870,177 +864,6 @@ export default function Agent2() {
     } catch (e) {
       console.error('Failed to download markdown:', e);
     }
-  };
-
-  // Voice input functionality with AssemblyAI (using axios)
-  const startVoiceInput = async () => {
-    try {
-      console.log('🎤 Starting AssemblyAI voice input...');
-      
-      // Check if we're in a secure context (HTTPS or localhost)
-      const isSecureContext = window.isSecureContext || window.location.protocol === 'https:' || window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1';
-      
-      if (!isSecureContext) {
-        throw new Error('Microphone access requires HTTPS. Please use a secure connection.');
-      }
-      
-      // Check if getUserMedia is available
-      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
-        throw new Error('getUserMedia is not supported in this browser');
-      }
-      
-      // Open modal
-      setVoiceModalOpen(true);
-      
-      // Request microphone access
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      
-      setIsListening(true);
-      audioChunksRef.current = [];
-      
-      // Create MediaRecorder to capture audio
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-      
-      mediaRecorder.onstop = async () => {
-        console.log('🛑 Recording stopped, processing...');
-        
-        // Combine audio chunks
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        
-        // Stop all audio tracks
-        stream.getTracks().forEach(track => track.stop());
-        
-        // Send to AssemblyAI for transcription
-        try {
-          const baseUrl = "https://api.assemblyai.com";
-          const headers = {
-            authorization: "8768531e10a24e46a03d0d9da6f74095",
-          };
-          
-          console.log('📤 Uploading audio to AssemblyAI...');
-          
-          // Step 1: Upload audio file
-          const uploadResponse = await axios.post(`${baseUrl}/v2/upload`, audioBlob, {
-            headers: {
-              ...headers,
-              'Content-Type': 'application/octet-stream',
-            },
-          });
-          
-          const audioUrl = uploadResponse.data.upload_url;
-          console.log('✅ Audio uploaded:', audioUrl);
-          
-          // Step 2: Request transcription
-          const transcriptResponse = await axios.post(
-            `${baseUrl}/v2/transcript`,
-            {
-              audio_url: audioUrl,
-              speech_model: "universal",
-            },
-            { headers }
-          );
-          
-          const transcriptId = transcriptResponse.data.id;
-          console.log('🔄 Transcription started, ID:', transcriptId);
-          
-          // Step 3: Poll for completion
-          const pollingEndpoint = `${baseUrl}/v2/transcript/${transcriptId}`;
-          let attempts = 0;
-          const maxAttempts = 60; // 3 minutes max
-          
-          while (attempts < maxAttempts) {
-            await new Promise((resolve) => setTimeout(resolve, 2000)); // Wait 2 seconds
-            
-            const pollingResponse = await axios.get(pollingEndpoint, { headers });
-            const transcriptionResult = pollingResponse.data;
-            
-            if (transcriptionResult.status === "completed") {
-              console.log('✅ Transcript:', transcriptionResult.text);
-              setQuestion(transcriptionResult.text);
-              setIsListening(false);
-              break;
-            } else if (transcriptionResult.status === "error") {
-              throw new Error(`Transcription failed: ${transcriptionResult.error}`);
-            }
-            
-            attempts++;
-            console.log(`⏳ Polling... (${attempts}/${maxAttempts})`);
-          }
-          
-          if (attempts >= maxAttempts) {
-            throw new Error('Transcription timeout');
-          }
-          
-        } catch (error: any) {
-          console.error('❌ AssemblyAI error:', error);
-          setIsListening(false);
-          toast({
-            title: "Transcription Error",
-            description: error.message || "Failed to transcribe audio. Please try again.",
-            variant: "destructive",
-            className: "left-4",
-          });
-        }
-      };
-      
-      // Start recording
-      mediaRecorder.start();
-      console.log('🔴 Recording started... (Click mic again to stop, or it will auto-stop in 10 seconds)');
-      
-      // Auto-stop after 10 seconds
-      setTimeout(() => {
-        if (mediaRecorder.state === 'recording') {
-          console.log('⏰ Auto-stopping recording after 10 seconds...');
-          mediaRecorder.stop();
-        }
-      }, 10000);
-      
-    } catch (error: any) {
-      console.error('❌ Microphone access error:', error);
-      setIsListening(false);
-      
-      let errorMessage = 'Failed to access microphone.';
-      if (error.name === 'NotAllowedError') {
-        errorMessage = 'Microphone permission denied. Please allow microphone access.';
-      } else if (error.name === 'NotFoundError') {
-        errorMessage = 'No microphone found. Please check your device.';
-      } else if (error.message === 'getUserMedia is not supported in this browser') {
-        errorMessage = 'Voice input is not supported in this browser. Please use a modern browser with microphone support.';
-      } else if (error.message === 'Microphone access requires HTTPS. Please use a secure connection.') {
-        errorMessage = 'Voice input requires HTTPS. Please access the app via a secure connection (https://) or use localhost for development.';
-      }
-      
-      toast({
-        title: "Microphone Error",
-        description: errorMessage,
-        variant: "destructive",
-        className: "left-4",
-      });
-    }
-  };
-
-  const stopVoiceInput = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      console.log('⏹️ Stopping recording...');
-      mediaRecorderRef.current.stop();
-    }
-  };
-
-  const handleVoiceModalClose = () => {
-    setVoiceModalOpen(false);
-    stopVoiceInput();
-  };
-
-  const handleVoiceSend = () => {
-    stopVoiceInput();
-    setVoiceModalOpen(false); // Close modal immediately
   };
 
   return (
@@ -2432,80 +2255,78 @@ export default function Agent2() {
         <div ref={bottomRef} className="h-1" />
       </main>
 
-      {/* Fixed Input Bar */}
-      <div className="fixed bottom-0 left-0 right-0 bg-background border-t p-4">
-        <div className="max-w-4xl mx-auto">
-          <form onSubmit={handleSubmit} className="flex items-center gap-3">
-            <Dialog open={queriesOpen} onOpenChange={setQueriesOpen}>
-              <DialogTrigger asChild>
-                <Button type="button" variant="outline" className="whitespace-nowrap">
-                  <BookOpen className="h-4 w-4 mr-2" />
-                  Queries Book
-                </Button>
-              </DialogTrigger>
-              <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden max-h-[85vh]">
-                <DialogHeader className="px-6 pt-6 pb-4">
-                  <DialogTitle>Queries Book</DialogTitle>
-                  <DialogDescription>
-                    Choose a ready-made question. It will copy to your clipboard and run with the appropriate dataset.
-                  </DialogDescription>
-                </DialogHeader>
-                <div className="px-6 pb-6 overflow-y-auto" style={{ maxHeight: '70vh' }}>
-                  <div className="space-y-8">
-                    {QUERIES_BOOK.map((group, idx) => (
-                      <div key={idx} className="space-y-3">
-                        <div className="flex items-center justify-between">
-                          <h3 className="text-base font-semibold">{group.title}</h3>
-                          <Badge variant="secondary" className="text-xs capitalize">{group.dataset}</Badge>
-                        </div>
-              <div className="space-y-2">
-                          {group.items.map((q, i) => (
-                            <div key={i} className="flex items-center justify-between gap-3 border rounded-lg bg-card/50 px-3 py-2">
-                              <div className="text-sm text-foreground/90 leading-6">{q}</div>
-                              <div className="shrink-0">
-                                <Button size="sm" variant="secondary" onClick={() => handlePickQuery(q, group.dataset)}>
-                                  <Copy className="h-4 w-4 mr-1.5" />
-                                  Copy & Run
-                                </Button>
+      {/* Fixed Input Bar - ChatGPT Style */}
+      <div className="fixed bottom-0 left-0 md:left-[var(--sidebar-width)] group-data-[state=collapsed]/sidebar-wrapper:md:left-[var(--sidebar-width-icon)] right-0 bg-gradient-to-t from-background via-background to-background/80 backdrop-blur-sm transition-[left] duration-200 ease-in-out">
+        <div className="max-w-4xl mx-auto px-4 pb-6 pt-4">
+          <div className="relative bg-background border border-border/60 rounded-3xl shadow-lg hover:shadow-xl transition-shadow duration-200">
+            <form onSubmit={handleSubmit} className="flex items-center gap-2 p-2">
+              {/* Queries Book Button */}
+              <Dialog open={queriesOpen} onOpenChange={setQueriesOpen}>
+                <DialogTrigger asChild>
+                  <Button 
+                    type="button" 
+                    variant="ghost" 
+                    size="icon"
+                    className="rounded-full h-10 w-10 shrink-0 hover:bg-muted"
+                    title="Queries Book"
+                  >
+                    <BookOpen className="h-5 w-5" />
+                  </Button>
+                </DialogTrigger>
+                <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden max-h-[85vh]">
+                  <DialogHeader className="px-6 pt-6 pb-4">
+                    <DialogTitle>Queries Book</DialogTitle>
+                    <DialogDescription>
+                      Choose a ready-made question. It will copy to your clipboard and run with the appropriate dataset.
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="px-6 pb-6 overflow-y-auto" style={{ maxHeight: '70vh' }}>
+                    <div className="space-y-8">
+                      {QUERIES_BOOK.map((group, idx) => (
+                        <div key={idx} className="space-y-3">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-base font-semibold">{group.title}</h3>
+                            <Badge variant="secondary" className="text-xs capitalize">{group.dataset}</Badge>
+                          </div>
+                          <div className="space-y-2">
+                            {group.items.map((q, i) => (
+                              <div key={i} className="flex items-center justify-between gap-3 border rounded-lg bg-card/50 px-3 py-2">
+                                <div className="text-sm text-foreground/90 leading-6">{q}</div>
+                                <div className="shrink-0">
+                                  <Button size="sm" variant="secondary" onClick={() => handlePickQuery(q, group.dataset)}>
+                                    <Copy className="h-4 w-4 mr-1.5" />
+                                    Copy & Run
+                                  </Button>
+                                </div>
                               </div>
+                            ))}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
                   </div>
-                ))}
+                </DialogContent>
+              </Dialog>
+              
+              {/* Input Field */}
+              <div className="flex-1 relative">
+                <Input
+                  placeholder="Ask about your safety data..."
+                  value={question}
+                  onChange={(e) => setQuestion(e.target.value)}
+                  className="border-0 bg-transparent focus-visible:ring-0 focus-visible:ring-offset-0 h-12 text-base pr-14 placeholder:text-muted-foreground/60"
+                  disabled={isStreaming}
+                />
               </div>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-              </DialogContent>
-            </Dialog>
-            
-            <div className="flex-1 relative">
-              <Input
-                placeholder="Ask about your safety data..."
-                value={question}
-                onChange={(e) => setQuestion(e.target.value)}
-                className="pr-24 h-12 rounded-full"
-                disabled={isStreaming}
-              />
-              {/* Voice Input Button */}
-              {!isStreaming && (
-                <Button
-                  type="button"
-                  onClick={isListening ? stopVoiceInput : startVoiceInput}
-                  size="icon"
-                  variant="ghost"
-                  className={`absolute right-12 top-1 rounded-full h-10 w-10 ${isListening ? 'text-red-500 animate-pulse' : 'text-muted-foreground'} ${!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? 'opacity-50' : ''}`}
-                  title={!window.isSecureContext && window.location.hostname !== 'localhost' && window.location.hostname !== '127.0.0.1' ? 'Voice input requires HTTPS' : 'Voice input'}
-                >
-                  {isListening ? <MicOff className="h-5 w-5" /> : <Mic className="h-5 w-5" />}
-                </Button>
-              )}
+
+              {/* Send/Stop Button */}
               {isStreaming ? (
                 <Button 
                   type="button" 
                   onClick={stopStreaming} 
                   size="icon"
                   variant="ghost"
-                  className="absolute right-1 top-1 rounded-full h-10 w-10"
+                  className="rounded-full h-10 w-10 shrink-0 hover:bg-muted"
                 >
                   <StopCircle className="h-5 w-5" />
                 </Button>
@@ -2514,23 +2335,25 @@ export default function Agent2() {
                   type="submit" 
                   disabled={!question.trim()}
                   size="icon"
-                  className="absolute right-1 top-1 rounded-full h-10 w-10"
+                  className={`rounded-full h-10 w-10 shrink-0 transition-all duration-200 ${
+                    question.trim() 
+                      ? 'bg-primary hover:bg-primary/90 text-primary-foreground' 
+                      : 'bg-muted text-muted-foreground cursor-not-allowed'
+                  }`}
                 >
-                  <ArrowUp className="h-10 w-10 font-bold" />
+                  <ArrowUp className="h-5 w-5" />
                 </Button>
               )}
-                  </div>
-          </form>
-              </div>
+            </form>
+          </div>
+          
+          {/* Optional: Helper text */}
+          <p className="text-xs text-center text-muted-foreground/60 mt-2">
+            Safety Copilot can make mistakes. Consider checking important information.
+          </p>
+        </div>
       </div>
 
-      {/* Voice Input Modal */}
-      <VoiceModal
-        isOpen={voiceModalOpen}
-        onClose={handleVoiceModalClose}
-        onSend={handleVoiceSend}
-        isListening={isListening}
-      />
     </div>
   );
 }

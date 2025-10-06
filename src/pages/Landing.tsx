@@ -26,7 +26,7 @@ const CurvedLoop = lazy(() => import("@/components/ui/CurvedLoop"));
 
 // Only register GSAP plugins when needed to reduce initial bundle size
 if (typeof window !== 'undefined') {
-  gsap.registerPlugin(useGSAP);
+gsap.registerPlugin(useGSAP);
 }
 
 export default function Landing() {
@@ -54,25 +54,25 @@ export default function Landing() {
     };
 
     const initObserver = () => {
-      const observer = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((entry) => {
-            if (entry.isIntersecting) {
-              entry.target.classList.add('animate-fade-up');
-              entry.target.classList.remove('opacity-0', 'translate-y-12', 'scale-95');
+    const observer = new IntersectionObserver(
+      (entries) => {
+        entries.forEach((entry) => {
+          if (entry.isIntersecting) {
+            entry.target.classList.add('animate-fade-up');
+            entry.target.classList.remove('opacity-0', 'translate-y-12', 'scale-95');
               // Unobserve after animation to improve performance
               observer.unobserve(entry.target);
-            }
-          });
-        },
+          }
+        });
+      },
         { threshold: 0.1, rootMargin: '0px 0px -50px 0px' } // Reduced threshold for faster triggering
-      );
+    );
 
-      // Observe all animatable elements
-      const elements = document.querySelectorAll('.animate-on-scroll');
-      elements.forEach((el) => observer.observe(el));
+    // Observe all animatable elements
+    const elements = document.querySelectorAll('.animate-on-scroll');
+    elements.forEach((el) => observer.observe(el));
 
-      return () => observer.disconnect();
+    return () => observer.disconnect();
     };
 
     const cleanup = scheduleObserver();
@@ -170,17 +170,17 @@ export default function Landing() {
     const onScroll = () => {
       if (!ticking) {
         requestAnimationFrame(() => {
-          const el = heroRef.current;
-          if (!el) return;
-          const rect = el.getBoundingClientRect();
-          const viewportH = window.innerHeight || document.documentElement.clientHeight;
-          // Progress as the hero enters and scrolls
-          const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
-          // Gentle parallax values
-          const y = -progress * 24; // px upward shift
-          const scale = 1 + progress * 0.02; // up to 2% scale
-          setParallaxY(y);
-          setParallaxScale(scale);
+      const el = heroRef.current;
+      if (!el) return;
+      const rect = el.getBoundingClientRect();
+      const viewportH = window.innerHeight || document.documentElement.clientHeight;
+      // Progress as the hero enters and scrolls
+      const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
+      // Gentle parallax values
+      const y = -progress * 24; // px upward shift
+      const scale = 1 + progress * 0.02; // up to 2% scale
+      setParallaxY(y);
+      setParallaxScale(scale);
           ticking = false;
         });
         ticking = true;
@@ -268,17 +268,17 @@ export default function Landing() {
     <div className="relative min-h-screen bg-black text-white bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem]">
       <PerformanceMonitor />
       <Suspense fallback={<div className="fixed top-0 left-0 z-0 pointer-events-none w-full h-full" />}>
-        <SplashCursor 
-          SIM_RESOLUTION={128}
-          DYE_RESOLUTION={512}
-          CURL={25}
-          SPLAT_RADIUS={0.18}
-          SPLAT_FORCE={4000}
-          DENSITY_DISSIPATION={1.5}
-          VELOCITY_DISSIPATION={0.3}
-          PRESSURE={0.6}
-          COLOR_UPDATE_SPEED={8}
-        />
+      <SplashCursor 
+        SIM_RESOLUTION={128}
+        DYE_RESOLUTION={512}
+        CURL={25}
+        SPLAT_RADIUS={0.18}
+        SPLAT_FORCE={4000}
+        DENSITY_DISSIPATION={1.5}
+        VELOCITY_DISSIPATION={0.3}
+        PRESSURE={0.6}
+        COLOR_UPDATE_SPEED={8}
+      />
       </Suspense>
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
@@ -299,14 +299,14 @@ export default function Landing() {
             <Link to="/" className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300" />
-                  <img 
-                    src="/logo.png" 
-                    alt="Logo" 
-                    className="relative h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
+                <img 
+                  src="/logo.png" 
+                  alt="Logo" 
+                  className="relative h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
                     loading="eager"
                     width="32"
                     height="32"
-                  />
+                />
               </div>
               <span className="font-bold text-xs sm:text-sm md:text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide hidden xs:inline">
                 Safety Copilot
@@ -596,14 +596,14 @@ export default function Landing() {
       {/* Curved Loop Marquee */}
       <section className="w-full pb-32 overflow-hidden">
         <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center w-full" />}>
-          <CurvedLoop 
-            marqueeText="Safety  ✦  Analytics  ✦ Insights  ✦  Prevention  ✦  Compliance ✦  Excellence  ✦"
-            speed={2}
-            curveAmount={400}
-            direction="left"
-            interactive={true}
-            className="text-primary"
-          />
+        <CurvedLoop 
+          marqueeText="Safety  ✦  Analytics  ✦ Insights  ✦  Prevention  ✦  Compliance ✦  Excellence  ✦"
+          speed={2}
+          curveAmount={400}
+          direction="left"
+          interactive={true}
+          className="text-primary"
+        />
         </Suspense>
       </section>
 
@@ -716,7 +716,7 @@ export default function Landing() {
                 <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Disclaimer</a>
                 <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Sitemap</a>
               </div>
-            </div>
+              </div>
 
             {/* Built By Qubit Dynamics */}
             <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-center gap-3 text-sm text-white/60">
@@ -732,7 +732,7 @@ export default function Landing() {
                 />
             
               </div>
-            </div>
+              </div>
             </div>
           </div>
         </div>
