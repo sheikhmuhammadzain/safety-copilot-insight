@@ -877,6 +877,11 @@ export default function Agent2() {
     try {
       console.log('🎤 Starting AssemblyAI voice input...');
       
+      // Check if getUserMedia is available
+      if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia) {
+        throw new Error('getUserMedia is not supported in this browser');
+      }
+      
       // Open modal
       setVoiceModalOpen(true);
       
@@ -999,6 +1004,8 @@ export default function Agent2() {
         errorMessage = 'Microphone permission denied. Please allow microphone access.';
       } else if (error.name === 'NotFoundError') {
         errorMessage = 'No microphone found. Please check your device.';
+      } else if (error.message === 'getUserMedia is not supported in this browser') {
+        errorMessage = 'Voice input is not supported in this browser. Please use a modern browser with microphone support.';
       }
       
       toast({

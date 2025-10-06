@@ -1,7 +1,7 @@
 import { Mic, Send, X } from "lucide-react";
 import { useState, useEffect } from "react";
 import { cn } from "@/lib/utils";
-import { Dialog, DialogContent, DialogClose } from "@/components/ui/dialog";
+import { Dialog, DialogContent, DialogClose, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import GlassSurface from "./GlassSurface";
 
@@ -38,6 +38,7 @@ export default function VoiceModal({ isOpen, onClose, onSend, isListening }: Voi
   return (
     <Dialog open={isOpen} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md p-0 border-0 bg-transparent shadow-none overflow-visible">
+        <DialogTitle className="sr-only">Voice Input</DialogTitle>
         <GlassSurface
           width="100%"
           height="auto"
