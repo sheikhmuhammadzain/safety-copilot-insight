@@ -1,23 +1,33 @@
 import { Link, useLocation } from "react-router-dom";
-import { Shield, BarChart3, Map, Bot, ArrowRight, CheckCircle2, Twitter, Github, Linkedin, Mail, Phone, MapPin } from "lucide-react";
-import { Button } from "@/components/ui/button";
-import { Input } from "@/components/ui/input";
-import { useEffect, useRef, useState } from "react";
+// Import only needed icons to reduce bundle size
+import { Shield, BarChart3, Map, ArrowRight, CheckCircle2, Twitter, Github, Linkedin, Phone, MapPin } from "lucide-react";
+// Remove unused imports to reduce bundle size
+// import { Button } from "@/components/ui/button";
+// import { Input } from "@/components/ui/input";
+import { useEffect, useRef, useState, Suspense, lazy } from "react";
 import { gsap } from "gsap";
 import { useGSAP } from "@gsap/react";
 // Reveal removed from bottom sections (no animations)
 import { Spotlight } from "@/components/ui/spotlight";
-import { TestimonialsSection } from "@/components/ui/testimonials-with-marquee";
+// Lazy load additional components
+const TestimonialsSection = lazy(() => import("@/components/ui/testimonials-with-marquee").then(m => ({ default: m.TestimonialsSection })));
 import { Typewriter } from "@/components/ui/typewriter";
-import SplashCursor from "@/components/ui/splash-cursor";
 import { Highlighter } from "@/components/ui/highlighter";
-import SplitText from "@/components/ui/SplitText";
+// SplitText is unused, remove it
+// import SplitText from "@/components/ui/SplitText";
 import { ShimmerButton } from "@/components/ui/shimmer-button";
-import CurvedLoop from "@/components/ui/CurvedLoop";
 import GlassSurface from "@/components/ui/GlassSurface";
 import CountUp from "@/components/ui/CountUp";
+import PerformanceMonitor from "@/components/ui/PerformanceMonitor";
 
-gsap.registerPlugin(useGSAP);
+// Lazy load heavy components
+const SplashCursor = lazy(() => import("@/components/ui/splash-cursor"));
+const CurvedLoop = lazy(() => import("@/components/ui/CurvedLoop"));
+
+// Only register GSAP plugins when needed to reduce initial bundle size
+if (typeof window !== 'undefined') {
+  gsap.registerPlugin(useGSAP);
+}
 
 export default function Landing() {
   const heroRef = useRef<HTMLDivElement>(null);
@@ -32,31 +42,47 @@ export default function Landing() {
   const [highlighterKey, setHighlighterKey] = useState(0);
   const location = useLocation();
 
-  // Intersection observer for scroll animations with smoother settings
+  // Intersection observer for scroll animations with smoother settings - optimized
   useEffect(() => {
-    const observer = new IntersectionObserver(
-      (entries) => {
-        entries.forEach((entry) => {
-          if (entry.isIntersecting) {
-            entry.target.classList.add('animate-fade-up');
-            entry.target.classList.remove('opacity-0', 'translate-y-12', 'scale-95');
-          }
-        });
-      },
-      { threshold: 0.15, rootMargin: '0px 0px -50px 0px' }
-    );
+    // Use requestIdleCallback for better performance
+    const scheduleObserver = () => {
+      if ('requestIdleCallback' in window) {
+        requestIdleCallback(initObserver);
+      } else {
+        setTimeout(initObserver, 0);
+      }
+    };
 
-    // Observe all animatable elements
-    const elements = document.querySelectorAll('.animate-on-scroll');
-    elements.forEach((el) => observer.observe(el));
+    const initObserver = () => {
+      const observer = new IntersectionObserver(
+        (entries) => {
+          entries.forEach((entry) => {
+            if (entry.isIntersecting) {
+              entry.target.classList.add('animate-fade-up');
+              entry.target.classList.remove('opacity-0', 'translate-y-12', 'scale-95');
+              // Unobserve after animation to improve performance
+              observer.unobserve(entry.target);
+            }
+          });
+        },
+        { threshold: 0.1, rootMargin: '0px 0px -50px 0px' } // Reduced threshold for faster triggering
+      );
 
-    return () => observer.disconnect();
+      // Observe all animatable elements
+      const elements = document.querySelectorAll('.animate-on-scroll');
+      elements.forEach((el) => observer.observe(el));
+
+      return () => observer.disconnect();
+    };
+
+    const cleanup = scheduleObserver();
+    return cleanup;
   }, []);
 
-  // GSAP Navbar animation with wobbly effect
+  // GSAP Navbar animation with wobbly effect - optimized
   useGSAP(() => {
     if (navRef.current) {
-      const tl = gsap.timeline();
+      const tl = gsap.timeline({ paused: true });
       
       tl.fromTo(
         navRef.current,
@@ -67,69 +93,72 @@ export default function Landing() {
         { 
           scaleX: 1.15,
           opacity: 1,
-          duration: 0.6,
+          duration: 0.4, // Reduced duration
           ease: "power2.out",
         }
       )
       .to(navRef.current, {
         scaleX: 0.95,
-        duration: 0.3,
+        duration: 0.2, // Reduced duration
         ease: "power2.inOut",
       })
       .to(navRef.current, {
         scaleX: 1.05,
-        duration: 0.25,
+        duration: 0.15, // Reduced duration
         ease: "power2.inOut",
       })
       .to(navRef.current, {
         scaleX: 1,
-        duration: 0.2,
+        duration: 0.1, // Reduced duration
         ease: "power2.out",
       });
+      
+      // Start animation immediately
+      tl.play();
     }
   }, []);
 
-  // GSAP Hero animations
+  // GSAP Hero animations - optimized
   useGSAP(() => {
-    const tl = gsap.timeline({ defaults: { ease: "power3.out" }, delay: 0.3 });
+    const tl = gsap.timeline({ defaults: { ease: "power2.out" }, delay: 0.2 }); // Reduced delay and changed easing
 
     // Animate badge
     tl.fromTo(
       badgeRef.current,
       { opacity: 0, scale: 0.8, y: 20 },
-      { opacity: 1, scale: 1, y: 0, duration: 0.6 }
+      { opacity: 1, scale: 1, y: 0, duration: 0.4 } // Reduced duration
     );
 
     // Animate heading
     tl.fromTo(
       headingRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.8 },
-      "-=0.3"
+      { opacity: 1, y: 0, duration: 0.6 }, // Reduced duration
+      "-=0.2" // Reduced overlap
     );
 
     // Animate subheading
     tl.fromTo(
       subheadingRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.8, onComplete: () => setHighlighterKey(prev => prev + 1) },
-      "-=0.4"
+      { opacity: 1, y: 0, duration: 0.6, onComplete: () => setHighlighterKey(prev => prev + 1) }, // Reduced duration
+      "-=0.3" // Reduced overlap
     );
 
     // Animate CTA buttons
     tl.fromTo(
       ctaRef.current,
       { opacity: 0, y: 30 },
-      { opacity: 1, y: 0, duration: 0.8 },
-      "-=0.4"
+      { opacity: 1, y: 0, duration: 0.6 }, // Reduced duration
+      "-=0.3" // Reduced overlap
     );
 
     // Animate dashboard image
     tl.fromTo(
       imageRef.current,
       { opacity: 0, y: 60, scale: 0.9 },
-      { opacity: 1, y: 0, scale: 1, duration: 1.2 },
-      "-=0.6"
+      { opacity: 1, y: 0, scale: 1, duration: 0.8 }, // Reduced duration
+      "-=0.4" // Reduced overlap
     );
   }, { scope: heroRef });
 
@@ -137,18 +166,25 @@ export default function Landing() {
     const reduceMotion = window.matchMedia && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
     if (reduceMotion) return;
 
+    let ticking = false;
     const onScroll = () => {
-      const el = heroRef.current;
-      if (!el) return;
-      const rect = el.getBoundingClientRect();
-      const viewportH = window.innerHeight || document.documentElement.clientHeight;
-      // Progress as the hero enters and scrolls
-      const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
-      // Gentle parallax values
-      const y = -progress * 24; // px upward shift
-      const scale = 1 + progress * 0.02; // up to 2% scale
-      setParallaxY(y);
-      setParallaxScale(scale);
+      if (!ticking) {
+        requestAnimationFrame(() => {
+          const el = heroRef.current;
+          if (!el) return;
+          const rect = el.getBoundingClientRect();
+          const viewportH = window.innerHeight || document.documentElement.clientHeight;
+          // Progress as the hero enters and scrolls
+          const progress = Math.min(1, Math.max(0, (viewportH - rect.top) / (viewportH + rect.height)));
+          // Gentle parallax values
+          const y = -progress * 24; // px upward shift
+          const scale = 1 + progress * 0.02; // up to 2% scale
+          setParallaxY(y);
+          setParallaxScale(scale);
+          ticking = false;
+        });
+        ticking = true;
+      }
     };
     onScroll();
     window.addEventListener("scroll", onScroll, { passive: true });
@@ -230,17 +266,20 @@ export default function Landing() {
   ];
   return (
     <div className="relative min-h-screen bg-black text-white bg-[linear-gradient(to_right,#1a1a1a_1px,transparent_1px),linear-gradient(to_bottom,#1a1a1a_1px,transparent_1px)] bg-[size:4rem_4rem]">
-      <SplashCursor 
-        SIM_RESOLUTION={128}
-        DYE_RESOLUTION={512}
-        CURL={25}
-        SPLAT_RADIUS={0.18}
-        SPLAT_FORCE={4000}
-        DENSITY_DISSIPATION={1.5}
-        VELOCITY_DISSIPATION={0.3}
-        PRESSURE={0.6}
-        COLOR_UPDATE_SPEED={8}
-      />
+      <PerformanceMonitor />
+      <Suspense fallback={<div className="fixed top-0 left-0 z-0 pointer-events-none w-full h-full" />}>
+        <SplashCursor 
+          SIM_RESOLUTION={128}
+          DYE_RESOLUTION={512}
+          CURL={25}
+          SPLAT_RADIUS={0.18}
+          SPLAT_FORCE={4000}
+          DENSITY_DISSIPATION={1.5}
+          VELOCITY_DISSIPATION={0.3}
+          PRESSURE={0.6}
+          COLOR_UPDATE_SPEED={8}
+        />
+      </Suspense>
       <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
@@ -260,11 +299,14 @@ export default function Landing() {
             <Link to="/" className="flex items-center gap-1 sm:gap-1.5 md:gap-2.5 group flex-shrink-0">
               <div className="relative">
                 <div className="absolute inset-0 bg-primary/20 rounded-lg blur-md group-hover:blur-lg transition-all duration-300" />
-                <img 
-                  src="/logo.png" 
-                  alt="Logo" 
-                  className="relative h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
-                />
+                  <img 
+                    src="/logo.png" 
+                    alt="Logo" 
+                    className="relative h-5 w-5 sm:h-6 sm:w-6 md:h-8 md:w-8 rounded-lg object-contain transition-all duration-500 group-hover:scale-110 group-hover:rotate-6" 
+                    loading="eager"
+                    width="32"
+                    height="32"
+                  />
               </div>
               <span className="font-bold text-xs sm:text-sm md:text-lg text-white transition-all duration-300 group-hover:text-primary group-hover:tracking-wide hidden xs:inline">
                 Safety Copilot
@@ -429,7 +471,10 @@ export default function Landing() {
                     src="/dashboard.png"
                     alt="Safety Copilot dashboard preview"
                     className="w-full h-auto object-cover transition-all duration-700 ease-out group-hover:scale-[1.03]"
-                    loading="eager"
+                    loading="lazy"
+                    width="1200"
+                    height="800"
+                    sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
                   />
                 </div>
               </div>
@@ -473,7 +518,7 @@ export default function Landing() {
           <FeatureCard
             title="Copilot Q&A"
             desc="Ask natural questions to analyze data."
-            icon={<img src="/copilot-logo.png" alt="Copilot" className="h-5 w-5 object-contain" />}
+            icon={<img src="/copilot-logo.png" alt="Copilot" className="h-5 w-5 object-contain" loading="lazy" width="20" height="20" />}
             iconClass="bg-amber-100 text-amber-700"
             className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400"
             gradientClass="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent"
@@ -550,14 +595,16 @@ export default function Landing() {
 
       {/* Curved Loop Marquee */}
       <section className="w-full pb-32 overflow-hidden">
-        <CurvedLoop 
-          marqueeText="Safety  ✦  Analytics  ✦ Insights  ✦  Prevention  ✦  Compliance ✦  Excellence  ✦"
-          speed={2}
-          curveAmount={400}
-          direction="left"
-          interactive={true}
-          className="text-primary"
-        />
+        <Suspense fallback={<div className="min-h-[200px] flex items-center justify-center w-full" />}>
+          <CurvedLoop 
+            marqueeText="Safety  ✦  Analytics  ✦ Insights  ✦  Prevention  ✦  Compliance ✦  Excellence  ✦"
+            speed={2}
+            curveAmount={400}
+            direction="left"
+            interactive={true}
+            className="text-primary"
+          />
+        </Suspense>
       </section>
 
       {/* CTA */}
@@ -599,7 +646,7 @@ export default function Landing() {
               {/* Brand */}
               <div className="md:col-span-4">
                 <div className="flex items-center gap-2">
-                  <img src="/logo.png" alt="Safety Copilot" className="h-9 w-auto" />
+                  <img src="/logo.png" alt="Safety Copilot" className="h-9 w-auto" loading="lazy" width="36" height="36" />
                   <span className="font-semibold text-white text-lg">Safety Copilot</span>
                 </div>
                 <p className="mt-3 text-sm text-white/80">AI-powered safety analysis and visualization across incidents, hazards, audits and inspections.</p>
@@ -669,7 +716,23 @@ export default function Landing() {
                 <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Disclaimer</a>
                 <a href="https://www.engropolymer.com/contact-us/" target="_blank" rel="noopener noreferrer" className="hover:text-white">Sitemap</a>
               </div>
+            </div>
+
+            {/* Built By Qubit Dynamics */}
+            <div className="mt-6 pt-4 border-t border-white/5 flex items-center justify-center gap-3 text-sm text-white/60">
+              <span>Built by</span>
+              <div className="flex items-center gap-2">
+                <img 
+                  src="/qbitlogo.png" 
+                  alt="Qubit Dynamics" 
+                  className="h-12 w-auto opacity-80 hover:opacity-100 transition-opacity duration-300" 
+                  loading="lazy"
+                  width="32"
+                  height="32"
+                />
+            
               </div>
+            </div>
             </div>
           </div>
         </div>
