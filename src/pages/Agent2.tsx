@@ -29,6 +29,7 @@ interface AgentResponse {
   figure?: any;
   mpl_png_base64?: string | null;
   analysis: string;
+  answer?: string; // Backend sometimes sends 'answer' instead of 'analysis'
 }
 
 interface ToolCall {
@@ -425,7 +426,7 @@ export default function Agent2() {
 
   // Debounce markdown rendering during streaming to allow complete tokens
   useEffect(() => {
-    const content = currentAnalysis || finalAnswer;
+    const content = currentAnalysis || finalAnswer || response?.analysis || response?.answer;
     
     if (!isStreaming) {
       // When not streaming, render immediately
@@ -449,7 +450,7 @@ export default function Agent2() {
         clearTimeout(debounceTimerRef.current);
       }
     };
-  }, [currentAnalysis, finalAnswer, isStreaming]);
+  }, [currentAnalysis, finalAnswer, response?.analysis, response?.answer, isStreaming]);
 
   // Auto-scroll to bottom only when response completes (not during streaming)
   // Removed auto-scroll during streaming to prevent jittery behavior
@@ -470,6 +471,8 @@ export default function Agent2() {
         currentQuestion ||
         currentAnalysis ||
         finalAnswer ||
+        response?.analysis ||
+        response?.answer ||
         toolCalls.length > 0 ||
         response
       );
@@ -491,7 +494,7 @@ export default function Agent2() {
           question: currentQuestion,
           dataset: currentDataset,
           toolCalls: toolCalls.slice(),
-          analysis: currentAnalysis || finalAnswer || response?.analysis || "",
+          analysis: currentAnalysis || finalAnswer || response?.analysis || response?.answer || "",
           response: response || null,
           timestamp: Date.now(),
         },
@@ -545,6 +548,8 @@ export default function Agent2() {
       currentQuestion ||
       currentAnalysis ||
       finalAnswer ||
+      response?.analysis ||
+      response?.answer ||
       toolCalls.length > 0 ||
       response
     );
@@ -566,7 +571,7 @@ export default function Agent2() {
         question: currentQuestion,
         dataset: currentDataset,
         toolCalls: toolCalls.slice(),
-        analysis: currentAnalysis || finalAnswer || response?.analysis || "",
+        analysis: currentAnalysis || finalAnswer || response?.analysis || response?.answer || "",
         response: response || null,
         timestamp: Date.now(),
       },
@@ -633,12 +638,7 @@ export default function Agent2() {
           return;
         }
         
-        if (data.type === 'thinking_token' && data.token) {
-          // Backend sends thinking_token for both reasoning and final answer
-          // We accumulate in thinking text until answer_complete arrives
-          setThinkingText(prev => prev + data.token!);
-          return;
-        }
+        // Ignore thinking_token to avoid duplicate content with reasoning
         
         if (data.type === 'answer_token' && data.token) {
           console.log('📝 Answer token received:', data.token);
@@ -716,10 +716,34 @@ export default function Agent2() {
 
         // Completion
         if (data.type === 'complete' || data.type === 'stream_end') {
+          console.log('🎯 Complete event received:', data);
           if (data.data) {
+            console.log('📦 Response data:', data.data);
             setResponse(data.data);
-            if (data.data.analysis && !currentAnalysis) {
-              setCurrentAnalysis(data.data.analysis);
+            // Handle both 'analysis' and 'answer' fields from backend
+            const responseText = data.data.answer || data.data.analysis;
+            console.log('📝 Extracted response text:', responseText ? `${responseText.substring(0, 100)}...` : 'none');
+            if (responseText && !currentAnalysis) {
+              setCurrentAnalysis(responseText);
+              setFinalAnswer(responseText);
+            }
+          }
+          
+          // Fallback: if no data.data but we have content in the main data object
+          if (!data.data && (data as any).answer) {
+              console.log('🔄 Using fallback response handling');
+            const fallbackResponse: AgentResponse = {
+              code: '',
+              stdout: '',
+              error: '',
+              result_preview: [],
+              analysis: (data as any).answer,
+              answer: (data as any).answer
+            };
+            setResponse(fallbackResponse);
+            if (!currentAnalysis) {
+              setCurrentAnalysis((data as any).answer);
+              setFinalAnswer((data as any).answer);
             }
           }
           
@@ -1612,9 +1636,9 @@ export default function Agent2() {
             {/* Current Assistant Response Container */}
             {(isStreaming || response || currentAnalysis || finalAnswer || toolCalls.length > 0 || thinkingText) && (
               <div className="space-y-4">
-                {/* Thinking & Planning (live) - tools nested inside */}
-        {(thinkingText?.trim().length > 0 || toolCalls.length > 0) && (
-                  <Collapsible defaultOpen={false}>
+                {/* Thinking & Planning (live) - tools + reasoning */}
+        {(reasoningText?.trim().length > 0 || toolCalls.length > 0) && (
+                  <Collapsible defaultOpen={true}>
                     <div className="flex items-start space-x-3">
                       <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0">
                         <Sparkles className="h-4 w-4" />
@@ -1624,7 +1648,7 @@ export default function Agent2() {
                           <button className="flex items-center gap-2 text-sm hover:bg-muted/50 px-3 py-2 rounded-lg transition-colors w-full text-left">
                             <ChevronRight className="h-4 w-4" />
                             {isStreaming ? (
-                              <AITextLoading compact texts={["Thinking & Planning", "Reasoning & Tools", "Planning Steps"]} className="font-semibold" />
+                              <AITextLoading compact texts={["Deep Reasoning", "Finding Best Tools", "Planning"]} className="font-semibold" />
                             ) : (
                               <AITextLoading compact staticText="Click to view chain of thought" className="font-semibold" />
                             )}
@@ -1634,7 +1658,9 @@ export default function Agent2() {
                           </button>
                         </CollapsibleTrigger>
                         <CollapsibleContent>
-                          <div className="mt-2 space-y-2 pl-3">
+                          <div className="mt-2 space-y-3 pl-3">
+                            
+                       
                             {/* Tool Calls */}
                             {toolCalls.length > 0 && (
                               <div className="space-y-2">
@@ -1942,7 +1968,7 @@ export default function Agent2() {
                 )}
 
                 {/* Main Response - Always show during streaming or when we have content */}
-                {(isStreaming || currentAnalysis || finalAnswer || response?.analysis) && (
+                {(isStreaming || currentAnalysis || finalAnswer || response?.analysis || response?.answer || (response && Object.keys(response).length > 0)) && (
                   <div className="flex items-start space-x-3">
                     <div className="w-8 h-8 rounded-full bg-muted flex items-center justify-center flex-shrink-0 mt-1">
                       {isStreaming && !currentAnalysis && !finalAnswer ? (
@@ -1952,7 +1978,7 @@ export default function Agent2() {
                       )}
                 </div>
                     <div className="flex-1 min-w-0">
-                      {currentAnalysis || finalAnswer || response?.analysis ? (
+                      {currentAnalysis || finalAnswer || response?.analysis || response?.answer ? (
                         <div className="prose prose-base dark:prose-invert max-w-none break-words
                           prose-p:leading-7 prose-p:my-4 prose-p:text-[15px] prose-p:break-words
                           prose-headings:font-semibold prose-headings:tracking-tight prose-headings:break-words
@@ -2073,7 +2099,7 @@ export default function Agent2() {
                               },
                             }}
                           >
-                            {debouncedAnalysis || response?.analysis || ""}
+                            {debouncedAnalysis || response?.analysis || response?.answer || ""}
                           </ReactMarkdown>
                           {isStreaming && (
                             <span className="inline-block w-2 h-4 bg-primary animate-pulse ml-1"></span>
@@ -2081,19 +2107,19 @@ export default function Agent2() {
                         </div>
                       ) : (
                         <div className="text-sm text-muted-foreground pt-1">
-                          Analyzing Data...
+                          {response ? 'Response received but no text content available' : 'Analyzing Data...'}
                         </div>
                       )}
                       
                       {/* Action Buttons - Show only when response is complete */}
-                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis) && (
+                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis || response?.answer) && (
                         <div className="flex items-center gap-1 mt-3 pt-3 border-t">
                           <Button
                             variant="ghost"
                             size="sm"
                             className="h-8 px-2 text-muted-foreground hover:text-foreground"
                             onClick={() => {
-                              const textToCopy = debouncedAnalysis || response?.analysis || finalAnswer || "";
+                              const textToCopy = debouncedAnalysis || response?.analysis || response?.answer || finalAnswer || "";
                               navigator.clipboard.writeText(textToCopy);
                               setCopiedCurrent(true);
                               setTimeout(() => setCopiedCurrent(false), 2000);
@@ -2129,10 +2155,10 @@ export default function Agent2() {
                             className="h-8 px-2 text-muted-foreground hover:text-foreground"
                             onClick={() => {
                               if (navigator.share) {
-                                navigator.share({
-                                  title: 'Safety Analysis',
-                                  text: debouncedAnalysis || response?.analysis || finalAnswer || "",
-                                });
+                                  navigator.share({
+                                    title: 'Safety Analysis',
+                                    text: debouncedAnalysis || response?.analysis || response?.answer || finalAnswer || "",
+                                  });
                               }
                             }}
                           >
@@ -2164,7 +2190,7 @@ export default function Agent2() {
                               <DropdownMenuContent align="end" className="w-44">
                                 <DropdownMenuItem
                                   onClick={() => {
-                                    const md = (debouncedAnalysis || response?.analysis || finalAnswer || '').toString();
+                                    const md = (debouncedAnalysis || response?.analysis || response?.answer || finalAnswer || '').toString();
                                     const fname = `response-current.md`;
                                     downloadMarkdown(fname, md);
                                   }}
@@ -2178,7 +2204,7 @@ export default function Agent2() {
                       )}
                       
                       {/* Follow-up Questions */}
-                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis) && (
+                      {!isStreaming && (currentAnalysis || finalAnswer || response?.analysis || response?.answer) && (
                         <div className="mt-4 pt-4 border-t">
                           <p className="text-xs text-muted-foreground font-medium mb-2">Follow-up questions:</p>
                           <div className="flex flex-wrap gap-2">
