@@ -642,32 +642,8 @@ export default function Overview() {
             </div>
           </div>
 
-          {/* Categories and Pareto */}
-          <div className="lg:col-span-4 relative">
-            <ShadcnBarCard title="Incident Types" endpoint="/analytics/data/incident-type-distribution" params={{ dataset: "incident", ...filterParams }} refreshKey={refreshKey} />
-            <TooltipProvider>
-              <Tooltip>
-                <TooltipTrigger asChild>
-                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
-                    <Info className="h-4 w-4" />
-                  </button>
-                </TooltipTrigger>
-                <TooltipContent side="left" className="max-w-sm">
-                  <p className="font-semibold mb-2">Incident Types Distribution</p>
-                  <p className="text-sm mb-2">Shows how many incidents fall into each category or type.</p>
-                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
-                    Count = Number of Incidents per Type
-                  </p>
-                  <ul className="text-xs space-y-1">
-                    <li>• <strong>Highest bars:</strong> Most common incident types</li>
-                    <li>• <strong>Categories:</strong> Near-miss, property damage, injury, environmental, etc.</li>
-                    <li>• <strong>Use case:</strong> Prioritize prevention efforts on most frequent types</li>
-                  </ul>
-                </TooltipContent>
-              </Tooltip>
-            </TooltipProvider>
-          </div>
-          <div className="lg:col-span-8 relative">
+          {/* Root Cause Pareto */}
+          <div className="lg:col-span-12 relative">
             <ShadcnParetoCard title="Root Cause Pareto" endpoint="/analytics/data/root-cause-pareto" params={{ dataset: "incident", ...filterParams }} refreshKey={refreshKey} />
             <TooltipProvider>
               <Tooltip>

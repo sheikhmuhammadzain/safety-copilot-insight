@@ -559,61 +559,70 @@ export default function Landing() {
 
       {/* AI Agent Capabilities */}
       <section id="agent-features" className="mx-auto max-w-7xl px-6 py-16">
+
         <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
           <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">AI Copilot Capabilities</h2>
           <p className="mt-2 text-center text-white/80">What the built-in agent can do for your safety data.</p>
         </div>
 
-        {/* Bento grid layout */}
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6">
-          {/* Tall hero tile */}
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4 lg:row-span-2" 
-            icon={<Bot className="h-5 w-5" />} 
-            title="Natural‑language Q&A" 
-            desc="Ask plain‑English questions across incidents, hazards, audits and inspections." />
-
-          {/* Two medium tiles */}
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
-            icon={<Database className="h-5 w-5" />} 
-            title="Smart tool calling" 
-            desc="Runs SQL, explores schemas, merges results and verifies steps automatically." />
-
-          <AgentFeatureBento className="md:col-span-6 lg:col-span-4" 
-            icon={<BarChart3 className="h-5 w-5" />} 
-            title="Charts on demand" 
-            desc="Generates bar, line, pie and scatter charts inline with your answer." />
-
-          {/* Wide tile */}
-          <AgentFeatureBento className="md:col-span-6 lg:col-span-8" 
-            icon={<ClipboardCheck className="h-5 w-5" />} 
-            title="Tabular previews" 
-            desc="Compact tables with pagination‑aware previews and numeric formatting." />
-
-          {/* Stacked small tiles */}
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
-            icon={<History className="h-5 w-5" />} 
-            title="Streaming reasoning" 
-            desc="Shows thinking, tool chain, and final answer—robust under heavy calls." />
-
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
-            icon={<Sparkles className="h-5 w-5" />} 
-            title="Answer formatting" 
-            desc="Clean, scannable markdown with lists, tables and callouts." />
-
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
-            icon={<Globe className="h-5 w-5" />} 
-            title="Web research (optional)" 
-            desc="Pulls reputable sources and images on demand." />
-
-          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
-            icon={<Code2 className="h-5 w-5" />} 
-            title="Generated code" 
-            desc="Concise analysis snippets you can copy and run." />
-
-          <AgentFeatureBento className="md:col-span-6 lg:col-span-8" 
-            icon={<Download className="h-5 w-5" />} 
-            title="Export ready" 
-            desc="One‑click copy/share and Markdown export." />
+        {/* Infinite horizontal gallery (equal-size images) */}
+        <style>
+          {`
+            @keyframes x-scroll {
+              0% { transform: translateX(0); }
+              100% { transform: translateX(-50%); }
+            }
+            #agent-marquee .marquee-track { animation: x-scroll 40s linear infinite; }
+            #agent-marquee:hover .marquee-track { animation-play-state: paused; }
+            @media (prefers-reduced-motion: reduce) {
+              #agent-marquee .marquee-track { animation: none !important; }
+            }
+          `}
+        </style>
+        <div id="agent-marquee" className="mt-10 relative overflow-hidden group">
+          <div
+            className="marquee-track relative z-0 flex items-center gap-6 w-[200%]"
+          >
+            {/* Track A */}
+            <div className="flex items-center gap-6 shrink-0">
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/naturallanguageqa.png" alt="Natural-language Q&A" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/smarttool.png" alt="Smart tool calling" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/chartondemand.png" alt="Charts on demand" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/websearch.png" alt="Web research" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/exportready.png" alt="Export ready" className="w-full h-full object-cover" loading="lazy" width="1600" height="900" />
+              </div>
+            </div>
+            {/* Track B (duplicate for seamless loop) */}
+            <div className="flex items-center gap-6 shrink-0" aria-hidden="true">
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/naturallanguageqa.png" alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/smarttool.png" alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/chartondemand.png" alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/websearch.png" alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+                <img src="/exportready.png" alt="" className="w-full h-full object-cover" loading="lazy" />
+              </div>
+            </div>
+          </div>
+          {/* edge fades */}
+          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-32 bg-gradient-to-r from-black via-black/60 to-transparent z-20" />
+          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-32 bg-gradient-to-l from-black via-black/60 to-transparent z-20" />
         </div>
       </section>
 
@@ -895,7 +904,7 @@ function AgentFeature({ icon, title, desc }: { icon: React.ReactNode; title: str
   );
 }
 
-function AgentFeatureBento({ icon, title, desc, className = "" }: { icon: React.ReactNode; title: string; desc: string; className?: string }) {
+function AgentFeatureBento({ icon, title, desc, className = "", imageSrc }: { icon: React.ReactNode; title: string; desc: string; className?: string; imageSrc?: string }) {
   return (
     <div 
       className={`group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.04] hover:border-white/30 hover:-translate-y-2 ${className}`}
@@ -912,6 +921,20 @@ function AgentFeatureBento({ icon, title, desc, className = "" }: { icon: React.
           <p className="mt-1 text-sm text-white/80">{desc}</p>
         </div>
       </div>
+      {imageSrc && (
+        <div className="mt-4 relative rounded-xl overflow-hidden border border-white/10 bg-black/30">
+          <div className="absolute inset-0 bg-gradient-to-tr from-white/5 via-transparent to-transparent pointer-events-none" />
+          <img
+            src={imageSrc}
+            alt={title}
+            className="w-full h-44 md:h-52 lg:h-56 object-cover transition-transform duration-700 ease-out group-hover:scale-[1.03]"
+            loading="lazy"
+            width="800"
+            height="500"
+            sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 33vw"
+          />
+        </div>
+      )}
     </div>
   );
 }

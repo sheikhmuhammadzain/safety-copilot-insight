@@ -802,6 +802,8 @@ export default function Agent2() {
       if (!currentAnalysis && !finalAnswer) {
         setCurrentAnalysis('The connection ended unexpectedly, but tool results above may contain partial data.');
       }
+      // Persist whatever we have (at least the user's question) to history
+      try { saveCurrentMessageToHistory(); } catch {}
     };
 
     ws.onclose = (event) => {
@@ -812,6 +814,8 @@ export default function Agent2() {
         // Abnormal closure
         console.error('WebSocket closed abnormally:', event.code);
       }
+      // Persist partial conversation if not already saved
+      try { saveCurrentMessageToHistory(); } catch {}
       // If many tool calls prevented answer finalize, try to synthesize from what we have
       if (!finalAnswer && !currentAnalysis && toolCalls.length > 0) {
         try {
@@ -829,6 +833,8 @@ export default function Agent2() {
       setIsStreaming(false);
       setLoading(false);
     }
+    // Save partial message when user stops streaming
+    try { saveCurrentMessageToHistory(); } catch {}
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -958,7 +964,7 @@ export default function Agent2() {
             
             {/* Render Previous Conversation History */}
             {conversationHistory.map((msg, msgIdx) => (
-              <div key={msgIdx} className="space-y-4">
+              <div key={msg.id} className="space-y-4">
                 {/* Historical User Question */}
                 <div className="flex justify-end">
                   <div className="bg-primary text-primary-foreground rounded-2xl px-5 py-3 max-w-2xl">

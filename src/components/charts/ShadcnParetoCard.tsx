@@ -31,13 +31,13 @@ export default function ShadcnParetoCard({
     return labels.map((label, i) => ({
       label,
       Count: Number(data.bars[i]) || 0,
-      "Cum %": Number(data.cum_pct[i]) || 0,
+      "Cumulative %": Number(data.cum_pct[i]) || 0,
     }));
   }, [data]);
 
   const chartConfig = useMemo(() => ({
     Count: { label: "Count" },
-    "Cum %": { label: "Cum %" },
+    "Cumulative %": { label: "Cumulative %" },
   }), []);
 
   return (
@@ -58,7 +58,7 @@ export default function ShadcnParetoCard({
               <ChartTooltip content={<ChartTooltipContent />} />
               <ChartLegend content={<ChartLegendContent />} />
               <Bar yAxisId="left" dataKey="Count" fill="hsl(201, 96%, 45%)" radius={[4,4,0,0]} />
-              <Line yAxisId="right" type="monotone" dataKey="Cum %" stroke="hsl(38, 92%, 55%)" strokeWidth={2} dot={false} />
+              <Line yAxisId="right" type="monotone" dataKey="Cumulative %" stroke="hsl(38, 92%, 55%)" strokeWidth={2} dot={false} />
             </ComposedChart>
           </ChartContainer>
         )}
