@@ -895,20 +895,63 @@ export default function AdvancedAnalytics() {
                 </div>
               </CardHeader>
               <CardContent>
-                <PyramidChart 
-                  layers={heinrichData.layers} 
-                  totalEvents={heinrichData.total_events}
-                />
-                <div className="mt-6 grid grid-cols-2 gap-4">
-                  <div className="p-4 bg-muted rounded-lg">
-                    <span className="text-sm text-muted-foreground">Total Events</span>
-                    <p className="text-2xl font-bold">{heinrichData.total_events}</p>
-                  </div>
-                  <div className="p-4 bg-muted rounded-lg">
-                    <span className="text-sm text-muted-foreground">Near-Miss Ratio</span>
-                    <p className="text-2xl font-bold">{heinrichData.near_miss_ratio}:1</p>
-                  </div>
-                </div>
+                {/* Map API layers to PyramidChart shape and compute totals */}
+                {(() => {
+                  const apiLayers = Array.isArray(heinrichData.layers) ? heinrichData.layers : [];
+                  const totalEvents = apiLayers.reduce((sum: number, l: any) => sum + (Number(l.count) || 0), 0);
+                  const layersForChart = apiLayers.map((l: any) => ({
+                    level: l.level,
+                    label: l.label,
+                    count: Number(l.count) || 0,
+                    // ratio not used by chart, set as realized vs expected if available
+                    ratio: l.heinrich_expected ? (Number(l.count) || 0) / Math.max(1, Number(l.heinrich_expected) || 1) : 0,
+                    color: l.color || "#7fbf7f",
+                  }));
+
+                  return (
+                    <>
+                      <PyramidChart layers={layersForChart} totalEvents={totalEvents} />
+
+                      {/* Stats and context */}
+                      <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-4">
+                        <div className="p-4 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">Total Events</span>
+                          <p className="text-2xl font-bold">{totalEvents}</p>
+                        </div>
+                        <div className="p-4 bg-muted rounded-lg">
+                          <span className="text-sm text-muted-foreground">Near-Miss Ratio</span>
+                          <p className="text-2xl font-bold">{heinrichData.near_miss_ratio}:1</p>
+                        </div>
+                        {heinrichData.filters_applied && (
+                          <div className="p-4 bg-muted rounded-lg">
+                            <span className="text-sm text-muted-foreground block mb-2">Filters Applied</span>
+                            <div className="flex flex-wrap gap-1">
+                              {Object.entries(heinrichData.filters_applied).map(([k,v]: [string, any]) => (
+                                v ? <span key={k} className="text-xs px-2 py-1 rounded bg-background border">{k}: {String(v)}</span> : null
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      {/* Expected vs Actual per layer */}
+                      <div className="mt-4 grid grid-cols-1 md:grid-cols-2 gap-3">
+                        {apiLayers.map((l: any, idx: number) => (
+                          <div key={idx} className="p-3 rounded border flex items-center justify-between">
+                            <div>
+                              <p className="text-sm font-medium">{l.label}</p>
+                              <p className="text-xs text-muted-foreground">Expected: {l.heinrich_expected ?? '-'}{l.anchor ? ` • Anchor: ${l.anchor}` : ''}</p>
+                            </div>
+                            <div className="text-right">
+                              <span className="text-xs text-muted-foreground block">Actual</span>
+                              <span className="text-lg font-bold">{l.count}</span>
+                            </div>
+                          </div>
+                        ))}
+                      </div>
+                    </>
+                  );
+                })()}
               </CardContent>
             </Card>
           )}

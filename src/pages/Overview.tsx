@@ -1,5 +1,6 @@
 import { KPICard } from "@/components/dashboard/KPICard";
 import { useState, useMemo, useEffect } from "react";
+import { useQuery } from "@tanstack/react-query";
 import ShadcnLineCard from "@/components/charts/ShadcnLineCard";
 import ShadcnLineCardEnhanced from "@/components/charts/ShadcnLineCardEnhanced";
 import ShadcnBarCard from "@/components/charts/ShadcnBarCard";
@@ -7,11 +8,10 @@ import ShadcnParetoCard from "@/components/charts/ShadcnParetoCard";
 import ShadcnHeatmapCard from "@/components/charts/ShadcnHeatmapCard";
 import { ChartDateFilter } from "@/components/charts/ChartDateFilter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
-import { useKpi } from "@/hooks/useKpi";
 import { useFilterOptions } from "@/hooks/useFilterOptions";
-import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw, Filter, X } from "lucide-react";
+import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw, Filter, X, ListChecks } from "lucide-react";
 import { RecentList } from "@/components/dashboard/RecentList";
-import { getRecentIncidents, getRecentHazards, getRecentAudits } from "@/lib/api";
+import { getRecentIncidents, getRecentHazards, getRecentAudits, getDataHealthCountsAll } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 import { MultiSelect } from "@/components/ui/multi-select";
 import { Input } from "@/components/ui/input";
@@ -214,50 +214,24 @@ export default function Overview() {
   const activeFilterCount = useMemo(() => {
     return Object.keys(filterParams).length;
   }, [filterParams]);
-  // KPIs sourced from real KPI endpoints that return Plotly indicator figures
-  const incidentsTotal = useKpi(
-    "/kpis/incident-total",
-    undefined,
-    (fig) => {
-      const d = fig?.data?.[0];
-      const val = d?.value as number | undefined;
-      return Number.isFinite(val as number) ? Math.round(val as number) : null;
-    },
-    refreshKey,
-  );
+  // KPIs via a single data-health endpoint (server-side filtered)
+  const { data: dataHealth, isLoading: kpiLoading, isError: kpiError, error: kpiErr } = useQuery({
+    queryKey: ["data-health-counts", filterParams, refreshKey ?? 0],
+    queryFn: () => getDataHealthCountsAll(filterParams),
+    staleTime: Infinity,
+    gcTime: Infinity,
+    refetchOnWindowFocus: false,
+    refetchOnReconnect: false,
+  });
 
-  const hazardsTotal = useKpi(
-    "/kpis/hazard-total",
-    undefined,
-    (fig) => {
-      const d = fig?.data?.[0];
-      const val = d?.value as number | undefined;
-      return Number.isFinite(val as number) ? Math.round(val as number) : null;
-    },
-    refreshKey,
-  );
-
-  const auditsTotal = useKpi(
-    "/kpis/audit-total",
-    undefined,
-    (fig) => {
-      const d = fig?.data?.[0];
-      const val = d?.value as number | undefined;
-      return Number.isFinite(val as number) ? Math.round(val as number) : null;
-    },
-    refreshKey,
-  );
-
-  const inspectionsTotal = useKpi(
-    "/kpis/inspection-total",
-    undefined,
-    (fig) => {
-      const d = fig?.data?.[0];
-      const val = d?.value as number | undefined;
-      return Number.isFinite(val as number) ? Math.round(val as number) : null;
-    },
-    refreshKey,
-  );
+  const counts = useMemo(() => ({
+    incident: dataHealth?.counts?.incident ?? 0,
+    hazard: dataHealth?.counts?.hazard ?? 0,
+    audit: dataHealth?.counts?.audit ?? 0,
+    inspection: dataHealth?.counts?.inspection ?? 0,
+    audit_findings: dataHealth?.counts?.audit_findings ?? 0,
+    inspection_findings: dataHealth?.counts?.inspection_findings ?? 0,
+  }), [dataHealth]);
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -508,43 +482,66 @@ export default function Overview() {
             </CardContent>
           </Card>
         )}
-        {/* KPI Cards - Real data */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+        {/* KPI Cards - Data Health (single endpoint) */}
+        {kpiError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+            Failed to load KPI counts{(kpiErr as any)?.message ? `: ${(kpiErr as any).message}` : "."}
+          </div>
+        )}
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           <KPICard
             title="Incidents"
-            value={incidentsTotal.value != null ? String(incidentsTotal.value) : "124"}
-            change={{ value: 12 }}
+            value={kpiLoading ? "—" : counts.incident}
             trend="up"
             variant="warning"
             icon={<AlertTriangle className="h-5 w-5" />}
             iconBgClass="bg-amber-100 text-amber-700"
+            info="An incident is an unplanned event that resulted in injury, illness, property damage, environmental impact, or operational disruption and was formally reported."
           />
           <KPICard
             title="Hazards"
-            value={hazardsTotal.value != null ? String(hazardsTotal.value) : "47"}
-            change={{ value: 4 }}
+            value={kpiLoading ? "—" : counts.hazard}
             trend="up"
             variant="danger"
             icon={<ShieldAlert className="h-5 w-5" />}
             iconBgClass="bg-rose-100 text-rose-600"
+            info="A hazard is a potential source of harm — a condition or activity that could cause injury, illness, property damage, or environmental impact if not controlled."
           />
           <KPICard
             title="Audits"
-            value={auditsTotal.value != null ? String(auditsTotal.value) : "23"}
-            change={{ value: -7 }}
-            trend="down"
+            value={kpiLoading ? "—" : counts.audit}
+            trend="up"
             variant="default"
             icon={<FileCheck className="h-5 w-5" />}
             iconBgClass="bg-accent/10 text-accent"
+            info="An audit is a structured, formal assessment against standards or procedures to verify compliance and the effectiveness of the safety management system."
           />
           <KPICard
             title="Inspections"
-            value={inspectionsTotal.value != null ? String(inspectionsTotal.value) : "0"}
-            change={{ value: 0 }}
+            value={kpiLoading ? "—" : counts.inspection}
             trend="up"
             variant="success"
             icon={<ClipboardCheck className="h-5 w-5" />}
             iconBgClass="bg-emerald-100 text-emerald-600"
+            info="An inspection is a routine on‑site check to identify unsafe acts/conditions and verify that controls are in place and functioning."
+          />
+          <KPICard
+            title="Audit Findings"
+            value={kpiLoading ? "—" : counts.audit_findings}
+            trend="up"
+            variant="warning"
+            icon={<ListChecks className="h-5 w-5" />}
+            iconBgClass="bg-amber-100 text-amber-700"
+            info="Audit findings are the individual nonconformities or issues identified during an audit that require corrective or preventive action."
+          />
+          <KPICard
+            title="Inspection Findings"
+            value={kpiLoading ? "—" : counts.inspection_findings}
+            trend="up"
+            variant="warning"
+            icon={<ListChecks className="h-5 w-5" />}
+            iconBgClass="bg-amber-100 text-amber-700"
+            info="Inspection findings are the issues or observations identified during inspections that indicate unsafe acts/conditions or control gaps."
           />
         </div>
 

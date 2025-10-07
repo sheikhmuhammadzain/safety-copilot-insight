@@ -200,6 +200,25 @@ export async function getRecentAudits(limit = 5) {
   return res.data;
 }
 
+// Data health counts (single endpoint for multiple KPIs)
+export type DataHealthCounts = {
+  counts: {
+    incident: number;
+    hazard: number;
+    audit: number;
+    inspection: number;
+    audit_findings: number;
+    inspection_findings: number;
+  };
+  selected_sheets?: Record<string, string>;
+  timestamp: string;
+};
+
+export async function getDataHealthCountsAll(params?: Record<string, any>) {
+  const res = await api.get<DataHealthCounts>("/data-health/counts/all", { params });
+  return res.data;
+}
+
 // Conversion analytics (JSON endpoints)
 export async function getConversionLinks() {
   const res = await api.get<any>("/analytics/conversion/links");

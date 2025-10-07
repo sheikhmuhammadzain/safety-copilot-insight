@@ -18,6 +18,7 @@ export default function DataHealth() {
   const [healthSummary, setHealthSummary] = useState<any>(null);
   const [sourceInfo, setSourceInfo] = useState<any>(null);
   const [validation, setValidation] = useState<any>(null);
+  const [chartsValidation, setChartsValidation] = useState<any>(null);
   const [sampleData, setSampleData] = useState<any>(null);
   const [selectedDataset, setSelectedDataset] = useState<string>("incidents");
   const [loading, setLoading] = useState(false);
@@ -44,20 +45,23 @@ export default function DataHealth() {
     location: "",
   });
   const [isTracing, setIsTracing] = useState(false);
+  const [activeTab, setActiveTab] = useState<string>("overview");
 
   const fetchAllData = async () => {
     setLoading(true);
     setError(null);
     try {
-      const [health, source, valid] = await Promise.all([
+      const [health, source, valid, chartsValid] = await Promise.all([
         axios.get(`${API_BASE}/data-health/summary`),
         axios.get(`${API_BASE}/data-health/source-info`),
         axios.get(`${API_BASE}/data-health/validation/check`),
+        axios.get(`${API_BASE}/data-health/validate/charts`),
       ]);
 
       setHealthSummary(health.data);
       setSourceInfo(source.data);
       setValidation(valid.data);
+      setChartsValidation(chartsValid.data);
     } catch (err: any) {
       console.error("Error fetching data health:", err);
       setError(err.message || "Failed to load data health information");
@@ -121,12 +125,23 @@ export default function DataHealth() {
   const fetchChartTrace = async (chartEndpoint: string) => {
     setIsTracing(true);
     try {
-      const params = new URLSearchParams();
-      if (traceFilters.start_date) params.append("start_date", traceFilters.start_date);
-      if (traceFilters.end_date) params.append("end_date", traceFilters.end_date);
-      if (traceFilters.location) params.append("location", traceFilters.location);
-      
-      const response = await axios.get(`${API_BASE}${chartEndpoint}?${params}`);
+      // Build a robust URL that works for both:
+      // 1) analytics endpoints like "/analytics/data/incident-trend"
+      // 2) prebuilt trace endpoints like "/data-health/trace/...?..."
+      let url: URL;
+      if (chartEndpoint.startsWith("/analytics/")) {
+        url = new URL(`${API_BASE}/data-health/trace/by-endpoint`);
+        url.searchParams.set("endpoint", chartEndpoint);
+      } else {
+        url = new URL(`${API_BASE}${chartEndpoint}`);
+      }
+
+      // Merge optional filters
+      if (traceFilters.start_date) url.searchParams.set("start_date", traceFilters.start_date);
+      if (traceFilters.end_date) url.searchParams.set("end_date", traceFilters.end_date);
+      if (traceFilters.location) url.searchParams.set("location", traceFilters.location);
+
+      const response = await axios.get(url.toString());
       setChartTrace(response.data);
     } catch (err) {
       console.error(`Error tracing chart:`, err);
@@ -137,6 +152,8 @@ export default function DataHealth() {
 
   const handleTraceChart = (traceEndpoint: string) => {
     setSelectedChart(traceEndpoint);
+    // Navigate to Tracing tab so results are visible immediately
+    setActiveTab("tracing");
     fetchChartTrace(traceEndpoint);
   };
 
@@ -156,7 +173,10 @@ export default function DataHealth() {
     switch (status?.toLowerCase()) {
       case "healthy":
       case "valid":
+      case "ok":
+      case "verified":
         return "bg-green-100 text-green-700 border-green-300";
+      case "missing_columns":
       case "has_issues":
         return "bg-yellow-100 text-yellow-700 border-yellow-300";
       case "critical":
@@ -296,7 +316,7 @@ export default function DataHealth() {
           )}
 
           {/* Tabs */}
-          <Tabs defaultValue="overview" className="space-y-6">
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="space-y-6">
             <TabsList className="grid w-full grid-cols-5">
               <TabsTrigger value="overview">Overview</TabsTrigger>
               <TabsTrigger value="validation">Validation</TabsTrigger>
@@ -372,6 +392,117 @@ export default function DataHealth() {
                       </div>
                     </CardContent>
                   </Card>
+
+                  {/* Charts Validation (OK & Verified) */}
+                  {chartsValidation && (
+                    <Card>
+                      <CardHeader>
+                        <CardTitle className="flex items-center gap-2">
+                          <BarChart3 className="h-5 w-5" />
+                          Charts Validation
+                        </CardTitle>
+                        <CardDescription>
+                          Authenticity check of chart inputs. {chartsValidation.summary?.timestamp ? `As of ${new Date(chartsValidation.summary.timestamp).toLocaleString()}` : ""}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent>
+                        {/* Summary */}
+                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                          <div className="p-4 rounded-lg border bg-green-50 border-green-200">
+                            <p className="text-sm text-green-700">OK / Verified</p>
+                            <p className="text-3xl font-bold text-green-700">{chartsValidation.summary?.ok ?? (chartsValidation.validated?.filter((c: any) => ["ok","verified"].includes((c.status||"").toLowerCase())).length || 0)}</p>
+                          </div>
+                          <div className="p-4 rounded-lg border bg-amber-50 border-amber-200">
+                            <p className="text-sm text-amber-700">With Issues</p>
+                            <p className="text-3xl font-bold text-amber-700">{chartsValidation.summary?.with_issues ?? (chartsValidation.validated?.filter((c: any) => !["ok","verified"].includes((c.status||"").toLowerCase())).length || 0)}</p>
+                          </div>
+                          <div className="p-4 rounded-lg border bg-muted">
+                            <p className="text-sm text-muted-foreground">Total Charts</p>
+                            <p className="text-3xl font-bold">{chartsValidation.validated?.length || 0}</p>
+                          </div>
+                        </div>
+
+                        {/* OK / Verified charts */}
+                        <div className="mb-6">
+                          <h3 className="text-sm font-semibold text-muted-foreground mb-3">OK / Verified</h3>
+                          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
+                            {(chartsValidation.validated || [])
+                              .filter((c: any) => ["ok","verified"].includes((c.status||"").toLowerCase()))
+                              .map((c: any, idx: number) => (
+                                <div key={`${c.endpoint}-${idx}`} className="flex items-center justify-between p-3 rounded-lg border bg-card">
+                                  <div className="min-w-0">
+                                    <div className="flex items-center gap-2">
+                                      <Badge className={getStatusColor(c.status)}>{c.status}</Badge>
+                                      <p className="font-medium truncate">{c.chart}</p>
+                                    </div>
+                                    <p className="text-xs text-muted-foreground truncate max-w-[26rem]">{c.endpoint}</p>
+                                  </div>
+                                  <Button variant="outline" size="sm" onClick={() => handleTraceChart(c.endpoint)}>
+                                    Trace
+                                  </Button>
+                                </div>
+                              ))}
+                          </div>
+                        </div>
+
+                        {/* Charts with issues */}
+                        {(chartsValidation.validated || []).some((c: any) => !["ok","verified"].includes((c.status||"").toLowerCase())) && (
+                          <div>
+                            <h3 className="text-sm font-semibold text-muted-foreground mb-3">Issues Detected</h3>
+                            <div className="space-y-3">
+                              {(chartsValidation.validated || [])
+                                .filter((c: any) => !["ok","verified"].includes((c.status||"").toLowerCase()))
+                                .map((c: any, idx: number) => (
+                                  <Card key={`${c.endpoint}-issue-${idx}`} className="border-amber-200">
+                                    <CardHeader>
+                                      <div className="flex items-center justify-between">
+                                        <CardTitle className="text-base flex items-center gap-2">
+                                          <AlertTriangle className="h-4 w-4 text-amber-600" />
+                                          {c.chart}
+                                        </CardTitle>
+                                        <Badge className={getStatusColor(c.status)}>{c.status}</Badge>
+                                      </div>
+                                      <CardDescription className="truncate">{c.endpoint}</CardDescription>
+                                    </CardHeader>
+                                    <CardContent>
+                                      <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-3">
+                                        <div>
+                                          <p className="text-xs text-muted-foreground">Rows</p>
+                                          <p className="text-lg font-bold">{c.rows?.toLocaleString?.() || c.rows}</p>
+                                        </div>
+                                        <div className="md:col-span-2">
+                                          <p className="text-xs text-muted-foreground">Missing Columns</p>
+                                          <div className="flex flex-wrap gap-1 mt-1">
+                                            {(c.missing || []).map((m: string) => (
+                                              <Badge key={m} variant="outline" className="text-xs">{m}</Badge>
+                                            ))}
+                                          </div>
+                                        </div>
+                                      </div>
+                                      <div className="space-y-1">
+                                        <p className="text-xs text-muted-foreground">Resolved Columns</p>
+                                        <div className="flex flex-wrap gap-1">
+                                          {Object.entries(c.resolved_columns || {}).map(([k,v]) => (
+                                            <Badge key={k} variant="outline" className="text-xs">
+                                              <span className="font-mono">{k}</span>: <span className="ml-1">{String(v)}</span>
+                                            </Badge>
+                                          ))}
+                                        </div>
+                                      </div>
+                                      <div className="mt-3 flex gap-2">
+                                        <Button variant="outline" size="sm" onClick={() => handleTraceChart(c.endpoint)}>
+                                          Trace Chart
+                                        </Button>
+                                      </div>
+                                    </CardContent>
+                                  </Card>
+                                ))}
+                            </div>
+                          </div>
+                        )}
+                      </CardContent>
+                    </Card>
+                  )}
                 </>
               )}
             </TabsContent>

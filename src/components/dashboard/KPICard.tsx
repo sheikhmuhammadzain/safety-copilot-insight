@@ -3,6 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { TrendingUp, TrendingDown, Minus, Info } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
 
 interface KPICardProps {
   title: string;
@@ -17,6 +18,7 @@ interface KPICardProps {
   icon?: ReactNode;
   iconBgClass?: string;
   className?: string;
+  info?: ReactNode;
 }
 
 export function KPICard({ 
@@ -28,7 +30,8 @@ export function KPICard({
   valueSuffix,
   icon,
   iconBgClass,
-  className 
+  className,
+  info,
 }: KPICardProps) {
   const getTrendIcon = () => {
     switch (trend) {
@@ -65,9 +68,24 @@ export function KPICard({
     <Card className={cn("relative overflow-hidden rounded-2xl border border-border/60 bg-card/90 shadow-sm transition-all hover:shadow-lg", className)}>
       <CardHeader className="pb-0">
         <div className="flex items-center justify-between">
-          <div className="h-6 w-6 rounded-full border border-muted-foreground/20 grid place-items-center text-muted-foreground/60">
-            <Info className="h-3.5 w-3.5" />
-          </div>
+          <TooltipProvider>
+            <Tooltip>
+              <TooltipTrigger asChild>
+                <button
+                  type="button"
+                  className="h-6 w-6 rounded-full border border-muted-foreground/20 grid place-items-center text-muted-foreground/60 hover:bg-muted/40"
+                  aria-label={`About ${title}`}
+                >
+                  <Info className="h-3.5 w-3.5" />
+                </button>
+              </TooltipTrigger>
+              <TooltipContent side="left" className="max-w-xs">
+                <p className="text-xs leading-relaxed">
+                  {info || "Key performance indicator."}
+                </p>
+              </TooltipContent>
+            </Tooltip>
+          </TooltipProvider>
           <div className="h-6 w-6 rounded-full bg-muted/50" />
         </div>
       </CardHeader>

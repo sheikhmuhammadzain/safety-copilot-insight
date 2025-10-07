@@ -301,7 +301,7 @@ export default function Landing() {
       />
       </Suspense>
       <Suspense fallback={null}>
-        <Spotlight className="absolute -top-40 left-0 z-0 md:left-60 md:-top-20" fill="#84cc16" />
+        <Spotlight className="absolute -top-50 left-0 z-0 md:left-60 md:-top-60" fill="#84cc16" />
       </Suspense>
       {/* Navbar - Pill Shaped Glassmorphism - Responsive */}
       <header ref={navRef} className="fixed top-2 sm:top-3 md:top-6 left-1/2 -translate-x-1/2 z-50 w-[98%] sm:w-[96%] md:w-[95%] max-w-5xl px-1 sm:px-2 md:px-0 origin-center">
@@ -631,10 +631,10 @@ export default function Landing() {
       <section id="stats" className="border-y border-white/10 bg-black/60 backdrop-blur-xl">
         <div className="mx-auto max-w-7xl px-6 py-10 grid grid-cols-2 md:grid-cols-4 gap-6">
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
-            <Stat value={3.1} suffix="k+" label="Incidents Analyzed" />
+            <Stat value={5.1} suffix="k+" label="Incidents Analyzed" />
           </div>
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200">
-            <Stat value={1.2} suffix="k+" label="Hazards Tracked" />
+            <Stat value={4.2} suffix="k+" label="Hazards Tracked" />
           </div>
           <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300">
             <Stat value={89} suffix="%" label="Audit Completion" />
