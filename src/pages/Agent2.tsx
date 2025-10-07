@@ -558,6 +558,15 @@ export default function Agent2() {
     // Mark as saved immediately
     savedMessageIdsRef.current.add(messageId);
     
+    const analysisText =
+      currentAnalysis ||
+      finalAnswer ||
+      response?.analysis ||
+      response?.answer ||
+      "";
+
+    const analysisToStore = analysisText || "Analysis complete. See tool outputs below.";
+
     setConversationHistory(prev => [
       ...prev,
       {
@@ -565,7 +574,7 @@ export default function Agent2() {
         question: currentQuestion,
         dataset: currentDataset,
         toolCalls: toolCalls.slice(),
-        analysis: currentAnalysis || finalAnswer || response?.analysis || response?.answer || "",
+        analysis: analysisToStore,
         response: response || null,
         timestamp: Date.now(),
       },
@@ -676,6 +685,10 @@ export default function Agent2() {
                 : tc
             )
           );
+          // Ensure we have something to show while tools are busy
+          if (!currentAnalysis && !finalAnswer) {
+            setCurrentAnalysis(prev => prev || 'Working on your request…');
+          }
         }
 
         // Code streaming
@@ -743,7 +756,8 @@ export default function Agent2() {
           
           setIsStreaming(false);
           setLoading(false);
-          ws.close();
+          // Slight delay to allow React to flush state before closing
+          setTimeout(() => ws.close(), 20);
           
           // Clear current message states after saving to prevent duplicate rendering
           setTimeout(() => {
@@ -756,7 +770,7 @@ export default function Agent2() {
             setThinkingText("");
             setReasoningText("");
             currentMessageIdRef.current = null;
-          }, 100);
+          }, 250);
           
           // Scroll to bottom only after response is complete and DOM is fully updated
           // Use longer delay to avoid jittery behavior
@@ -773,7 +787,7 @@ export default function Agent2() {
 
     ws.onerror = (error) => {
       console.error('WebSocket error:', error);
-      const hasResponse = currentAnalysis.length > 0 || currentCode.length > 0;
+      const hasResponse = currentAnalysis.length > 0 || currentCode.length > 0 || finalAnswer.length > 0;
       setIsStreaming(false);
       setLoading(false);
       if (!hasResponse) {
@@ -784,6 +798,10 @@ export default function Agent2() {
           className: "left-4",
         });
       }
+      // Ensure the UI shows something despite the error
+      if (!currentAnalysis && !finalAnswer) {
+        setCurrentAnalysis('The connection ended unexpectedly, but tool results above may contain partial data.');
+      }
     };
 
     ws.onclose = (event) => {
@@ -793,6 +811,14 @@ export default function Agent2() {
       if (event.code !== 1000 && event.code !== 1001) {
         // Abnormal closure
         console.error('WebSocket closed abnormally:', event.code);
+      }
+      // If many tool calls prevented answer finalize, try to synthesize from what we have
+      if (!finalAnswer && !currentAnalysis && toolCalls.length > 0) {
+        try {
+          const summary = `Completed ${toolCalls.length} tool calls. Review the results above.`;
+          setCurrentAnalysis(summary);
+          setFinalAnswer(summary);
+        } catch {}
       }
     };
   };
@@ -988,12 +1014,12 @@ export default function Agent2() {
                     )}
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
+                <CollapsibleContent className="max-h-[60vh] overflow-auto">
                                   <div className="mt-2 space-y-3 pl-3">
                           <div>
                             <div className="text-xs font-semibold text-muted-foreground mb-1">Arguments</div>
-                                      <div className="bg-muted rounded-lg p-3">
-                                        <pre className="text-xs font-mono overflow-x-auto">
+                                      <div className="bg-muted rounded-lg p-3 overflow-auto max-w-full">
+                                        <pre className="text-xs font-mono whitespace-pre-wrap break-words break-all overflow-auto max-h-60 max-w-full">
 {JSON.stringify(tc.arguments, null, 2)}
                             </pre>
                           </div>
@@ -1208,8 +1234,8 @@ export default function Agent2() {
                                         
                                         {/* Raw JSON (only if no table/chart/web search) */}
                                         {!hasTableData && !hasChartData && !isWebSearch && (
-                                          <div className="bg-muted rounded-lg p-3">
-                                            <pre className="text-xs font-mono overflow-x-auto max-h-48">
+                                          <div className="bg-muted rounded-lg p-3 overflow-auto max-w-full">
+                                            <pre className="text-xs font-mono whitespace-pre-wrap break-words break-all overflow-auto max-h-60 max-w-full">
 {typeof tc.result === 'object' ? JSON.stringify(tc.result, null, 2) : tc.result}
                                             </pre>
               </div>
@@ -1441,7 +1467,7 @@ export default function Agent2() {
                                     <MoreHorizontal className="h-4 w-4" />
                                   </Button>
                                 </DropdownMenuTrigger>
-                                <DropdownMenuContent align="end" className="w-44">
+                                <DropdownMenuContent align="end" className="w-44 max-w-[90vw] overflow-auto">
                                   <DropdownMenuItem
                                     onClick={() => {
                                       const md = msg.analysis || '';
@@ -1548,12 +1574,12 @@ export default function Agent2() {
                     )}
                   </button>
                 </CollapsibleTrigger>
-                <CollapsibleContent>
+                <CollapsibleContent className="max-h-[60vh] overflow-auto">
                               <div className="mt-2 space-y-3 pl-3">
                       <div>
                             <div className="text-xs font-semibold text-muted-foreground mb-1">Arguments</div>
-                                  <div className="bg-muted rounded-lg p-3">
-                                    <pre className="text-xs font-mono overflow-x-auto">
+                                  <div className="bg-muted rounded-lg p-3 overflow-auto max-w-full">
+                                    <pre className="text-xs font-mono whitespace-pre-wrap break-words break-all overflow-auto max-h-60 max-w-full">
 {JSON.stringify(tc.arguments, null, 2)}
                         </pre>
                       </div>
@@ -1768,8 +1794,8 @@ export default function Agent2() {
                             
                             {/* Raw JSON (collapsed by default if we have table/chart/web search) */}
                             {!hasTableData && !hasChartData && !isWebSearch && (
-                                    <div className="bg-muted rounded-lg p-3">
-                                      <pre className="text-xs font-mono overflow-x-auto max-h-48">
+                                    <div className="bg-muted rounded-lg p-3 overflow-auto max-w-full">
+                                      <pre className="text-xs font-mono whitespace-pre-wrap break-words break-all overflow-auto max-h-60 max-w-full">
 {typeof tc.result === 'object' ? JSON.stringify(tc.result, null, 2) : tc.result}
                               </pre>
                                     </div>
@@ -2026,7 +2052,7 @@ export default function Agent2() {
                                   <MoreHorizontal className="h-4 w-4" />
                                 </Button>
                               </DropdownMenuTrigger>
-                              <DropdownMenuContent align="end" className="w-44">
+                              <DropdownMenuContent align="end" className="w-44 max-w-[90vw] overflow-auto">
                                 <DropdownMenuItem
                                   onClick={() => {
                                     const md = (debouncedAnalysis || response?.analysis || response?.answer || finalAnswer || '').toString();
@@ -2273,7 +2299,7 @@ export default function Agent2() {
                     <BookOpen className="h-5 w-5" />
                   </Button>
                 </DialogTrigger>
-                <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-hidden max-h-[85vh]">
+                <DialogContent className="max-w-3xl w-[95vw] p-0 overflow-auto max-h-[85vh]">
                   <DialogHeader className="px-6 pt-6 pb-4">
                     <DialogTitle>Queries Book</DialogTitle>
                     <DialogDescription>
