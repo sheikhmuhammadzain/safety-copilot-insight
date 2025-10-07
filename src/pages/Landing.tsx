@@ -1,6 +1,6 @@
 import { Link, useLocation } from "react-router-dom";
 // Import only needed icons to reduce bundle size
-import { Shield, BarChart3, Map, ArrowRight, CheckCircle2, Twitter, Github, Linkedin, Phone, MapPin } from "lucide-react";
+import { Shield, BarChart3, Map, ArrowRight, CheckCircle2, Twitter, Github, Linkedin, Phone, MapPin, Bot, Brain, Database, Code2, Sparkles, History, ClipboardCheck, Download, Globe } from "lucide-react";
 // Remove unused imports to reduce bundle size
 // import { Button } from "@/components/ui/button";
 // import { Input } from "@/components/ui/input";
@@ -557,6 +557,66 @@ export default function Landing() {
         </div>
       </section>
 
+      {/* AI Agent Capabilities */}
+      <section id="agent-features" className="mx-auto max-w-7xl px-6 py-16">
+        <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">AI Copilot Capabilities</h2>
+          <p className="mt-2 text-center text-white/80">What the built-in agent can do for your safety data.</p>
+        </div>
+
+        {/* Bento grid layout */}
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6">
+          {/* Tall hero tile */}
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4 lg:row-span-2" 
+            icon={<Bot className="h-5 w-5" />} 
+            title="Natural‑language Q&A" 
+            desc="Ask plain‑English questions across incidents, hazards, audits and inspections." />
+
+          {/* Two medium tiles */}
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
+            icon={<Database className="h-5 w-5" />} 
+            title="Smart tool calling" 
+            desc="Runs SQL, explores schemas, merges results and verifies steps automatically." />
+
+          <AgentFeatureBento className="md:col-span-6 lg:col-span-4" 
+            icon={<BarChart3 className="h-5 w-5" />} 
+            title="Charts on demand" 
+            desc="Generates bar, line, pie and scatter charts inline with your answer." />
+
+          {/* Wide tile */}
+          <AgentFeatureBento className="md:col-span-6 lg:col-span-8" 
+            icon={<ClipboardCheck className="h-5 w-5" />} 
+            title="Tabular previews" 
+            desc="Compact tables with pagination‑aware previews and numeric formatting." />
+
+          {/* Stacked small tiles */}
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
+            icon={<History className="h-5 w-5" />} 
+            title="Streaming reasoning" 
+            desc="Shows thinking, tool chain, and final answer—robust under heavy calls." />
+
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
+            icon={<Sparkles className="h-5 w-5" />} 
+            title="Answer formatting" 
+            desc="Clean, scannable markdown with lists, tables and callouts." />
+
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
+            icon={<Globe className="h-5 w-5" />} 
+            title="Web research (optional)" 
+            desc="Pulls reputable sources and images on demand." />
+
+          <AgentFeatureBento className="md:col-span-3 lg:col-span-4" 
+            icon={<Code2 className="h-5 w-5" />} 
+            title="Generated code" 
+            desc="Concise analysis snippets you can copy and run." />
+
+          <AgentFeatureBento className="md:col-span-6 lg:col-span-8" 
+            icon={<Download className="h-5 w-5" />} 
+            title="Export ready" 
+            desc="One‑click copy/share and Markdown export." />
+        </div>
+      </section>
+
 
       {/* Stats strip */}
       <section id="stats" className="border-y border-white/10 bg-black/60 backdrop-blur-xl">
@@ -813,6 +873,45 @@ function UseCase({ title, bullet1, bullet2, bullet3 }: { title: string; bullet1:
         <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet2}</li>
         <li className="flex items-center gap-2 transition-all duration-500 ease-out group-hover:text-white group-hover:translate-x-1"><span className="h-1.5 w-1.5 rounded-full bg-primary transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-150 group-hover:shadow-lg group-hover:shadow-primary/50" />{bullet3}</li>
       </ul>
+    </div>
+  );
+}
+
+function AgentFeature({ icon, title, desc }: { icon: React.ReactNode; title: string; desc: string }) {
+  return (
+    <div 
+      className="group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_20px_45px_rgba(0,0,0,0.35)] hover:scale-[1.06] hover:border-white/30 hover:-translate-y-2"
+    >
+      <div className="flex items-start gap-3">
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary group-hover:bg-primary/25 group-hover:text-primary/90 transition-colors">
+          {icon}
+        </div>
+        <div>
+          <div className="text-base font-semibold text-white">{title}</div>
+          <p className="mt-1 text-sm text-white/80">{desc}</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function AgentFeatureBento({ icon, title, desc, className = "" }: { icon: React.ReactNode; title: string; desc: string; className?: string }) {
+  return (
+    <div 
+      className={`group rounded-2xl border border-white/15 bg-white/10 backdrop-blur-xl p-6 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.04] hover:border-white/30 hover:-translate-y-2 ${className}`}
+      style={{ 
+        backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+      }}
+    >
+      <div className="flex items-start gap-3">
+        <div className="inline-flex h-10 w-10 items-center justify-center rounded-full bg-primary/15 text-primary group-hover:bg-primary/25 group-hover:text-primary/90 transition-colors">
+          {icon}
+        </div>
+        <div>
+          <div className="text-base font-semibold text-white">{title}</div>
+          <p className="mt-1 text-sm text-white/80">{desc}</p>
+        </div>
+      </div>
     </div>
   );
 }
