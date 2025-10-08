@@ -103,7 +103,7 @@ export default function Settings() {
               <SettingsIcon className="h-6 w-6 text-primary" />
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Settings</h1>
-                <p className="text-sm text-muted-foreground">Configure your Safety Co-pilot preferences</p>
+                <p className="text-sm text-muted-foreground">Configure your Safety Copilot preferences</p>
               </div>
             </div>
           </div>

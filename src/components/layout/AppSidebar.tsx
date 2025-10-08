@@ -61,7 +61,7 @@ export function AppSidebar() {
             <img src="/logo.png" alt="Logo" className="h-8 w-8 rounded-md object-contain" />
             <div className="group-data-[collapsible=icon]:hidden">
               <a href="/" className="flex items-center gap-2">
-                <h2 className="text-lg font-semibold text-sidebar-foreground">Safety Co-pilot</h2>
+                <h2 className="text-lg font-semibold text-sidebar-foreground">Safety Copilot</h2>
               </a>
             </div>
           </div>

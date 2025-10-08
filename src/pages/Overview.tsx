@@ -265,7 +265,7 @@ export default function Overview() {
           <div className="flex items-center space-x-4">
             <SidebarTrigger />
             <div>
-              <h1 className="text-2xl font-bold text-foreground">Safety Co-pilot</h1>
+              <h1 className="text-2xl font-bold text-foreground">Safety Copilot</h1>
               <p className="text-sm text-muted-foreground">Health, Safety & Environment Dashboard</p>
             </div>
           </div>

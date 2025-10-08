@@ -2,7 +2,7 @@
 @tailwind components;
 @tailwind utilities;
 
-/* Safety Co-pilot Design System - Industrial & Professional
+/* Safety Copilot Design System - Industrial & Professional
 All colors MUST be HSL for consistency */
 
 @layer base {
@@ -50,7 +50,7 @@ All colors MUST be HSL for consistency */
     --tracking-normal: -0.025em;
     --spacing: 0.27rem;
 
-    /* Safety Co-pilot specific tokens */
+    /* Safety Copilot specific tokens */
     --safety-success: 142 76% 36%;
     --safety-warning: 38 92% 50%;
     --safety-danger: 0 84% 60%;

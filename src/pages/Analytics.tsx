@@ -106,7 +106,7 @@ export default function Analytics() {
               <BarChart3 className="h-6 w-6 text-primary" />
               <div>
                 <h1 className="text-2xl font-bold text-foreground">Analytics</h1>
-                <p className="text-sm text-muted-foreground">Interactive analytics powered by Safety Co-pilot</p>
+                <p className="text-sm text-muted-foreground">Interactive analytics powered by Safety Copilot</p>
               </div>
             </div>
           </div>
