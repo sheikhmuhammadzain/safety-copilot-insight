@@ -97,21 +97,10 @@ export const PyramidChart: React.FC<PyramidChartProps> = ({ layers, totalEvents 
                 className="transition-all duration-300 hover:opacity-90"
               />
               
-              {/* Label text */}
+              {/* Count text (Number - First) */}
               <text
                 x={centerX}
-                y={yPos + 32}
-                textAnchor="middle"
-                className="fill-white font-bold"
-                style={{ fontSize: index === 0 ? '12px' : '19px', fontWeight: '700' }}
-              >
-                {layer.label}
-              </text>
-              
-              {/* Count text */}
-              <text
-                x={centerX}
-                y={yPos + 68}
+                y={yPos + 38}
                 textAnchor="middle"
                 className="fill-white font-extrabold"
                 style={{ fontSize: index === 0 ? '32px' : '42px', fontWeight: '900' }}
@@ -119,10 +108,21 @@ export const PyramidChart: React.FC<PyramidChartProps> = ({ layers, totalEvents 
                 {layer.count}
               </text>
               
-              {/* Percentage indicator */}
+              {/* Label text (Text - Second) */}
               <text
                 x={centerX}
-                y={yPos + 88}
+                y={yPos + 65}
+                textAnchor="middle"
+                className="fill-white font-bold"
+                style={{ fontSize: index === 0 ? '12px' : '19px', fontWeight: '700' }}
+              >
+                {layer.label}
+              </text>
+              
+              {/* Percentage indicator (Percentage - Third) */}
+              <text
+                x={centerX}
+                y={yPos + 85}
                 textAnchor="middle"
                 className="fill-white/90"
                 style={{ fontSize: index === 0 ? '11px' : '13px' }}

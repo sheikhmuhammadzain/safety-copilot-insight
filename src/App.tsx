@@ -13,7 +13,6 @@ import Agent from "./pages/Agent2";
 import Workbooks from "./pages/WorkbooksReal";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
-import AdvancedAnalytics from "./pages/AdvancedAnalytics";
 import DataHealth from "./pages/DataHealth";
 import NotFound from "./pages/NotFound";
 import Landing from "./pages/Landing";
@@ -53,7 +52,6 @@ const App = () => (
             <Route path="/wordclouds" element={<Wordclouds />} />
             <Route path="/agent" element={<Agent />} />
             <Route path="/analytics" element={<Analytics />} />
-            <Route path="/advanced-analytics" element={<AdvancedAnalytics />} />
             <Route path="/workbooks" element={<Workbooks />} />
             <Route path="/data-health" element={<DataHealth />} />
             <Route path="/settings" element={<Settings />} />

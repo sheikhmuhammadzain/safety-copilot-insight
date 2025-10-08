@@ -1,6 +1,7 @@
 import { KPICard } from "@/components/dashboard/KPICard";
 import { useState, useMemo, useEffect } from "react";
 import { useQuery } from "@tanstack/react-query";
+import { useCachedGet } from "@/hooks/useCachedGet";
 import ShadcnLineCard from "@/components/charts/ShadcnLineCard";
 import ShadcnLineCardEnhanced from "@/components/charts/ShadcnLineCardEnhanced";
 import ShadcnBarCard from "@/components/charts/ShadcnBarCard";
@@ -9,7 +10,7 @@ import ShadcnHeatmapCard from "@/components/charts/ShadcnHeatmapCard";
 import { ChartDateFilter } from "@/components/charts/ChartDateFilter";
 import { SidebarTrigger } from "@/components/ui/sidebar";
 import { useFilterOptions } from "@/hooks/useFilterOptions";
-import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw, Filter, X, ListChecks } from "lucide-react";
+import { AlertTriangle, ShieldAlert, FileCheck, ClipboardCheck, Info, RefreshCw, Filter, X, ListChecks, BarChart3 } from "lucide-react";
 import { RecentList } from "@/components/dashboard/RecentList";
 import { getRecentIncidents, getRecentHazards, getRecentAudits, getDataHealthCountsAll } from "@/lib/api";
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from "@/components/ui/tooltip";
@@ -17,8 +18,18 @@ import { MultiSelect } from "@/components/ui/multi-select";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Button } from "@/components/ui/button";
-import { Card, CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { format } from "date-fns";
+import { ConversionMetricsCards } from "@/components/conversion/ConversionMetricsCards";
+import { LinksSummary } from "@/components/conversion/LinksSummary";
+import { DepartmentMetricsTable } from "@/components/conversion/DepartmentMetricsTable";
+import { PlotlyCard } from "@/components/charts/PlotlyCard";
+import axios from "axios";
+import { Badge } from "@/components/ui/badge";
+import { CardDescription } from "@/components/ui/card";
+
+// API Base URL from environment variable
+const API_BASE = import.meta.env.VITE_API_BASE_URL || "http://localhost:8000";
 
 export default function Overview() {
   const [refreshKey, setRefreshKey] = useState<number>(0);
@@ -214,8 +225,9 @@ export default function Overview() {
   const activeFilterCount = useMemo(() => {
     return Object.keys(filterParams).length;
   }, [filterParams]);
+
   // KPIs via a single data-health endpoint (server-side filtered)
-  const { data: dataHealth, isLoading: kpiLoading, isError: kpiError, error: kpiErr } = useQuery({
+  const { data: dataHealth, isLoading: healthKpiLoading, isError: healthKpiError, error: healthKpiErr } = useQuery({
     queryKey: ["data-health-counts", filterParams, refreshKey ?? 0],
     queryFn: () => getDataHealthCountsAll(filterParams),
     staleTime: Infinity,
@@ -232,6 +244,19 @@ export default function Overview() {
     audit_findings: dataHealth?.counts?.audit_findings ?? 0,
     inspection_findings: dataHealth?.counts?.inspection_findings ?? 0,
   }), [dataHealth]);
+
+  // Fetch KPI Summary data with caching
+  const { data: kpiSummary, error: kpiError, loading: kpiLoading } = useCachedGet(
+    "/analytics/advanced/kpis/summary",
+    {
+      start_date: startDate || undefined,
+      end_date: endDate || undefined,
+      departments: departments.length > 0 ? departments.join(",") : undefined,
+      locations: locations.length > 0 ? locations.join(",") : undefined
+    },
+    1000 * 60 * 60 * 6, // 6 hours TTL
+    refreshKey
+  );
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -483,15 +508,17 @@ export default function Overview() {
           </Card>
         )}
         {/* KPI Cards - Data Health (single endpoint) */}
-        {kpiError && (
+        {healthKpiError && (
           <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
-            Failed to load KPI counts{(kpiErr as any)?.message ? `: ${(kpiErr as any).message}` : "."}
+            Failed to load KPI counts{(healthKpiErr as any)?.message ? `: ${(healthKpiErr as any).message}` : "."}
           </div>
         )}
+        
+        {/* Main KPI Cards */}
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6">
           <KPICard
             title="Incidents"
-            value={kpiLoading ? "—" : counts.incident}
+            value={healthKpiLoading ? "—" : counts.incident}
             trend="up"
             variant="warning"
             icon={<AlertTriangle className="h-5 w-5" />}
@@ -500,7 +527,7 @@ export default function Overview() {
           />
           <KPICard
             title="Hazards"
-            value={kpiLoading ? "—" : counts.hazard}
+            value={healthKpiLoading ? "—" : counts.hazard}
             trend="up"
             variant="danger"
             icon={<ShieldAlert className="h-5 w-5" />}
@@ -509,7 +536,7 @@ export default function Overview() {
           />
           <KPICard
             title="Audits"
-            value={kpiLoading ? "—" : counts.audit}
+            value={healthKpiLoading ? "—" : counts.audit}
             trend="up"
             variant="default"
             icon={<FileCheck className="h-5 w-5" />}
@@ -518,7 +545,7 @@ export default function Overview() {
           />
           <KPICard
             title="Inspections"
-            value={kpiLoading ? "—" : counts.inspection}
+            value={healthKpiLoading ? "—" : counts.inspection}
             trend="up"
             variant="success"
             icon={<ClipboardCheck className="h-5 w-5" />}
@@ -527,7 +554,7 @@ export default function Overview() {
           />
           <KPICard
             title="Audit Findings"
-            value={kpiLoading ? "—" : counts.audit_findings}
+            value={healthKpiLoading ? "—" : counts.audit_findings}
             trend="up"
             variant="warning"
             icon={<ListChecks className="h-5 w-5" />}
@@ -536,13 +563,234 @@ export default function Overview() {
           />
           <KPICard
             title="Inspection Findings"
-            value={kpiLoading ? "—" : counts.inspection_findings}
+            value={healthKpiLoading ? "—" : counts.inspection_findings}
             trend="up"
             variant="warning"
             icon={<ListChecks className="h-5 w-5" />}
             iconBgClass="bg-amber-100 text-amber-700"
             info="Inspection findings are the issues or observations identified during inspections that indicate unsafe acts/conditions or control gaps."
           />
+        </div>
+
+        {/* Advanced KPI Cards */}
+        {kpiError && (
+          <div className="p-3 bg-destructive/10 border border-destructive/30 rounded-lg text-sm text-destructive">
+            Failed to load advanced KPI data: {kpiError}
+          </div>
+        )}
+        
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            {/* TRIR */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm">TRIR</CardTitle>
+                    <CardDescription>Total Recordable Incident Rate</CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Info className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="font-semibold mb-2">TRIR - Total Recordable Incident Rate</p>
+                        <p className="text-sm mb-2">Measures the number of recordable work-related injuries per 200,000 hours worked.</p>
+                        <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                          TRIR = (Total Recordable Cases × 200,000) / Total Hours Worked
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• <strong>Recordable cases:</strong> Injuries requiring medical treatment beyond first aid</li>
+                          <li>• <strong>200,000 hours:</strong> Equivalent to 100 employees working 40 hours/week for 50 weeks</li>
+                          <li>• <strong>Industry benchmark:</strong> Below 3.0 is considered good</li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {kpiLoading ? (
+                  <>
+                    <div className="text-3xl font-bold text-muted-foreground">—</div>
+                    <div className="mt-2 h-5 w-24 bg-muted animate-pulse rounded"></div>
+                    <p className="text-xs text-muted-foreground mt-2">Loading...</p>
+                  </>
+                ) : kpiSummary ? (
+                  <>
+                    <div className="text-3xl font-bold" style={{ color: kpiSummary.trir.color }}>
+                      {kpiSummary.trir.value}
+                    </div>
+                    <Badge className="mt-2">{kpiSummary.trir.benchmark}</Badge>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {kpiSummary.trir.recordable_incidents} incidents / {(kpiSummary.trir.total_hours_worked / 1000000).toFixed(1)}M hours
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground">—</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* LTIR */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm">LTIR</CardTitle>
+                    <CardDescription>Lost Time Incident Rate</CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Info className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="font-semibold mb-2">LTIR - Lost Time Incident Rate</p>
+                        <p className="text-sm mb-2">Measures incidents that result in an employee being unable to work the next scheduled shift.</p>
+                        <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                          LTIR = (Lost Time Incidents × 200,000) / Total Hours Worked
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• <strong>Lost time incident:</strong> Employee misses at least one full day of work</li>
+                          <li>• <strong>Excludes:</strong> Day of injury and first aid cases</li>
+                          <li>• <strong>Industry benchmark:</strong> Below 1.0 is considered excellent</li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {kpiLoading ? (
+                  <>
+                    <div className="text-3xl font-bold text-muted-foreground">—</div>
+                    <p className="text-xs text-muted-foreground mt-2">Loading...</p>
+                  </>
+                ) : kpiSummary ? (
+                  <>
+                    <div className="text-3xl font-bold">
+                      {kpiSummary.ltir.value}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {kpiSummary.ltir.lost_time_incidents} lost-time incidents
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground">—</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* PSTIR */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm">PSTIR</CardTitle>
+                    <CardDescription>Process Safety Total Incident Rate</CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Info className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="font-semibold mb-2">PSTIR - Process Safety Total Incident Rate</p>
+                        <p className="text-sm mb-2">Measures incidents related to process safety (fires, explosions, chemical releases).</p>
+                        <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                          PSTIR = (Process Safety Events × 200,000) / Total Hours Worked
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• <strong>Process safety events:</strong> Unplanned releases, fires, explosions</li>
+                          <li>• <strong>Focus:</strong> Major hazard scenarios and catastrophic risks</li>
+                          <li>• <strong>Industry benchmark:</strong> Below 0.5 is considered good</li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {kpiLoading ? (
+                  <>
+                    <div className="text-3xl font-bold text-muted-foreground">—</div>
+                    <p className="text-xs text-muted-foreground mt-2">Loading...</p>
+                  </>
+                ) : kpiSummary ? (
+                  <>
+                    <div className="text-3xl font-bold">
+                      {kpiSummary.pstir.value}
+                    </div>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {kpiSummary.pstir.psm_incidents} PSM incidents
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground">—</div>
+                )}
+              </CardContent>
+            </Card>
+
+            {/* Near-Miss Ratio */}
+            <Card>
+              <CardHeader>
+                <div className="flex items-center justify-between">
+                  <div>
+                    <CardTitle className="text-sm">Near-Miss Ratio</CardTitle>
+                    <CardDescription>Near-Miss to Incident Ratio</CardDescription>
+                  </div>
+                  <TooltipProvider>
+                    <Tooltip>
+                      <TooltipTrigger asChild>
+                        <Button variant="ghost" size="icon" className="h-6 w-6">
+                          <Info className="h-3 w-3" />
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent className="max-w-sm">
+                        <p className="font-semibold mb-2">Near-Miss Ratio</p>
+                        <p className="text-sm mb-2">Compares near-miss reports to actual incidents. Higher ratio indicates better safety culture.</p>
+                        <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                          Ratio = Near-Miss Reports / Total Incidents
+                        </p>
+                        <ul className="text-xs space-y-1">
+                          <li>• <strong>Near-miss:</strong> Event that could have caused injury but didn't</li>
+                          <li>• <strong>Good ratio:</strong> 10:1 or higher (10 near-misses per incident)</li>
+                          <li>• <strong>Indicates:</strong> Strong reporting culture and proactive hazard identification</li>
+                        </ul>
+                      </TooltipContent>
+                    </Tooltip>
+                  </TooltipProvider>
+                </div>
+              </CardHeader>
+              <CardContent>
+                {kpiLoading ? (
+                  <>
+                    <div className="text-3xl font-bold text-muted-foreground">—</div>
+                    <div className="mt-2 h-5 w-24 bg-muted animate-pulse rounded"></div>
+                    <p className="text-xs text-muted-foreground mt-2">Loading...</p>
+                  </>
+                ) : kpiSummary ? (
+                  <>
+                    <div className="text-3xl font-bold" style={{ color: kpiSummary.near_miss_ratio.color }}>
+                      {kpiSummary.near_miss_ratio.ratio}:1
+                    </div>
+                    <Badge className="mt-2">{kpiSummary.near_miss_ratio.benchmark}</Badge>
+                    <p className="text-xs text-muted-foreground mt-2">
+                      {kpiSummary.near_miss_ratio.near_misses} near-misses / {kpiSummary.near_miss_ratio.incidents} incidents
+                    </p>
+                  </>
+                ) : (
+                  <div className="text-3xl font-bold text-muted-foreground">—</div>
+                )}
+              </CardContent>
+            </Card>
         </div>
 
         {/* Analytics Overview (hazards first, then incidents) */}
@@ -665,7 +913,82 @@ export default function Overview() {
             </TooltipProvider>
           </div>
 
-          {/* Long-text findings */}
+          {/* Top Findings Section */}
+          <div className="lg:col-span-12 relative">
+            <ShadcnBarCard title="Top Hazard Findings" endpoint="/analytics/data/hazard-top-findings" params={filterParams} refreshKey={refreshKey} />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Top Hazard Findings</p>
+                  <p className="text-sm mb-2">Shows the most frequently identified hazard descriptions and violation types.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Number of Similar Hazards Identified
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Data source:</strong> Hazard descriptions and violation types</li>
+                    <li>• <strong>Top findings:</strong> Most common hazardous conditions</li>
+                    <li>• <strong>Use case:</strong> Focus on controlling recurring hazards</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          <div className="lg:col-span-12 relative">
+            <ShadcnBarCard title="Top Incident Findings" endpoint="/analytics/data/incident-top-findings" params={filterParams} refreshKey={refreshKey} />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Top Incident Findings</p>
+                  <p className="text-sm mb-2">Displays the most common incident descriptions, conclusions, and root causes.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Number of Similar Incidents
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Data source:</strong> Incident descriptions and conclusions</li>
+                    <li>• <strong>Top findings:</strong> Most recurring incident types or causes</li>
+                    <li>• <strong>Use case:</strong> Target preventive measures for common incidents</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
+          <div className="lg:col-span-12 relative">
+            <ShadcnBarCard title="Top Audit Findings" endpoint="/analytics/data/audit-top-findings" params={filterParams} refreshKey={refreshKey} />
+            <TooltipProvider>
+              <Tooltip>
+                <TooltipTrigger asChild>
+                  <button className="absolute top-2 right-2 inline-flex h-7 w-7 items-center justify-center rounded-full border border-slate-200 bg-white text-slate-600 hover:bg-slate-50 shadow-sm">
+                    <Info className="h-4 w-4" />
+                  </button>
+                </TooltipTrigger>
+                <TooltipContent side="left" className="max-w-sm">
+                  <p className="font-semibold mb-2">Top Audit Findings</p>
+                  <p className="text-sm mb-2">Shows the most frequently identified findings from safety audits.</p>
+                  <p className="text-sm font-mono bg-muted p-2 rounded mb-2">
+                    Count = Number of Times Finding Was Identified
+                  </p>
+                  <ul className="text-xs space-y-1">
+                    <li>• <strong>Data source:</strong> Audit findings from formal assessments</li>
+                    <li>• <strong>Top findings:</strong> Most common nonconformities or issues</li>
+                    <li>• <strong>Use case:</strong> Identify systemic gaps and compliance issues</li>
+                  </ul>
+                </TooltipContent>
+              </Tooltip>
+            </TooltipProvider>
+          </div>
+
           <div className="lg:col-span-12 relative">
             <ShadcnBarCard title="Top Inspection Findings" endpoint="/analytics/data/inspection-top-findings" params={filterParams} refreshKey={refreshKey} />
             <TooltipProvider>
@@ -718,6 +1041,36 @@ export default function Overview() {
             </TooltipProvider>
           </div>
         </div>
+
+        {/* Conversion Analytics */}
+        <Card>
+          <CardHeader>
+            <CardTitle className="flex items-center gap-2">
+              <BarChart3 className="h-4 w-4" />
+              <span>Conversion Analytics</span>
+            </CardTitle>
+          </CardHeader>
+          <CardContent>
+            <div className="grid grid-cols-1 gap-6">
+              {/* KPI cards from JSON metrics */}
+              <ConversionMetricsCards />
+
+              {/* Hazard–Incident links summary (edges/pairs source) */}
+              <LinksSummary />
+
+              {/* Department-level metrics table */}
+              <DepartmentMetricsTable />
+
+              {/* Existing Plotly visualizations */}
+              <PlotlyCard title="Funnel" endpoint="/analytics/conversion/funnel" height={420} refreshKey={refreshKey} />
+              <PlotlyCard title="Time Lag" endpoint="/analytics/conversion/time-lag" height={420} refreshKey={refreshKey} />
+              <PlotlyCard title="Hazard to Incident Flow Analysis" endpoint="/analytics/conversion/sankey" height={600} refreshKey={refreshKey} />
+              <PlotlyCard title="Department Matrix" endpoint="/analytics/conversion/department-matrix" height={700} refreshKey={refreshKey} />
+              <PlotlyCard title="Prevention Effectiveness" endpoint="/analytics/conversion/prevention-effectiveness" height={700} refreshKey={refreshKey} />
+              <PlotlyCard title="Metrics Gauge" endpoint="/analytics/conversion/metrics-gauge" height={420} refreshKey={refreshKey} />
+            </div>
+          </CardContent>
+        </Card>
 
         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
           <RecentList title="Recent Incidents" fetcher={getRecentIncidents} limit={5} />

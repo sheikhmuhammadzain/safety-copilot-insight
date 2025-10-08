@@ -7,7 +7,6 @@ import {
   Settings,
   Home,
   Cloud,
-  TrendingUp,
   Activity
 } from "lucide-react";
 import { NavLink, useLocation } from "react-router-dom";
@@ -26,12 +25,10 @@ import { cn } from "@/lib/utils";
 
 const navigationItems = [
   { title: "Overview", url: "/dashboard", icon: Home },
+  { title: "Analytics", url: "/analytics", icon: BarChart3 },
+  { title: "Agent", url: "/agent", icon: Bot },
   { title: "Maps", url: "/maps", icon: Map },
   { title: "Wordclouds", url: "/wordclouds", icon: Cloud },
-  { title: "Analytics", url: "/analytics", icon: BarChart3 },
-  { title: "Advanced Analytics", url: "/advanced-analytics", icon: TrendingUp },
-  { title: "Agent", url: "/agent", icon: Bot },
-  { title: "Workbooks", url: "/workbooks", icon: Database },
   { title: "Data Health", url: "/data-health", icon: Activity },
   { title: "Settings", url: "/settings", icon: Settings },
 ];

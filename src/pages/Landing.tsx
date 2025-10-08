@@ -19,6 +19,7 @@ import { ShimmerButton } from "@/components/ui/shimmer-button";
 import GlassSurface from "@/components/ui/GlassSurface";
 import CountUp from "@/components/ui/CountUp";
 import PerformanceMonitor from "@/components/ui/PerformanceMonitor";
+import { Marquee } from "@/components/ui/marquee";
 
 // Lazy load heavy components with higher priority
 const SplashCursor = lazy(() => import("@/components/ui/splash-cursor"));
@@ -505,55 +506,25 @@ export default function Landing() {
           <p className="mt-2 text-center text-white/80">Everything you need to understand and improve safety performance.</p>
         </div>
 
-        <div className="mt-10 grid grid-cols-1 md:grid-cols-6 lg:grid-cols-12 gap-6">
-          <FeatureCard
-            title="Unified Safety Data"
-            desc="Incidents, hazards, audits and inspections in one place."
-            icon={<Shield className="h-5 w-5" />}
-            iconClass="bg-emerald-100 text-emerald-600"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100"
-            gradientClass="bg-gradient-to-br from-emerald-500/20 via-emerald-600/10 to-transparent"
-          />
-          <FeatureCard
-            title="Actionable Analytics"
-            desc="Spot trends, prioritize risk, track improvements."
-            icon={<BarChart3 className="h-5 w-5" />}
-            iconClass="bg-sky-100 text-sky-700"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200"
-            gradientClass="bg-gradient-to-br from-sky-500/20 via-sky-600/10 to-transparent"
-          />
-          <FeatureCard
-            title="Interactive Maps"
-            desc="Visualize locations and hotspots instantly."
-            icon={<Map className="h-5 w-5" />}
-            iconClass="bg-violet-100 text-violet-700"
-            className="md:col-span-6 lg:col-span-4 row-span-2 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300"
-            gradientClass="bg-gradient-to-br from-violet-500/20 via-violet-600/10 to-transparent"
-          />
-          <FeatureCard
-            title="Copilot Q&A"
-            desc="Ask natural questions to analyze data."
-            icon={<img src="/copilot-logo.png" alt="Copilot" className="h-5 w-5 object-contain" loading="lazy" width="20" height="20" />}
-            iconClass="bg-amber-100 text-amber-700"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px] lg:row-span-2 animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-400"
-            gradientClass="bg-gradient-to-br from-amber-500/20 via-amber-600/10 to-transparent"
-          />
-          <FeatureCard
-            title="Automation"
-            desc="Generate actions and follow-ups quickly."
-            icon={<CheckCircle2 className="h-5 w-5" />}
-            iconClass="bg-rose-100 text-rose-600"
-            className="md:col-span-3 lg:col-span-4 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-500"
-            gradientClass="bg-gradient-to-br from-rose-500/20 via-rose-600/10 to-transparent"
-          />
-          <FeatureCard
-            title="Integrations"
-            desc="Connect to your existing systems."
-            icon={<ArrowRight className="h-5 w-5" />}
-            iconClass="bg-indigo-100 text-indigo-600"
-            className="md:col-span-6 lg:col-span-8 min-h-[180px] animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-600"
-            gradientClass="bg-gradient-to-br from-indigo-500/20 via-indigo-600/10 to-transparent"
-          />
+        {/* Bento Grid Image */}
+        <div className="mt-10 animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <div className="relative group">
+            {/* Glow effects */}
+            <div className="absolute -inset-1 bg-gradient-to-r from-primary/20 via-primary/10 to-primary/20 rounded-3xl blur-2xl opacity-30 group-hover:opacity-50 transition-opacity duration-700" />
+            
+            <div className="relative rounded-2xl border border-white/10 bg-black/30 overflow-hidden shadow-[0_20px_60px_rgba(0,0,0,0.4)] hover:shadow-[0_30px_80px_rgba(0,0,0,0.6)] transition-all duration-700">
+              <div className="absolute inset-0 bg-gradient-to-tr from-primary/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-700 pointer-events-none" />
+              <img
+                src="/bentoimage.png"
+                alt="Safety Copilot Features"
+                className="w-full h-auto object-cover transition-all duration-700 ease-out group-hover:scale-[1.02]"
+                loading="lazy"
+                width="1400"
+                height="900"
+                sizes="(max-width: 768px) 100vw, (max-width: 1200px) 90vw, 80vw"
+              />
+            </div>
+          </div>
         </div>
       </section>
 
@@ -565,64 +536,25 @@ export default function Landing() {
           <p className="mt-2 text-center text-white/80">What the built-in agent can do for your safety data.</p>
         </div>
 
-        {/* Infinite horizontal gallery (equal-size images) */}
-        <style>
-          {`
-            @keyframes x-scroll {
-              0% { transform: translateX(0); }
-              100% { transform: translateX(-50%); }
-            }
-            #agent-marquee .marquee-track { animation: x-scroll 40s linear infinite; }
-            #agent-marquee:hover .marquee-track { animation-play-state: paused; }
-            @media (prefers-reduced-motion: reduce) {
-              #agent-marquee .marquee-track { animation: none !important; }
-            }
-          `}
-        </style>
-        <div id="agent-marquee" className="mt-10 relative overflow-hidden group">
-          <div
-            className="marquee-track relative z-0 flex items-center gap-6 w-[200%]"
-          >
-            {/* Track A */}
-            <div className="flex items-center gap-6 shrink-0">
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+        {/* Infinite marquee (single row) */}
+        <div className="mt-10 relative">
+          {/* Marquee Row */}
+          <div className="relative">
+            <Marquee pauseOnHover className="[--duration:50s] [--gap:1.5rem]">
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] flex-shrink-0 rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img src="/naturallanguageqa.png" alt="Natural-language Q&A" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
               </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] flex-shrink-0 rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img src="/smarttool.png" alt="Smart tool calling" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
               </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
+              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] flex-shrink-0 rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)] transition-all duration-300 hover:scale-105 hover:shadow-[0_20px_50px_rgba(0,0,0,0.5)]">
                 <img src="/chartondemand.png" alt="Charts on demand" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
               </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/websearch.png" alt="Web research" className="w-full h-full object-cover" loading="lazy" width="1200" height="800" />
-              </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/exportready.png" alt="Export ready" className="w-full h-full object-cover" loading="lazy" width="1600" height="900" />
-              </div>
-            </div>
-            {/* Track B (duplicate for seamless loop) */}
-            <div className="flex items-center gap-6 shrink-0" aria-hidden="true">
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/naturallanguageqa.png" alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/smarttool.png" alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/chartondemand.png" alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/websearch.png" alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-              <div className="w-[360px] h-[220px] md:w-[420px] md:h-[260px] lg:w-[520px] lg:h-[320px] rounded-2xl overflow-hidden bg-black/30 border border-white/10 shadow-[0_10px_30px_rgba(0,0,0,0.35)]">
-                <img src="/exportready.png" alt="" className="w-full h-full object-cover" loading="lazy" />
-              </div>
-            </div>
+            </Marquee>
+            {/* Edge fade gradients */}
+            <div className="pointer-events-none absolute inset-y-0 left-0 w-24 md:w-32 bg-gradient-to-r from-black via-black/70 to-transparent z-10" />
+            <div className="pointer-events-none absolute inset-y-0 right-0 w-24 md:w-32 bg-gradient-to-l from-black via-black/70 to-transparent z-10" />
           </div>
-          {/* edge fades */}
-          <div className="pointer-events-none absolute inset-y-0 left-0 w-24 sm:w-32 bg-gradient-to-r from-black via-black/60 to-transparent z-20" />
-          <div className="pointer-events-none absolute inset-y-0 right-0 w-24 sm:w-32 bg-gradient-to-l from-black via-black/60 to-transparent z-20" />
         </div>
       </section>
 
@@ -663,6 +595,76 @@ export default function Landing() {
           </div>
         </div>
       </section>
+
+      {/* Key Concepts */}
+      <section id="key-concepts" className="mx-auto max-w-7xl px-6 py-16">
+        <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-1000">
+          <h2 className="text-2xl md:text-3xl font-bold tracking-tight text-white text-center">
+            The Key <span className="text-primary">Concepts</span> Behind
+          </h2>
+          <p className="mt-2 text-center text-white/80">Three concepts that guide everything we do.</p>
+        </div>
+
+        <div className="mt-10 grid grid-cols-1 md:grid-cols-3 gap-6">
+          {/* Enhanced Context Engineering */}
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-100">
+            <div 
+              className="group relative rounded-2xl border border-white/15 p-8 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.05] hover:border-white/30 hover:-translate-y-3 h-full"
+              style={{ 
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+              }}
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:rotate-12">
+                <BarChart3 className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Enhanced Context Engineering</h3>
+              <p className="text-sm text-white/80 leading-relaxed">
+                Our advanced context engine combines deep codebase analysis with adaptive memory, delivering smarter AI that truly evolves with you.
+              </p>
+            </div>
+          </div>
+
+          {/* Knowledge Visibility */}
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-200">
+            <div 
+              className="group relative rounded-2xl border border-white/15 p-8 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.05] hover:border-white/30 hover:-translate-y-3 h-full"
+              style={{ 
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+              }}
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:rotate-12">
+                <Shield className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Knowledge Visibility</h3>
+              <p className="text-sm text-white/80 leading-relaxed">
+                Make your safety data truly understandable - for both humans and AI. Clear visibility reduces hallucinations and improves alignment.
+              </p>
+            </div>
+          </div>
+
+          {/* Spec-Driven Development */}
+          <div className="animate-on-scroll opacity-0 translate-y-8 transition-all duration-700 delay-300">
+            <div 
+              className="group relative rounded-2xl border border-white/15 p-8 shadow-[0_10px_30px_rgba(0,0,0,0.25)] transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] hover:shadow-[0_25px_50px_rgba(0,0,0,0.4)] hover:scale-[1.05] hover:border-white/30 hover:-translate-y-3 h-full"
+              style={{ 
+                backgroundColor: 'rgba(0, 0, 0, 0.85)',
+                backgroundImage: 'linear-gradient(135deg, rgba(255,255,255,0.05) 0%, rgba(255,255,255,0.02) 100%)'
+              }}
+            >
+              <div className="mb-4 inline-flex h-12 w-12 items-center justify-center rounded-full bg-primary/15 text-primary transition-all duration-700 ease-[cubic-bezier(0.34,1.56,0.64,1)] group-hover:scale-125 group-hover:rotate-12">
+                <Map className="h-6 w-6" />
+              </div>
+              <h3 className="text-lg font-semibold text-white mb-3">Spec-Driven Development</h3>
+              <p className="text-sm text-white/80 leading-relaxed">
+                Start by defining requirements clearly. Then delegate implementation - stay in control while AI automates execution. Fewer iterations. Faster delivery.
+              </p>
+            </div>
+          </div>
+        </div>
+      </section>
+
 {/* 
       Testimonials
       <section id="testimonials" className="mx-auto max-w-7xl px-6 py-16">
