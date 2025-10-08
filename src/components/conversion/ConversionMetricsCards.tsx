@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { getConversionMetrics } from "@/lib/api";
 import { KPICard } from "@/components/dashboard/KPICard";
+import { ChartInsightsButton } from "@/components/charts/ChartInsightsButton";
 
 export function ConversionMetricsCards() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
@@ -36,15 +37,25 @@ export function ConversionMetricsCards() {
     typeof m.avg_days_to_incident === "number" ? (m.avg_days_to_incident <= targets.avg_days_to_incident ? "up" : "down") : "neutral";
 
   return (
-    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-      <KPICard title="Total Hazards" value={m.total_hazards ?? "-"} trend="up" variant="warning" />
-      <KPICard title="Total Incidents" value={m.total_incidents ?? "-"} trend="up" variant="danger" />
-      <KPICard title="Hazards → Incidents" value={m.hazards_became_incidents ?? "-"} trend="up" />
-      <KPICard title="Prevented Hazards" value={m.prevented_hazards ?? "-"} trend="up" variant="success" />
-      <KPICard title="Conversion Rate" value={m.conversion_rate_pct ?? "-"} valueSuffix="%" trend={convTrend} />
-      <KPICard title="Prevention Rate" value={m.prevention_rate_pct ?? "-"} valueSuffix="%" trend={prevTrend} variant={prevTrend === "up" ? "success" : "danger"} />
-      <KPICard title="Avg Days to Incident" value={m.avg_days_to_incident ?? "-"} trend={daysTrend} />
-      <div className="self-center text-xs text-muted-foreground">{isFetching ? "Refreshing…" : ""}</div>
+    <div className="space-y-4">
+      <div className="flex items-center justify-between">
+        <h3 className="text-sm font-medium text-muted-foreground">Conversion Metrics</h3>
+        <ChartInsightsButton 
+          figure={undefined}
+          title="Conversion Metrics"
+          meta={{ endpoint: "/analytics/conversion/metrics" }}
+        />
+      </div>
+      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+        <KPICard title="Total Hazards" value={m.total_hazards ?? "-"} trend="up" variant="warning" />
+        <KPICard title="Total Incidents" value={m.total_incidents ?? "-"} trend="up" variant="danger" />
+        <KPICard title="Hazards → Incidents" value={m.hazards_became_incidents ?? "-"} trend="up" />
+        <KPICard title="Prevented Hazards" value={m.prevented_hazards ?? "-"} trend="up" variant="success" />
+        <KPICard title="Conversion Rate" value={m.conversion_rate_pct ?? "-"} valueSuffix="%" trend={convTrend} />
+        <KPICard title="Prevention Rate" value={m.prevention_rate_pct ?? "-"} valueSuffix="%" trend={prevTrend} variant={prevTrend === "up" ? "success" : "danger"} />
+        <KPICard title="Avg Days to Incident" value={m.avg_days_to_incident ?? "-"} trend={daysTrend} />
+        <div className="self-center text-xs text-muted-foreground">{isFetching ? "Refreshing…" : ""}</div>
+      </div>
     </div>
   );
 }

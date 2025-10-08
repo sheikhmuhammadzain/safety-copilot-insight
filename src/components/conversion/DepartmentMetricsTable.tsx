@@ -4,6 +4,7 @@ import { getDepartmentMetricsData } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
 import { Input } from "@/components/ui/input";
+import { ChartInsightsButton } from "@/components/charts/ChartInsightsButton";
 
 export function DepartmentMetricsTable() {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
@@ -70,9 +71,16 @@ export function DepartmentMetricsTable() {
   return (
     <Card>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Department Metrics {isFetching && <span className="text-xs text-muted-foreground">(refreshing)</span>}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">
+            Department Metrics {isFetching && <span className="text-xs text-muted-foreground">(refreshing)</span>}
+          </CardTitle>
+          <ChartInsightsButton 
+            figure={undefined}
+            title="Department Metrics"
+            meta={{ endpoint: "/analytics/conversion/department-metrics-data" }}
+          />
+        </div>
         <div className="mt-2">
           <div className="flex items-center gap-2">
             <Input placeholder="Search department…" value={q} onChange={(e) => setQ(e.target.value)} className="max-w-xs" />

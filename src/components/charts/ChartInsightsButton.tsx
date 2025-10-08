@@ -29,11 +29,13 @@ export function ChartInsightsButton({
   const [loading, setLoading] = useState(false);
   const [markdown, setMarkdown] = useState<string>("");
   const [error, setError] = useState<string>("");
-  const [showDebug, setShowDebug] = useState(false);
   const [sendRaw, setSendRaw] = useState(false);
-  const [usedCache, setUsedCache] = useState(false);
 
-  const canRequest = useMemo(() => !!figure && typeof figure === "object" && Array.isArray(figure.data), [figure]);
+  // Allow insights only if we have an endpoint in meta
+  const canRequest = useMemo(() => {
+    const hasEndpoint = !!(meta as any)?.endpoint;
+    return hasEndpoint;
+  }, [meta]);
 
   const sanitizeFigure = (fig: any) => {
     try {
@@ -72,27 +74,21 @@ export function ChartInsightsButton({
     setLoading(true);
     setError("");
     try {
-      // Prefer GET /<endpoint>/insights if meta.endpoint exists
-      let res;
       const ep = (meta as any)?.endpoint as string | undefined;
       const params = (meta as any)?.params as Record<string, any> | undefined;
-      try {
-        if (ep) {
-          res = await getChartInsightsForEndpoint(ep, params);
-        }
-      } catch (_) {
-        // swallow and fallback to POST
+      
+      // Use GET endpoint if available
+      if (ep) {
+        const res = await getChartInsightsForEndpoint(ep, params);
+        setMarkdown(res?.insights_md || "No insights returned.");
+        // Save to cache after a successful generation
+        try {
+          const key = cacheKey;
+          if (key && res?.insights_md) localStorage.setItem(key, res.insights_md);
+        } catch {}
+      } else {
+        setError("No insights endpoint available for this chart.");
       }
-      if (!res) {
-        res = await postChartInsights(buildPayload());
-      }
-      setMarkdown(res?.insights_md || "No insights returned.");
-      // Save to cache after a successful generation
-      try {
-        const key = cacheKey;
-        if (key && res?.insights_md) localStorage.setItem(key, res.insights_md);
-        setUsedCache(false);
-      } catch {}
     } catch (e: any) {
       setError(e?.message || String(e));
     } finally {
@@ -127,33 +123,26 @@ export function ChartInsightsButton({
         if (cached) {
           if (!cancelled) {
             setMarkdown(cached);
-            setUsedCache(true);
             setLoading(false);
           }
           return; // don't hit the API until user clicks re-generate
         }
 
         setLoading(true);
-        // Prefer GET per-chart endpoint
-        let res;
         const ep = (meta as any)?.endpoint as string | undefined;
         const params = (meta as any)?.params as Record<string, any> | undefined;
-        try {
-          if (ep) {
-            res = await getChartInsightsForEndpoint(ep, params);
+        
+        // Use GET endpoint only
+        if (ep) {
+          const res = await getChartInsightsForEndpoint(ep, params);
+          if (!cancelled) {
+            setMarkdown(res?.insights_md || "No insights returned.");
+            try {
+              if (cacheKey && res?.insights_md) localStorage.setItem(cacheKey, res.insights_md);
+            } catch {}
           }
-        } catch (_) {
-          // ignore and fallback
-        }
-        if (!res) {
-          res = await postChartInsights(buildPayload());
-        }
-        if (!cancelled) {
-          setMarkdown(res?.insights_md || "No insights returned.");
-          try {
-            if (cacheKey && res?.insights_md) localStorage.setItem(cacheKey, res.insights_md);
-          } catch {}
-          setUsedCache(false);
+        } else {
+          if (!cancelled) setError("No insights endpoint available for this chart.");
         }
       } catch (e: any) {
         if (!cancelled) setError(e?.message || String(e));
@@ -164,7 +153,7 @@ export function ChartInsightsButton({
     return () => {
       cancelled = true;
     };
-  }, [open, canRequest, figure, title, context, sendRaw, cacheKey]);
+  }, [open, canRequest, cacheKey, meta]);
 
   return (
     <Dialog open={open} onOpenChange={setOpen}>
@@ -178,21 +167,17 @@ export function ChartInsightsButton({
           <DialogTitle>{title ? `Insights for ${title}` : "Chart Insights"}</DialogTitle>
           <DialogDescription>Generated summary, top contributors, trends, and recommendations.</DialogDescription>
         </DialogHeader>
-        <div className="flex items-center justify-between mb-2">
-          <div className="text-xs text-muted-foreground flex items-center gap-2">
-            <span>Mode: {sendRaw ? "Raw figure" : "Sanitized figure"}</span>
-            {usedCache && <span className="rounded bg-muted px-1.5 py-0.5">Using cached</span>}
-          </div>
+        <div className="flex items-center justify-end mb-2">
           <div className="flex items-center gap-2">
-            <label className="text-xs text-muted-foreground">Send raw</label>
-            <input type="checkbox" checked={sendRaw} onChange={(e) => setSendRaw(e.target.checked)} />
             <button className="text-xs underline" onClick={generate} disabled={loading || !canRequest}>Re-generate</button>
             {cacheKey && (
               <button
                 className="text-xs underline"
-                onClick={() => {
-                  try { localStorage.removeItem(cacheKey); } catch {}
-                  setUsedCache(false);
+                disabled={loading}
+                onClick={async () => {
+                  try { if (cacheKey) localStorage.removeItem(cacheKey); } catch {}
+                  setMarkdown("");
+                  await generate();
                 }}
               >
                 Clear cache
@@ -208,33 +193,6 @@ export function ChartInsightsButton({
           ) : (
             <div className="prose prose-sm max-w-none dark:prose-invert break-words">
               <ReactMarkdown>{markdown || "No content."}</ReactMarkdown>
-            </div>
-          )}
-        </div>
-        <div className="mt-3 text-xs text-muted-foreground">
-          <button className="underline" onClick={() => setShowDebug((v) => !v)}>{showDebug ? "Hide" : "Show"} debug</button>
-          {showDebug && (
-            <div className="mt-2 max-h-64 overflow-auto bg-muted/40 p-2 rounded">
-              <pre>{JSON.stringify({
-                title,
-                context,
-                meta,
-                hasFigure: !!figure,
-                traces: Array.isArray(figure?.data) ? figure.data.length : 0,
-                payloadPreview: (() => {
-                  const payload = buildPayload();
-                  const d0 = payload?.figure?.data?.[0] ?? {};
-                  const preview: any = {
-                    firstTraceType: d0.type,
-                    firstTraceName: d0.name,
-                    xLen: Array.isArray(d0.x) ? d0.x.length : undefined,
-                    yLen: Array.isArray(d0.y) ? d0.y.length : undefined,
-                    ySample: Array.isArray(d0.y) ? d0.y.slice(0, 5) : undefined,
-                  };
-                  return preview;
-                })(),
-                willUse: (meta as any)?.endpoint ? `${(meta as any)?.endpoint}/insights?${new URLSearchParams(((meta as any)?.params)||{}).toString()}` : "POST /analytics/insights",
-              }, null, 2)}</pre>
             </div>
           )}
         </div>

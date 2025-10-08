@@ -2,6 +2,7 @@ import { useQuery } from "@tanstack/react-query";
 import { getConversionLinks } from "@/lib/api";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { ChartInsightsButton } from "@/components/charts/ChartInsightsButton";
 
 export function LinksSummary({ className }: { className?: string }) {
   const { data, isLoading, isError, error, refetch, isFetching } = useQuery({
@@ -26,9 +27,16 @@ export function LinksSummary({ className }: { className?: string }) {
   return (
     <Card className={className}>
       <CardHeader>
-        <CardTitle className="text-lg font-semibold">
-          Hazard–Incident Links {isFetching && <span className="text-xs text-muted-foreground">(refreshing)</span>}
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="text-lg font-semibold">
+            Hazard–Incident Links {isFetching && <span className="text-xs text-muted-foreground">(refreshing)</span>}
+          </CardTitle>
+          <ChartInsightsButton 
+            figure={undefined}
+            title="Hazard-Incident Links"
+            meta={{ endpoint: "/analytics/conversion/links" }}
+          />
+        </div>
       </CardHeader>
       <CardContent>
         <div className="grid grid-cols-3 gap-4">

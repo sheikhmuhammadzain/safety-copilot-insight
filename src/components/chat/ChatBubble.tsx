@@ -1,4 +1,4 @@
-import { useState, useRef, useEffect } from "react";
+import { useState, useRef, useEffect, useDeferredValue } from "react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
@@ -97,12 +97,14 @@ export function ChatBubble() {
   const [response, setResponse] = useState<AgentResponse | null>(null);
   const [debouncedAnalysis, setDebouncedAnalysis] = useState("");
   const websocketRef = useRef<WebSocket | null>(null);
+  const deferredAnalysis = useDeferredValue(debouncedAnalysis);
   
   const currentMessageIdRef = useRef<string | null>(null);
   const savedMessageIdsRef = useRef<Set<string>>(new Set());
   const isAnswerModeRef = useRef<boolean>(false);
   const bottomRef = useRef<HTMLDivElement | null>(null);
   const debounceTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const receivedAnswerTokensRef = useRef<boolean>(false);
 
   // Debounce markdown rendering during streaming to allow complete tokens
   useEffect(() => {
@@ -122,7 +124,7 @@ export function ChatBubble() {
       
       debounceTimerRef.current = setTimeout(() => {
         setDebouncedAnalysis(content);
-      }, 150); // 150ms debounce for smoother rendering
+      }, 32); // tighter debounce for smoother, natural token flow
     }
     
     return () => {
@@ -269,14 +271,13 @@ export function ChatBubble() {
           return;
         }
         
+        // Ignore generic thinking tokens to avoid duplicates (reasoning_token already handled)
         if (data.type === 'thinking_token' && data.token) {
-          // Backend sends thinking_token for both reasoning and final answer
-          // We accumulate in thinking text until answer_complete arrives
-          setThinkingText(prev => prev + data.token!);
           return;
         }
         
         if (data.type === 'answer_token' && data.token) {
+          receivedAnswerTokensRef.current = true;
           setCurrentAnalysis(prev => (prev || "") + data.token!);
           setFinalAnswer(prev => (prev || "") + data.token!);
           return;
@@ -307,12 +308,21 @@ export function ChatBubble() {
           setResponse(data.data);
         }
 
+        if ((data.type === 'answer' || data.type === 'final_answer' || data.type === 'final') && data.content) {
+          if (receivedAnswerTokensRef.current) {
+            setFinalAnswer(prev => (prev || "") + data.content);
+            setCurrentAnalysis(prev => (prev || "") + data.content);
+          } else {
+            setFinalAnswer(prev => (prev || "") + data.content);
+            setCurrentAnalysis(prev => (prev || "") + data.content);
+          }
+        }
+
         if ((data.type === 'answer_complete' || data.type === 'final_answer_complete') && data.content) {
-          // Backend sends the complete formatted answer here - replace any accumulated content
-          console.log('✅ Received formatted answer, length:', data.content.length);
-          setFinalAnswer(data.content);
-          setCurrentAnalysis(data.content);
-          // Clear thinking and reasoning text since we now have the final formatted answer
+          const combined = (finalAnswer || "");
+          const preferred = data.content && data.content.length > combined.length ? data.content : combined;
+          setFinalAnswer(preferred);
+          setCurrentAnalysis(preferred);
           setThinkingText("");
           setReasoningText("");
         }
@@ -397,11 +407,7 @@ export function ChatBubble() {
             console.log('✅ Current message states cleared');
           }, 100);
           
-          setTimeout(() => {
-            if (bottomRef.current) {
-              bottomRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
-            }
-          }, 300);
+          // Do not auto-scroll; keep natural chat position
         }
       } catch (error) {
         console.error('WebSocket message parse error:', error);
@@ -1125,7 +1131,7 @@ export function ChatBubble() {
                   <div className="bg-white rounded-2xl rounded-tl-md px-5 py-4 max-w-[90%] border border-gray-100 shadow-sm">
                     <div className="prose prose-sm max-w-none prose-headings:text-gray-900 prose-headings:font-semibold prose-p:text-gray-700 prose-p:leading-relaxed prose-strong:text-gray-900 prose-strong:font-semibold prose-ul:list-disc prose-ul:ml-4 prose-ol:list-decimal prose-ol:ml-4 prose-li:text-gray-700 prose-li:my-1">
                       <ReactMarkdown 
-                        key={`markdown-${isStreaming ? 'streaming' : 'complete'}-${(debouncedAnalysis || "").length}`}
+                        key={`markdown-${isStreaming ? 'streaming' : 'complete'}-${(deferredAnalysis || "").length}`}
                         remarkPlugins={[remarkGfm]}
                         skipHtml={false}
                         components={{
@@ -1197,7 +1203,7 @@ export function ChatBubble() {
                             },
                         }}
                       >
-                        {debouncedAnalysis || ""}
+                        {deferredAnalysis || ""}
                       </ReactMarkdown>
                       {isStreaming && (
                         <span className="inline-block w-2 h-4 bg-gradient-to-r from-primary to-lime-600 animate-pulse ml-1 rounded-full"></span>

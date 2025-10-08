@@ -1063,7 +1063,7 @@ export default function Overview() {
 
               {/* Existing Plotly visualizations */}
               <PlotlyCard title="Funnel" endpoint="/analytics/conversion/funnel" height={420} refreshKey={refreshKey} />
-              <PlotlyCard title="Time Lag" endpoint="/analytics/conversion/time-lag" height={420} refreshKey={refreshKey} />
+              <PlotlyCard title="Time Lag" endpoint="/analytics/conversion/time-lag" height={620} refreshKey={refreshKey} />
               <PlotlyCard title="Hazard to Incident Flow Analysis" endpoint="/analytics/conversion/sankey" height={600} refreshKey={refreshKey} />
               <PlotlyCard title="Department Matrix" endpoint="/analytics/conversion/department-matrix" height={700} refreshKey={refreshKey} />
               <PlotlyCard title="Prevention Effectiveness" endpoint="/analytics/conversion/prevention-effectiveness" height={700} refreshKey={refreshKey} />
